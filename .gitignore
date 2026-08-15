@@ -1,0 +1,13 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.DS_Store
+Thumbs.db
+*.Rout
+*.Rcheck/
+
+# Archivos temporales de editores
+*~
+*.swp
+
