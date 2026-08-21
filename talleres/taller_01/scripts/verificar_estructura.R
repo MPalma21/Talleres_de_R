@@ -1,9 +1,15 @@
 # Verificacion basica de la estructura del script maestro.
-# Ejecutar desde la raiz del proyecto con:
-# source("scripts/verificar_estructura.R")
+# Ejecutar desde la raiz del repositorio con:
+# source("talleres/taller_01/scripts/verificar_estructura.R")
+
+ruta_taller <- file.path("talleres", "taller_01")
+
+if (!dir.exists(ruta_taller) && basename(getwd()) == "taller_01") {
+  ruta_taller <- "."
+}
 
 archivos_maestros <- list.files(
-  path = ".",
+  path = ruta_taller,
   pattern = "^Taller1_Grupo_.*[.]R$",
   full.names = TRUE
 )
@@ -41,4 +47,3 @@ if (is.unsorted(posiciones)) {
 }
 
 message("Estructura correcta: sintaxis valida y ejercicios 1 a 20 en orden.")
-
