@@ -157,13 +157,239 @@ Promedio_No_NA_2 <- sum(ventas_numerico[!is.na(ventas_numerico)]) /
 
 ## Ejercicio 4 ---------------------------------------------------------------
 
+# Creamos copia de edades
+edades_copia <- edades
+
+# Umbrales establecidos
+umbral_mayor <- 40 # umbral de edad del literal a.
+lim_inf <- 25 # límite inferior del literal b.
+lim_sup <- 35 # límite superior del literal b.
+corte_na <- 20 # corte de censura del literal c.
+
+### a) Solucion -----
+
+# Individuos mayores al umbral
+supera_umbral <- length(edades_copia[edades_copia > umbral_mayor])
+
+print(paste(
+  "La cantidad de individuos que superan el umbral de edad son",
+  supera_umbral
+))
+
+# Proporcion del total
+
+caso_totales <- length(edades_copia)
+
+
+proporcion_supera_umbral <- round(100 * (supera_umbral / caso_totales), 2)
+
+print(paste(
+  "La proporcion de individuos que supera el umbral es",
+  proporcion_supera_umbral,
+  "%"
+))
+
+### b) Solucion -----
+
+entr_limites <- edades_copia >= lim_inf & edades_copia <= lim_sup
+propo_limites <- mean(entr_limites)
+
+print(paste(
+  "La proporcion de individuos entre los limites es",
+  100 * propo_limites,
+  "%"
+))
+
+### c) Solucion -----
+
+edades_copia[edades_copia < corte_na] <- NA
+
+cantidad_na <- length(edades_copia[is.na(edades_copia)])
+
+print(paste("La cantidad de NA son", cantidad_na))
+
+### d) Solucion -----
+
+posiciones <- which(
+  edades_copia == edad_max,
+  arr.ind = TRUE
+)
+
+cat("Las posciones son", posiciones)
+
+
 ## Ejercicio 5 ---------------------------------------------------------------
+
+### a) solución ----
+
+educacion_sin_ordered <- factor(
+  x = sample(
+    # Muestra de N de nivel de eduacion
+    niveles_educacion, # Vector de niveles de educacion
+    size = n, # Tamaño de la muestra
+    replace = TRUE # Con remplazo
+  ),
+  levels = niveles_educacion, # Niveles del factor
+  ordered = FALSE # Aplica la jerarquia del vector
+)
+
+# En el print vemos la jerarquia "<" entre niveles
+print(educacion_sin_ordered)
+print(educacion)
+
+
+# En el class, vemos que ademas de levels hay un orden
+class(educacion_sin_ordered)
+class(educacion)
+
+cat(
+  "La diferencia de usar ordered = TRUE: \n",
+  "* Permite establecer una jerarquia en los niveles de educacion \n",
+  "* Esto permite operaciones relacionales"
+)
+
+
+v
+graduados_secundaria <- educacion > "Secundaria"
+
+proporcion_graduados_secundaria <- length(educacion[graduados_secundaria]) /
+  length(educacion)
+
+cat(
+  "La proporcion de graduados de secundaria son: \n",
+  round(proporcion_graduados_secundaria, 4) * 100,
+  "%"
+)
+
+### c)  solución ----
+
+individuos_educacion <- table(educacion)
+print(individuos_educacion)
+
+
+cat(
+  "\n La proporcion de graduados de Primaria son:",
+  individuos_educacion[individuos_educacion = "Primaria"],
+  "\n La proporcion de graduados de Secundaria son:",
+  individuos_educacion[individuos_educacion = "Secundaria"],
+  "\n La proporcion de graduados de Pregrado son:",
+  individuos_educacion[individuos_educacion = "Pregrado"],
+  "\n La proporcion de graduados de Posgrado son:",
+  individuos_educacion[individuos_educacion = "Posgrado"]
+)
+
 
 ## Ejercicio 6 ---------------------------------------------------------------
 
+### a)  solución ----
+
+M <- matrix(
+  data = 1:12,
+  nrow = 4,
+  ncol = 3,
+  byrow = TRUE
+)
+
+print(M)
+
+### b)  solución ----
+
+colnames(M) <- c("v1", "v2", "v3")
+rownames(M) <- c("obs_1", "obs_2", "obs_3", "obs_4")
+
+print(M)
+
+### c)  solución ----
+
+# Extramos la segunda fila
+M[2, ]
+
+# Extramos la tercera columna
+M[, 3]
+
+# Extraemos submatriz
+M[1:2, 2:3]
+
+### d)  solución ----
+
+# Calcular la transpuesta
+t(M)
+
+# Producto matricial de M por su transpuesta
+M %*% t(M)
+
+
+cat(
+  "\n La matriz M tiene es de 4x3 y la transpuestas de M es 3x4.",
+  "\n Por lo tanto, las dimensiones de la matriz es",
+  dim(M %*% t(M))
+)
+
 ## Ejercicio 7 ---------------------------------------------------------------
 
+### a)  solución ----
+
+grupo_taller <- list(
+  nombres = c("Sergio", "MiguelAngel", "Juan"),
+  semestre = c(1, 1, 1),
+  entrego_a_tiempo = c(TRUE, TRUE, TRUE),
+  contacto = list(
+    correo = c(
+      "m.palma1@uniandes.edu.co",
+      "sa.lopezv@uniandes.edu.co",
+      "j.echeverryd@uniandes.edu.co"
+    ),
+    ciudad = c("Bogota", "Bogota", "Bogota")
+  )
+)
+
+### b)  solución ----
+
+grupo_taller$nombres[[2]]
+
+
+grupo_taller[[3]]
+
+### c)  solución ----
+
+# Con un solo [] seleccionamos elementos de la lista,
+# pero el resultado sigue siendo una lista.
+grupo_taller[1]
+
+class(grupo_taller[1])
+
+# Con [[]] extraemos el contenido del elemento de la lista.
+# Si ese contenido es un vector, luego podemos seleccionar
+# un elemento específico de ese vector con [].
+
+grupo_taller[[1]][2]
+
+class(grupo_taller[[1]])
+
+### d)  solución ----
+
+# Crear nuevo elemento
+grupo_taller$curso <- "Taller de R"
+print(grupo_taller)
+
+# Eliminar elemento
+grupo_taller$entrego_a_tiempo <- NULL
+print(grupo_taller)
+
 ## Ejercicio 8 ---------------------------------------------------------------
+
+frases <- paste(
+  nombres,
+  "tiene",
+  edades,
+  "años y su nivel educativo es",
+  paste0(
+    educacion,
+    "."
+  )
+)
+
+head(frases, 5)
 
 # NIVEL 2 - INTERMEDIO ------------------------------------------------------
 
