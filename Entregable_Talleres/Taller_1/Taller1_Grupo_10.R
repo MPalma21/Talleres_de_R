@@ -395,11 +395,88 @@ head(frases, 5)
 
 ## Ejercicio 9 ---------------------------------------------------------------
 
+corte_joven <- 30
+corte_mayor <- 50
+
+grupo_etario <- ifelse(
+  edades < corte_joven,
+  "Joven",
+  ifelse(
+    edades <= corte_mayor,
+    "Adulto",
+    "Mayor"
+  )
+)
+table(grupo_etario)
+
+#Verificaciones
+joven <- length(edades[edades < 30])
+adulto <- length(edades[edades <= 50 & edades >= 30])
+mayor <- length(edades[edades > 50])
+
+print(joven)
+print(adulto)
+print(mayor)
+
 ## Ejercicio 10 --------------------------------------------------------------
+
+valor_prueba <- 10
+valor_prueba <- 17
+valor_prueba <- "Hola"
+
+
+if (!is.numeric(valor_prueba)) {
+  cat("El valor no es numérico") ###a) Solución----
+} else if (valor_prueba %% 2 == 0) {
+  cat("El valor es numérico y par") ###b) Solución----
+} else {
+  cat("El valor es numérico e impar") ###c) Solución----
+}
 
 ## Ejercicio 11 --------------------------------------------------------------
 
+edad_corte <- 55
+vocales <- c("A", "E", "I", "O", "U")
+
+for (i in 1:length(frases)) {
+  #Tomar variables de interés
+  edad_par <- edades[i] %% 2 == 0
+  edad_mayor <- edades[i] > edad_corte
+  nombre_no_vocal <- !(substr(nombres[i], 1, 1) %in% vocales)
+  #Establecer reglas con variables definidas
+  if (edad_par & edad_mayor & nombre_no_vocal) {
+    cat(frases[i], "\n")
+  }
+}
+
 ## Ejercicio 12 --------------------------------------------------------------
+
+#Definimos los parámetros
+pob_inicial <- 50000 # población hoy
+tasa <- 0 # crecimiento anual
+meta <- 80000 # población objetivo
+
+#Definimos Valores Iniciales
+poblacion <- pob_inicial
+anios <- 0
+
+#Bucle While
+#Siga creciendo mientras la poblacion sea <= a la meta
+if (tasa <= 0) {
+  cat("La tasa debe ser mayor que 0")
+} else {
+  while (poblacion <= meta) {
+    #Crecimiento con tasa anual
+    poblacion <- poblacion * (1 + tasa)
+    anios <- anios + 1
+  }
+
+  #Imprimir Resultados
+  cat("Tarda", anios, "años", "en alcanzar", round(poblacion), "personas.")
+}
+#Si la tasa fuera 0, la población nunca crece y los años crecen hasta al el
+#infinito, entonces el bucle nunca termina.
+#Por este motivo, usamos un if que no admita tasas menores o iguales a cero
 
 ## Ejercicio 13 --------------------------------------------------------------
 
