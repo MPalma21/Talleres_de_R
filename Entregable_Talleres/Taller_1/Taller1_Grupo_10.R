@@ -480,9 +480,142 @@ if (tasa <= 0) {
 
 ## Ejercicio 13 --------------------------------------------------------------
 
+#' Calcular estadísticas manualmente
+#'
+#' Calcula el promedio y la desviación estándar muestral de un
+#' vector numérico sin utilizar las funciones mean() ni sd().
+#'
+#' Si el vector contiene valores NA, la función genera una advertencia
+#' y los excluye de los cálculos.
+#'
+#' @param x Un vector numérico.
+#'
+#' @returns Una lista con el promedio y la desviación estándar muestral
+#' del vector.
+#'
+#' @examples
+#' estadisticos_manuales(c(10, 20, 30, 40))
+#' estadisticos_manuales(c(10, 20, NA, 40))
+#'
+#'
+estadisticos_manuales <- function(x) {
+  if (!is.numeric(x)) {
+    stop(print("No es numerico"))
+  }
+  if (any(is.na(x))) {
+    warning(print("El vector contiene NAs"))
+  }
+
+  datos <- x[!is.na(x)]
+  promedio <- sum(datos) / length(datos)
+  sd <- sqrt(
+    (sum((datos - promedio)^2)) / (length(datos) - 1)
+  )
+
+  return(
+    list(
+      Promedio = promedio,
+      DesStad = sd
+    )
+  )
+}
+
+
+#Ejemplo de uso
+
+x <- c(2, 5, 4, 6, NA, 4)
+ejemplo <- estadisticos_manuales(x)
+
+class(ejemplo)
+
+# Aplicamos la funcion a edades
+estadisticos_manuales(edades)
+
+# probamos valores
+mean(edades)
+sd(edades)
+
 ## Ejercicio 14 --------------------------------------------------------------
 
+# Definimos funcion
+estandarizar <- function(x) {
+  # Definimos estadisticas
+  Estadisticas <- estadisticos_manuales(x)
+  Promedio <- Estadisticas$Promedio
+  DesStad <- Estadisticas$DesStad
+  z_score <- (x - Promedio) / (DesStad)
+
+  return(
+    z_score
+  )
+}
+
+
+# Ejemplo
+edades_std <- estandarizar(edades)
+print(edades_std)
+
+estadisticos_manuales(edades_std)
+class(edades_std)
+typeof(edades_std)
+# La media del vector estandarizado es aproximadamente 0 y su desviación
+# estándar aproximadamente 1. La diferencia respecto a los valores exactos
+# se debe a la representación finita de los números y a los errores de
+# redondeo asociados a la aritmética de punto flotante utilizada por R.
+# Fuente: R Core Team, R FAQ, sección 7.31:
+# "Why doesn't R think these numbers are equal?"
+
 ## Ejercicio 15 --------------------------------------------------------------
+
+lista_a_matriz <- function(x) {
+  if (!is.list(x)) {
+    stop(print("El objeto no es una lista"))
+  }
+  if (!all(sapply(x, is.numeric))) {
+    stop(print("En la lista hay elementos que no son numericos"))
+  }
+  if (!all(sapply(x, length) == sapply(x, length)[1])) {
+    #Todos los vectores tengan la misma longitudad comparada al primer vector
+    stop(print("Los vectores deben tener las mismas dimensiones"))
+  }
+  #Indicamos matriz
+  # Longitud de las filas de la lista
+  n_filas <- length(x[[1]])
+
+  # Longitud de las columnas (+ contante)
+  n_columnas <- length(x) + 1
+
+  # Definimos matriz
+  X <- matrix(
+    1,
+    nrow = n_filas,
+    ncol = n_columnas
+  )
+
+  # Agregamos cada vector de la lista a partir de la segunda columna
+  for (j in 1:length(x)) {
+    # x[[j]]
+    # X[, j + 1] llenar por posicion en su respectiva fila omitiendo la contante
+    X[, j + 1] <- x[[j]]
+  }
+
+  return(X)
+}
+
+
+# Ejemplo de pruebas
+prueba <- list(
+  edad = c(20, 30, 40),
+  salario = c(100, 200, 300)
+)
+
+prueba[[2]]
+
+matriz_prueba <- lista_a_matriz(prueba)
+print(matriz_prueba)
+
+matriz_prueba[3, 2]
+matriz_prueba[[4]]
 
 # NIVEL 3 - AVANZADO --------------------------------------------------------
 
