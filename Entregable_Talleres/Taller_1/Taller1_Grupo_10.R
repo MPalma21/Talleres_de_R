@@ -249,7 +249,6 @@ cat(
 )
 
 
-v
 graduados_secundaria <- educacion > "Secundaria"
 
 proporcion_graduados_secundaria <- length(educacion[graduados_secundaria]) /
@@ -395,8 +394,23 @@ head(frases, 5)
 
 ## Ejercicio 9 ---------------------------------------------------------------
 
-corte_joven <- 30
-corte_mayor <- 50
+# Clasificación etaria basada en fuentes oficiales:
+# - Naciones Unidas define "juventud" como el grupo de 15 a 24 años.
+# - La Organización Mundial de la Salud utiliza 60 años o más
+#   como referencia para personas mayores.
+#
+# Fuentes:
+# United Nations, Department of Economic and Social Affairs (2026).
+# World Population Highlights 2026: Youth.
+#
+# World Health Organization (2015).
+# World Report on Ageing and Health.
+#
+# A partir de estas referencias y dado que la muestra inicia en 18 años,
+# se definen los siguientes cortes:
+
+corte_joven <- 25
+corte_mayor <- 60
 
 grupo_etario <- ifelse(
   edades < corte_joven,
@@ -410,13 +424,14 @@ grupo_etario <- ifelse(
 table(grupo_etario)
 
 #Verificaciones
-joven <- length(edades[edades < 30])
-adulto <- length(edades[edades <= 50 & edades >= 30])
-mayor <- length(edades[edades > 50])
+joven <- length(edades[edades < 25])
+adulto <- length(edades[edades <= 60 & edades >= 25])
+mayor <- length(edades[edades > 60])
 
 print(joven)
 print(adulto)
 print(mayor)
+
 
 ## Ejercicio 10 --------------------------------------------------------------
 
@@ -426,11 +441,11 @@ valor_prueba <- "Hola"
 
 
 if (!is.numeric(valor_prueba)) {
-  cat("El valor no es numérico") ###a) Solución----
+  cat("El valor no es numérico") ### a) Solución----
 } else if (valor_prueba %% 2 == 0) {
-  cat("El valor es numérico y par") ###b) Solución----
+  cat("El valor es numérico y par") ### b) Solución----
 } else {
-  cat("El valor es numérico e impar") ###c) Solución----
+  cat("El valor es numérico e impar") ### c) Solución----
 }
 
 ## Ejercicio 11 --------------------------------------------------------------
@@ -621,10 +636,153 @@ matriz_prueba[[4]]
 
 ## Ejercicio 16 --------------------------------------------------------------
 
+### Solucion A----
+n <- 1000
+
+salario <- runif(
+  n,
+  min = 1400000,
+  max = 12000000
+)
+
+
+experiencia <- round(rexp(
+  n,
+  rate = 1 / 10
+))
+
+### Solucion B----
+
+edad_std <- estandarizar(edades)
+salario_std <- estandarizar(salario)
+exper_std <- estandarizar(experiencia)
+
+### Solucion C----
+
+beta_0 <- 2.0 # constante
+beta_1 <- 1.2 # efecto de la edad estandarizada
+beta_2 <- 0.8 # efecto del salario estandarizado
+beta_3 <- 0.4 # efecto de la experiencia estandarizada
+
+### Solucion D----
+n <- 1000
+
+# Definimos epsilon
+epsilon <- rnorm(
+  n,
+  mean = 0,
+  sd = 1
+)
+
+# Definimos el Modelo
+y <- beta_0 +
+  beta_1 * edad_std +
+  beta_2 * salario_std +
+  beta_3 * exper_std +
+  epsilon
 ## Ejercicio 17 --------------------------------------------------------------
+
+mco_manual <- function(X, y) {
+  # Validación del objeto
+  if (!is.matrix(X)) {
+    stop(print("X debe ser una matriz"))
+  }
+  # Validamos la condicion de multiplicacion matricial
+  if (nrow(X) != length(y)) {
+    stop(print("Las filas de X deben ser iguales a la longitud de y"))
+  }
+  # Estimamos los betas, beta= (X'X)^(-1) (X'Y)
+  beta <- solve(t(X) %*% X) %*% t(X) %*% y
+  # Convertimos beta a vector
+  beta <- as.vector(beta)
+  #Asignamos nombres
+  names(beta) <- colnames(x)
+  #Retornar resultado
+  return(beta)
+}
 
 ## Ejercicio 18 --------------------------------------------------------------
 
+### Solución A----
+
+# Modelo A
+
+lista_A <- list(edad_std)
+Modelo_A <- lista_a_matriz(lista_A)
+
+# Modelo B
+
+lista_B <- list(edad_std, salario_std)
+Modelo_B <- lista_a_matriz(lista_B)
+
+# Modelo C
+lista_C <- list(edad_std, salario_std, exper_std)
+Modelo_C <- lista_a_matriz(lista_C)
+
+### Solución B----
+Modelos <- list(
+  A = Modelo_A,
+  B = Modelo_B,
+  C = Modelo_C
+)
+lista_resultados <- list()
+
+for (i in 1:length(Modelos)) {
+  beta <- mco_manual(Modelos[[i]], y)
+  epsilon <- y - Modelos[[i]] %*% beta
+
+  lista_resultados[[i]] <- list(
+    coeficientes = beta,
+    residuos = epsilon,
+    SCR = as.numeric(t(epsilon) %*% epsilon)
+  )
+}
+
+names(lista_resultados) <- names(Modelos)
+
+### Solución C----
+#Cambia el coeficiente gracias a que agregamos variables control, mejorando la precisión de la estimación
+print(lista_resultados$A$SCR)
+print(lista_resultados$B$SCR)
+print(lista_resultados$C$SCR)
+#El Modelo C es el que tiene una menor SCR, gracias a la inclusión de variables control
+#
+
 ## Ejercicio 19 --------------------------------------------------------------
+
+###Solución A----
+#Creamos datos_taller
+datos_taller <- data.frame(
+  id,
+  nombres,
+  edades,
+  educacion,
+  salario
+)
+
+###Solución C----
+
+str(datos_taller)
+head(datos_taller)
+dim(datos_taller)
+cat(
+  "La columna id es",
+  class(datos_taller$id)
+)
+
+###Solución C----
+
+n_faltantes <- 50
+posiciones_NA <- sample(
+  1:nrow(datos_taller),
+  n_faltantes
+)
+
+datos_taller_1 <- datos_taller
+if ((datos_taller_1$salario %in% posiciones_NA) == TRUE) {
+  datos_taller_1$salario <- NA
+} else {
+  (datos_taller_1$salario)
+}
 
 ## Ejercicio 20 --------------------------------------------------------------
