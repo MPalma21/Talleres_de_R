@@ -22,9 +22,11 @@ set.seed(semilla)
 # Comentarios
 # (i) Para garantizar la reproducibilidad. Dado que al manejar numeros aleatorios,
 #  un semilla nos ayuda a fijar la misma generacion de los numeros
-# (ii) Si los resultados no se fijan, puede generar errores operativos y entre otros dado que no se garantiza una reproducibilidad de analisis
+# (ii) Si los resultados no se fijan, puede generar errores operativos y entre
+# otros dado que no se garantiza una reproducibilidad de analisis
 # (iii) Toda generacion apartado que tenga variables aleatorias o modelos estocasticos
-
+# (iii) Si cambia semilla, cambian los objetos generados con runif(), # sample(), rnorm(), etc.
+# No cambian los parametros ni objetos # deterministas como n, edad_min, edad_max e id.
 ## Ejercicio 2 ---------------------------------------------------------------
 
 # Parametros
@@ -127,7 +129,6 @@ ventas_texto <- c(
 ventas_numerico <- as.numeric(ventas_texto)
 
 # Warning message: NAs introduced by coercion
-
 # Explicacion: El vector contiene strings que no pueden ser convertidos
 # a numerico
 
@@ -165,7 +166,7 @@ lim_inf <- 25 # límite inferior del literal b.
 lim_sup <- 35 # límite superior del literal b.
 corte_na <- 20 # corte de censura del literal c.
 
-### a) Solucion -----
+###Solución A----
 
 # Individuos mayores al umbral
 supera_umbral <- length(edades_copia[edades_copia > umbral_mayor])
@@ -188,7 +189,7 @@ print(paste(
   "%"
 ))
 
-### b) Solucion -----
+###Solución B----
 
 entr_limites <- edades_copia >= lim_inf & edades_copia <= lim_sup
 propo_limites <- mean(entr_limites)
@@ -199,7 +200,7 @@ print(paste(
   "%"
 ))
 
-### c) Solucion -----
+###Solución C----
 
 edades_copia[edades_copia < corte_na] <- NA
 
@@ -207,11 +208,10 @@ cantidad_na <- length(edades_copia[is.na(edades_copia)])
 
 print(paste("La cantidad de NA son", cantidad_na))
 
-### d) Solucion -----
+###Solución D----
 
 posiciones <- which(
-  edades_copia == edad_max,
-  arr.ind = TRUE
+  edades_copia == edad_max
 )
 
 cat("Las posciones son", posiciones)
@@ -219,7 +219,7 @@ cat("Las posciones son", posiciones)
 
 ## Ejercicio 5 ---------------------------------------------------------------
 
-### a) solución ----
+###Solución A----
 
 educacion_sin_ordered <- factor(
   x = sample(
@@ -231,6 +231,11 @@ educacion_sin_ordered <- factor(
   levels = niveles_educacion, # Niveles del factor
   ordered = FALSE # Aplica la jerarquia del vector
 )
+
+levels(educacion)
+levels(educacion_sin_ordered)
+# ordered = TRUE conserva un orden entre las categorias y permite
+# comparaciones relacionales; sin ordered = TRUE el factor es nominal.
 
 # En el print vemos la jerarquia "<" entre niveles
 print(educacion_sin_ordered)
@@ -248,6 +253,8 @@ cat(
 )
 
 
+###Solución B----
+
 graduados_secundaria <- educacion > "Secundaria"
 
 proporcion_graduados_secundaria <- length(educacion[graduados_secundaria]) /
@@ -259,7 +266,7 @@ cat(
   "%"
 )
 
-### c)  solución ----
+###Solución C----
 
 individuos_educacion <- table(educacion)
 print(individuos_educacion)
@@ -279,7 +286,7 @@ cat(
 
 ## Ejercicio 6 ---------------------------------------------------------------
 
-### a)  solución ----
+###Solución A----
 
 M <- matrix(
   data = 1:12,
@@ -290,14 +297,14 @@ M <- matrix(
 
 print(M)
 
-### b)  solución ----
+###Solución B----
 
 colnames(M) <- c("v1", "v2", "v3")
 rownames(M) <- c("obs_1", "obs_2", "obs_3", "obs_4")
 
 print(M)
 
-### c)  solución ----
+###Solución C----
 
 # Extramos la segunda fila
 M[2, ]
@@ -308,7 +315,7 @@ M[, 3]
 # Extraemos submatriz
 M[1:2, 2:3]
 
-### d)  solución ----
+###Solución D----
 
 # Calcular la transpuesta
 t(M)
@@ -316,16 +323,12 @@ t(M)
 # Producto matricial de M por su transpuesta
 M %*% t(M)
 
-
-cat(
-  "\n La matriz M tiene es de 4x3 y la transpuestas de M es 3x4.",
-  "\n Por lo tanto, las dimensiones de la matriz es",
-  dim(M %*% t(M))
-)
+dim(M %*% t(M)) # M es 4x3 y t(M) es 3x4; por eso el producto es 4x4.
+# Las dimensiones internas (3 y 3) coinciden.
 
 ## Ejercicio 7 ---------------------------------------------------------------
 
-### a)  solución ----
+###Solución A----
 
 grupo_taller <- list(
   nombres = c("Sergio", "MiguelAngel", "Juan"),
@@ -341,30 +344,25 @@ grupo_taller <- list(
   )
 )
 
-### b)  solución ----
-
+###Solución B----
+grupo_taller$nombres
 grupo_taller$nombres[[2]]
 
 
-grupo_taller[[3]]
+###Solución C----
 
-### c)  solución ----
-
-# Con un solo [] seleccionamos elementos de la lista,
-# pero el resultado sigue siendo una lista.
 grupo_taller[1]
+grupo_taller[[1]]
 
-class(grupo_taller[1])
-
-# Con [[]] extraemos el contenido del elemento de la lista.
-# Si ese contenido es un vector, luego podemos seleccionar
-# un elemento específico de ese vector con [].
-
-grupo_taller[[1]][2]
 
 class(grupo_taller[[1]])
+class(grupo_taller[1])
 
-### d)  solución ----
+# grupo_taller[1] devuelve una sublista que contiene el primer elemento.
+# grupo_taller[[1]] extrae directamente el contenido del primer elemento.
+# Por eso [ ] conserva la estructura de lista, mientras que [[ ]] la elimina.
+
+###Solución D----
 
 # Crear nuevo elemento
 grupo_taller$curso <- "Taller de R"
@@ -440,11 +438,11 @@ valor_prueba <- "Hola"
 
 
 if (!is.numeric(valor_prueba)) {
-  cat("El valor no es numérico") ### a) Solución----
+  cat("El valor no es numérico") ###Solución A----
 } else if (valor_prueba %% 2 == 0) {
-  cat("El valor es numérico y par") ### b) Solución----
+  cat("El valor es numérico y par") ###Solución B----
 } else {
-  cat("El valor es numérico e impar") ### c) Solución----
+  cat("El valor es numérico e impar") ###Solución C----
 }
 
 ## Ejercicio 11 --------------------------------------------------------------
@@ -467,7 +465,7 @@ for (i in 1:length(frases)) {
 
 #Definimos los parámetros
 pob_inicial <- 50000 # población hoy
-tasa <- 0 # crecimiento anual
+tasa <- 0.023 # crecimiento anual
 meta <- 80000 # población objetivo
 
 #Definimos Valores Iniciales
@@ -529,7 +527,7 @@ estadisticos_manuales <- function(x) {
   return(
     list(
       Promedio = promedio,
-      DesStad = sd
+      Desviacion_estandar = sd
     )
   )
 }
@@ -556,7 +554,7 @@ estandarizar <- function(x) {
   # Definimos estadisticas
   Estadisticas <- estadisticos_manuales(x)
   Promedio <- Estadisticas$Promedio
-  DesStad <- Estadisticas$DesStad
+  DesStad <- Estadisticas$Desviacion_estandar
   z_score <- (x - Promedio) / (DesStad)
 
   return(
@@ -566,12 +564,12 @@ estandarizar <- function(x) {
 
 
 # Ejemplo
-edades_std <- estandarizar(edades)
-print(edades_std)
+edad_std <- estandarizar(edades)
+print(edad_std)
 
-estadisticos_manuales(edades_std)
-class(edades_std)
-typeof(edades_std)
+estadisticos_manuales(edad_std)
+class(edad_std)
+typeof(edad_std)
 # La media del vector estandarizado es aproximadamente 0 y su desviación
 # estándar aproximadamente 1. La diferencia respecto a los valores exactos
 # se debe a la representación finita de los números y a los errores de
@@ -596,7 +594,7 @@ lista_a_matriz <- function(x) {
   # Longitud de las filas de la lista
   n_filas <- length(x[[1]])
 
-  # Longitud de las columnas (+ contante)
+  # Longitud de las columnas (+ constante)
   n_columnas <- length(x) + 1
 
   # Definimos matriz
@@ -612,6 +610,8 @@ lista_a_matriz <- function(x) {
     # X[, j + 1] llenar por posicion en su respectiva fila omitiendo la contante
     X[, j + 1] <- x[[j]]
   }
+
+  colnames(X) <- c("constante", names(x)) # Nombramos las columnas
 
   return(X)
 }
@@ -636,19 +636,21 @@ matriz_prueba[[4]]
 ## Ejercicio 16 --------------------------------------------------------------
 
 ### Solucion A----
-n <- 1000
+
+salario_min <- 1400000
+salario_max <- 12000000
+lambda_experiencia <- 10
 
 salario <- runif(
   n,
-  min = 1400000,
-  max = 12000000
+  min = salario_min,
+  max = salario_max
 )
 
+experiencia <- rpois(n, lambda = lambda_experiencia)
 
-experiencia <- round(rexp(
-  n,
-  rate = 1 / 10
-))
+# Se usa Poisson porque genera valores enteros no negativos,
+# consistentes con una medida simple de años de experiencia laboral.
 
 ### Solucion B----
 
@@ -695,7 +697,7 @@ mco_manual <- function(X, y) {
   # Convertimos beta a vector
   beta <- as.vector(beta)
   #Asignamos nombres
-  names(beta) <- colnames(x)
+  names(beta) <- colnames(X)
   #Retornar resultado
   return(beta)
 }
@@ -706,16 +708,20 @@ mco_manual <- function(X, y) {
 
 # Modelo A
 
-lista_A <- list(edad_std)
+lista_A <- list(edad_std = edad_std)
 Modelo_A <- lista_a_matriz(lista_A)
 
 # Modelo B
 
-lista_B <- list(edad_std, salario_std)
+lista_B <- list(edad_std = edad_std, salario_std = salario_std)
 Modelo_B <- lista_a_matriz(lista_B)
 
 # Modelo C
-lista_C <- list(edad_std, salario_std, exper_std)
+lista_C <- list(
+  edad_std = edad_std,
+  salario_std = salario_std,
+  exper_std = exper_std
+)
 Modelo_C <- lista_a_matriz(lista_C)
 
 ### Solución B----
@@ -759,22 +765,26 @@ datos_taller <- data.frame(
   salario
 )
 
-###Solución C----
+###Solución B----
 
 str(datos_taller)
 head(datos_taller)
 dim(datos_taller)
 
 cat(
-  "\n La columna id es:", class(datos_taller$id),
-  "\n la columna  nombres es:", class(datos_taller$nombres),
-  "\n la columna  edades es:", class(datos_taller$edades),
-  "\n la columna  educacion es:", class(datos_taller$educacion),
-  "\n la columna  salario es:", class(datos_taller$salario)
+  "\n La columna id es:",
+  class(datos_taller$id),
+  "\n la columna  nombres es:",
+  class(datos_taller$nombres),
+  "\n la columna  edades es:",
+  class(datos_taller$edades),
+  "\n la columna  educacion es:",
+  class(datos_taller$educacion),
+  "\n la columna  salario es:",
+  class(datos_taller$salario)
 )
 
 ###Solución C----
-
 
 # Definimos cantidad de valores faltantes
 n_faltantes <- 50
@@ -823,3 +833,55 @@ head(datos_ordenados, 5)
 
 
 ## Ejercicio 20 --------------------------------------------------------------
+
+### Solución A ----
+
+# Cargamos base de datos
+
+data(airquality)
+head(airquality, 6)
+
+# Valores NA en cada Columna
+na_por_columna <- colSums(is.na(airquality))
+print(na_por_columna)
+
+### Solución B ----
+
+medias_columnas <- apply(
+  airquality, # Dataset (Array , Matrix)
+  MARGIN = 2, # 1 = Rows , 2 = Columns
+  FUN = function(x) mean(x, na.rm = TRUE) # Funcion a aplicar
+)
+
+print(medias_columnas)
+
+### Solución C ----
+
+rango_manual <- function(x) {
+  if (any(is.na(x))) {
+    datos <- x[!is.na(x)]
+    print("El vector contiene NAs, serán ignorados en la operación")
+  } else {
+    datos <- x
+  }
+
+  maximo <- max(datos)
+  minimo <- min(datos)
+
+  rango <- maximo - minimo
+
+  return(rango)
+}
+
+apply(airquality, 2, rango_manual)
+
+### Solución D ----
+
+# La variable con mayor rango es Solar.R, con un rango de 327.
+# Sin embargo, el rango puede ser una medida engañosa de variabilidad
+# cuando se comparan variables medidas en unidades diferentes.
+# Por ejemplo, Solar.R, Wind y Temp están expresadas en escalas distintas,
+# por lo que un rango numéricamente mayor no implica necesariamente que
+# esa variable sea relativamente más variable.
+# Además, el rango solo utiliza el valor máximo y el mínimo, por lo que
+# puede verse muy afectado por valores extremos.
