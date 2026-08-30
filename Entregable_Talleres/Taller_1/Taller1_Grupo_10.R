@@ -16,9 +16,8 @@ cod_palma <- 202621481
 cod_lopez <- 202111932
 cod_echeverry <- 202616233
 
-seed <- (cod_palma + cod_lopez + cod_echeverry) / 3
-
-set.seed(seed)
+semilla <- (cod_palma + cod_lopez + cod_echeverry) / 3
+set.seed(semilla)
 
 # Comentarios
 # (i) Para garantizar la reproducibilidad. Dado que al manejar numeros aleatorios,
@@ -765,24 +764,62 @@ datos_taller <- data.frame(
 str(datos_taller)
 head(datos_taller)
 dim(datos_taller)
+
 cat(
-  "La columna id es",
-  class(datos_taller$id)
+  "\n La columna id es:", class(datos_taller$id),
+  "\n la columna  nombres es:", class(datos_taller$nombres),
+  "\n la columna  edades es:", class(datos_taller$edades),
+  "\n la columna  educacion es:", class(datos_taller$educacion),
+  "\n la columna  salario es:", class(datos_taller$salario)
 )
 
 ###Solución C----
 
+
+# Definimos cantidad de valores faltantes
 n_faltantes <- 50
+
+# Seleccionamos aleatoriamente las filas
 posiciones_NA <- sample(
   1:nrow(datos_taller),
   n_faltantes
 )
 
-datos_taller_1 <- datos_taller
-if ((datos_taller_1$salario %in% posiciones_NA) == TRUE) {
-  datos_taller_1$salario <- NA
-} else {
-  (datos_taller_1$salario)
-}
+
+# Reemplazamos por NA el salario en las filas seleccionadas
+datos_taller$salario[posiciones_NA] <- NA
+
+# Cantidad de valores faltantes por columna
+cantidad_NA <- colSums(is.na(datos_taller))
+
+print(cantidad_NA)
+
+# Porcentaje de valores faltantes por columna
+porcentaje_NA <- colMeans(is.na(datos_taller)) * 100
+
+print(porcentaje_NA)
+
+
+### Solución D ----
+
+# Creamos un data frame únicamente con filas completas
+datos_completos <- datos_taller[complete.cases(datos_taller), ]
+
+# Calculamos cuántas filas se perdieron
+filas_perdidas <- nrow(datos_taller) - nrow(datos_completos)
+
+# Mostramos el resultado
+cat("La cantidad de filas perdidas es:", filas_perdidas)
+
+### Solución E ----
+
+# Ordenamos los datos de mayor a menor salario
+datos_ordenados <- datos_completos[
+  order(datos_completos$salario, decreasing = TRUE),
+]
+
+# Mostramos las primeras 5 filas
+head(datos_ordenados, 5)
+
 
 ## Ejercicio 20 --------------------------------------------------------------
