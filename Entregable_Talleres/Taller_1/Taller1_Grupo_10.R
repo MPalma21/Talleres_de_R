@@ -1,13 +1,16 @@
 # Taller 1 - Programacion en R
-# Grupo: NUMERO
-# Integrantes: COMPLETAR
+# Grupo: 10
+# Integrantes: Miguelangel Palma - Sergio Lopez - Juan Jose Echeverry
 # Fecha de entrega: 31 de agosto de 2026
+
+# Por buenas practicas reiniciamos el enviroment de Rstudio
+rm(list =  ls())
 
 # NIVEL 1 - BASICO ----------------------------------------------------------
 
 ## Ejercicio 1 ---------------------------------------------------------------
 
-# Codigos
+# Codigos:
 # Miguelangel Palma: 202621481
 # Sergio Lopez: 202111932
 # Juan Jose Echeverry: 202616233
@@ -132,7 +135,7 @@ ventas_numerico <- as.numeric(ventas_texto)
 
 # Warning message: NAs introduced by coercion
 # Explicacion: El vector contiene strings que no pueden ser convertidos
-# a numerico
+# a numerico, por ende se remplazan por NA
 
 print(ventas_numerico)
 typeof(ventas_numerico)
@@ -348,7 +351,7 @@ grupo_taller <- list(
 
 ###Solución B----
 grupo_taller$nombres
-grupo_taller$nombres[[2]]
+grupo_taller[[2]]
 
 
 ###Solución C----
@@ -711,11 +714,14 @@ mco_manual <- function(X, y) {
 
 lista_A <- list(edad_std = edad_std)
 Modelo_A <- lista_a_matriz(lista_A)
+dim(Modelo_A)
 
 # Modelo B
 
 lista_B <- list(edad_std = edad_std, salario_std = salario_std)
 Modelo_B <- lista_a_matriz(lista_B)
+dim(Modelo_B)
+
 
 # Modelo C
 lista_C <- list(
@@ -724,6 +730,8 @@ lista_C <- list(
   exper_std = exper_std
 )
 Modelo_C <- lista_a_matriz(lista_C)
+dim(Modelo_C)
+
 
 ### Solución B----
 Modelos <- list(
@@ -751,8 +759,14 @@ names(lista_resultados) <- names(Modelos)
 print(lista_resultados$A$SCR)
 print(lista_resultados$B$SCR)
 print(lista_resultados$C$SCR)
-#El Modelo C es el que tiene una menor SCR, gracias a la inclusión de variables control
-#
+
+
+# El coeficiente de edad debe permanecer cercano a beta_1 = 1.2;
+# puede cambiar ligeramente al añadir regresores por correlaciones muestrales y ruido.
+# El Modelo C tiene la menor (o igual) SCR porque los modelos son anidados y
+# agregar regresores en MCO no puede aumentar la SCR.
+# El Modelo C captura mejor el DGP porque incluye edad, salario y experiencia,
+# que son exactamente los regresores usados para generar y.
 
 ## Ejercicio 19 --------------------------------------------------------------
 
@@ -784,6 +798,14 @@ cat(
   "\n la columna  salario es:",
   class(datos_taller$salario)
 )
+
+
+# La columna id es: integer 
+# la columna  nombres es: character 
+# la columna  edades es: numeric 
+# la columna  educacion es: ordered factor 
+# la columna  salario es: numeric
+
 
 ###Solución C----
 
@@ -886,3 +908,4 @@ apply(airquality, 2, rango_manual)
 # esa variable sea relativamente más variable.
 # Además, el rango solo utiliza el valor máximo y el mínimo, por lo que
 # puede verse muy afectado por valores extremos.
+
