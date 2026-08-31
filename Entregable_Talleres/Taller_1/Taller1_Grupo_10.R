@@ -25,8 +25,10 @@ set.seed(semilla)
 # (ii) Si los resultados no se fijan, puede generar errores operativos y entre
 # otros dado que no se garantiza una reproducibilidad de analisis
 # (iii) Toda generacion apartado que tenga variables aleatorias o modelos estocasticos
-# (iii) Si cambia semilla, cambian los objetos generados con runif(), # sample(), rnorm(), etc.
-# No cambian los parametros ni objetos # deterministas como n, edad_min, edad_max e id.
+# Si cambia semilla, cambian los objetos generados con runif(), # sample(), rnorm(), etc.
+# No cambian los parametros ni objetos
+# deterministas como n, edad_min, edad_max e id.
+
 ## Ejercicio 2 ---------------------------------------------------------------
 
 # Parametros
@@ -666,7 +668,6 @@ beta_2 <- 0.8 # efecto del salario estandarizado
 beta_3 <- 0.4 # efecto de la experiencia estandarizada
 
 ### Solucion D----
-n <- 1000
 
 # Definimos epsilon
 epsilon <- rnorm(
