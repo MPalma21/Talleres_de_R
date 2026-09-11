@@ -685,6 +685,7 @@ y <- beta_0 +
   beta_2 * salario_std +
   beta_3 * exper_std +
   epsilon
+
 ## Ejercicio 17 --------------------------------------------------------------
 
 mco_manual <- function(X, y) {

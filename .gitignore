@@ -7,6 +7,9 @@ Thumbs.db
 *.Rout
 *.Rcheck/
 
+# Microdatos de las encuestas (archivos grandes; se conservan solo localmente)
+/Datos/
+
 # Archivos temporales de editores
 *~
 *.swp
