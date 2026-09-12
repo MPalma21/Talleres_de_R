@@ -18,9 +18,29 @@
 # La carpeta outputs debe contener todas las tablas y gráficas exportadas desde
 # R. Los nombres de los archivos deben corresponder al numeral del taller.
 
+# Limpiar ambiente
+rm(list = ls())
+
+# Librerías
+library(here)
+library(dplyr)
+library(readr)
+
+
+# RUTAS DE CARPETAS
+
+ruta_geih_2023 <- here("GEIH_2023")
+#ruta_geih_2024 <- here("GEIH_2024")
+#ruta_emicron_2024 <- here("EMICRON_2024")
+#ruta_outputs <- here("outputs")
 
 # 1. CONFORMACIÓN Y UNIÓN DE LAS BASES DE DATOS --------------------------------
 
+# here() identifica automáticamente la raíz del proyecto
+ruta <- here()
+
+# Verificar la ruta
+print(ruta)
 
 # 1.1. PEGUE DE LAS BASES DE DATOS DE LA GEIH
 
@@ -44,7 +64,6 @@
 # Explicar en el documento el significado de la llave, las generalidades de la
 # GEIH, la lógica del loop y la estrategia utilizada para manejar los datos.
 
-
 # 1.2. DESCRIPCIÓN GENERAL DE LOS DATOS
 
 # Crear una tabla para la GEIH 2024 que incluya el tamaño total de la muestra de
@@ -54,7 +73,6 @@
 # Explicar las diferencias en el número de observaciones y verificar que sean
 # coherentes con las definiciones de PET, fuerza de trabajo, ocupados y
 # desocupados.
-
 
 # 1.3. CONSTRUCCIÓN Y DOCUMENTACIÓN DE LA BASE ANALÍTICA
 
@@ -89,7 +107,6 @@
 # gráficas posteriores.
 
 # Explicar la diferencia conceptual entre DPTO, AREA y CLASE.
-
 
 # 1.4. INCORPORACIÓN DE LA EMICRON 2024 Y UNIÓN CON LA GEIH
 
@@ -136,9 +153,7 @@
 # identifica como propietarias de un micronegocio. Interpretar el resultado en
 # máximo 150 palabras.
 
-
 # 2. CONSTRUCCIÓN DE INDICADORES DE MERCADO LABORAL ----------------------------
-
 
 # 2.1. TASAS Y POBLACIONES
 
@@ -158,7 +173,6 @@
 # 2_1_tasas_hombres.xlsx
 # 2_1_tasas_mujeres.xlsx
 
-
 # 2.2. ANÁLISIS DE LAS TASAS DE MERCADO LABORAL
 
 # Crear una serie de tiempo con TGP, TO y TD para el total nacional según sexo.
@@ -170,7 +184,6 @@
 
 # Exportar el gráfico como:
 # 2_2_tasas_sexo.png
-
 
 # 2.3. POBLACIÓN OCUPADA SEGÚN FORMALIDAD
 
@@ -187,7 +200,6 @@
 
 # Exportar el gráfico como:
 # 2_3_formalidad_13ciudades.png
-
 
 # 2.4. POBLACIÓN OCUPADA SEGÚN POSICIÓN OCUPACIONAL
 
@@ -206,9 +218,7 @@
 # Exportar el gráfico como:
 # 2_4_posicion_nacional.png
 
-
 # 3. CARACTERIZACIÓN DE LOS MICRONEGOCIOS EN COLOMBIA --------------------------
-
 
 # 3.1. INDICADORES BÁSICOS DE LOS MICRONEGOCIOS
 
@@ -225,7 +235,6 @@
 # Exportar la tabla como:
 # 3_1_indicadores.xlsx
 
-
 # 3.2. INCLUSIÓN FINANCIERA DE LOS MICRONEGOCIOS
 
 # Construir el porcentaje expandido de micronegocios que acepta cada forma de
@@ -240,7 +249,6 @@
 
 # Exportar el gráfico como:
 # 3_2_formas_pago.png
-
 
 # 3.3. ANÁLISIS CONJUNTO GEIH - EMICRON
 
@@ -261,7 +269,6 @@
 
 # Exportar el gráfico como:
 # 3_3_cruce.png
-
 
 # 4. ANÁLISIS SOCIOECONÓMICO DE LA POBLACIÓN COLOMBIANA ------------------------
 
