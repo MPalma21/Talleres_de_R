@@ -1,45 +1,34 @@
 # TALLER 2 -  CLASE TALLER DE PROGRAMACIÓN EN R
 # Grupo 10
 
-# REQUISITOS GENERALES
-
-# El script debe estar organizado por puntos y subpuntos y debe ejecutarse
-# completamente desde una sesión limpia de R.
-
-# Debe utilizar una única ruta base declarada al inicio. Todo el código deberá
-# funcionar modificando únicamente esa ruta.
-
-# Los microdatos deben estar organizados en las carpetas GEIH_2023, GEIH_2024
-# y EMICRON_2024. Solo deben utilizarse los archivos CSV y no deben cambiarse
-# sus nombres.
-
-# La carpeta outputs debe contener todas las tablas y gráficas exportadas desde
-# R. Los nombres de los archivos deben corresponder al numeral del‘ taller.
-
-
 # 0) Configuración inicial ----
 
 
 ## 0.1) Limpiar ambiente ----
 
+# Elimina los objetos de sesiones anteriores.
+# Permite ejecutar el script desde un ambiente limpio.
 rm(list = ls())
 
 
 ## 0.2) Librerías ----
 
+# Carga las herramientas usadas en el script.
+# Permite utilizar las funciones de `here` y `dplyr`.
 library(here)
 library(dplyr)
 
 
 ## 0.3) Rutas ----
 
-# Única ruta base
-
+# Define la ruta base del proyecto.
+# Permite derivar todas las rutas de datos y resultados desde
+# Un único lugar.
 ruta <- here()
 
 
-# Rutas derivadas
-
+# Construye las rutas de datos, EMICRON y outputs.
+# Centraliza la ubicación de los archivos que usa el taller.
 ruta_datos <- paste0(
   ruta,
   "/Datos"
@@ -56,26 +45,23 @@ ruta_outputs <- paste0(
 )
 
 
-# Crear carpeta outputs si no existe
-
+# Crea la carpeta de outputs cuando no existe.
+# Permite guardar las tablas generadas por el script.
 if (!dir.exists(ruta_outputs)) {
   dir.create(ruta_outputs)
 }
 
 
-# Verificar ruta
-
-print(ruta)
+# 1) Conformación y unión de las bases de datos ----
 
 
-# 1) Solución ----
+## 1.1) Pegue de las bases de datos de la GEIH ----
 
 
-## 1.1) Pegue de las bases GEIH ----
+### 1.1.1) Años, meses y llave de identificación ----
 
-
-### 1.1.1) Años y meses ----
-
+# Define los años y los 12 meses que recorrerá el loop.
+# Organiza la lectura de las 24 bases mensuales de GEIH.
 anios <- c(
   "GEIH_2023",
   "GEIH_2024"
@@ -98,8 +84,8 @@ meses <- c(
 )
 
 
-# Llave de identificación de GEIH
-
+# Define las variables que identifican a cada persona en GEIH.
+# Establece la llave usada para unir los módulos mensuales.
 llave_geih <- c(
   "DIRECTORIO",
   "SECUENCIA_P",
@@ -109,33 +95,36 @@ llave_geih <- c(
 
 ### 1.1.2) Objetos para almacenar resultados ----
 
+# Crea listas para guardar bases y verificaciones del loop.
+# Permite conservar los resultados de cada año y mes.
 bases_anuales <- list()
-
 conteos_modulos <- list()
-
 verificacion_llaves <- list()
-
 verificacion_pegues <- list()
-
 verificacion_eficiencia <- list()
-
 contador <- 1
 
 
 ### 1.1.3) Loop para construir las bases mensuales ----
 
+# Recorre cada año y cada mes de la GEIH.
+# Construye las 24 bases mensuales con la misma estructura.
 for (anio in anios) {
   
+  # Crea la lista de bases mensuales del año actual.
+  # Permite unir sus 12 meses al terminar el año.
   bases_mensuales_anio <- list()
   
   
   for (i in 1:12) {
     
+    # Selecciona el mes correspondiente a la iteración actual.
+    # Construye la ruta y registra el período procesado.
     mes <- meses[i]
     
     
-    # Ruta correspondiente al año y mes
-    
+    # Construye la ruta de la carpeta del año y mes actuales.
+    # Permite leer los cuatro módulos del período.
     ruta_mes <- paste0(
       ruta_datos,
       "/",
@@ -145,8 +134,8 @@ for (anio in anios) {
     )
     
     
-    # Marzo de 2024 tiene el archivo en singular
-    
+    # Ajusta el nombre del archivo de no ocupados para marzo de 2024.
+    # Permite leer el archivo real sin cambiar su nombre.
     archivo_no_ocupados <- "No ocupados.CSV"
     
     if (anio == "GEIH_2024" & mes == "03_Marzo") {
@@ -158,6 +147,8 @@ for (anio in anios) {
     
     #### 1.1.3.1) Leer los módulos ----
     
+    # Lee los cuatro módulos mensuales de GEIH.
+    # Obtiene las bases que se unirán mediante la llave GEIH.
     general <- read.csv(
       paste0(
         ruta_mes,
@@ -197,18 +188,14 @@ for (anio in anios) {
     
     #### 1.1.3.2) Guardar número de observaciones ----
     
+    # Registra el número de filas de cada módulo.
+    # Produce la evidencia del tamaño mensual solicitada en 1.2.
     conteos_modulos[[contador]] <- data.frame(
-      
       ANIO = anio,
-      
       MES = mes,
-      
       GENERAL = nrow(general),
-      
       FUERZA_MODULO = nrow(fuerza),
-      
       OCUPADOS = nrow(ocupados),
-      
       NO_OCUPADOS = nrow(no_ocupados)
       
     )
@@ -216,19 +203,21 @@ for (anio in anios) {
     
     #### 1.1.3.3) Guardar número original de columnas ----
     
+    # Guarda el número de columnas antes de seleccionar variables.
+    # Permite documentar la reducción de las bases.
     columnas_general_antes <- ncol(general)
-    
     columnas_fuerza_antes <- ncol(fuerza)
-    
     columnas_ocupados_antes <- ncol(ocupados)
-    
     columnas_no_ocupados_antes <- ncol(no_ocupados)
     
     
     #### 1.1.3.4) Seleccionar variables necesarias ----
     
-    # Características generales
+    # 1.3.a) Características generales, seguridad social en salud y educación
     
+    # Conserva las variables generales, educativas y de salud.
+    # Responde a 1.3.a y deja las variables necesarias para los
+    # Análisis posteriores.
     general <- general %>%
       select(
         DIRECTORIO,
@@ -247,14 +236,16 @@ for (anio in anios) {
         FEX_C18,
         PT,
         
-        # Variables adicionales necesarias para formalidad
+        # 1.3.e) Variables necesarias para formalidad
         P6100,
         P6110
       )
     
     
-    # Fuerza de trabajo
+    # 1.3.b) Fuerza de trabajo
     
+    # Conserva las variables de fuerza de trabajo.
+    # Responde a 1.3.b y permite verificar sus relaciones.
     fuerza <- fuerza %>%
       select(
         DIRECTORIO,
@@ -267,8 +258,10 @@ for (anio in anios) {
       )
     
     
-    # Ocupados
+    # 1.3.c) Ocupados
     
+    # Conserva las variables de personas ocupadas y formalidad.
+    # Responde a 1.3.c y conserva insumos para el Punto 2.3.
     ocupados <- ocupados %>%
       select(
         DIRECTORIO,
@@ -297,8 +290,10 @@ for (anio in anios) {
       )
     
     
-    # No ocupados
+    # 1.3.d) No ocupados
     
+    # Conserva la variable de personas no ocupadas.
+    # Responde a 1.3.d y permite verificar la partición laboral.
     no_ocupados <- no_ocupados %>%
       select(
         DIRECTORIO,
@@ -310,26 +305,18 @@ for (anio in anios) {
     
     #### 1.1.3.5) Evidencia de eficiencia ----
     
+    # Compara las columnas antes y después de la selección.
+    # Documenta la eficiencia solicitada en 1.1.
     verificacion_eficiencia[[contador]] <- data.frame(
-      
       ANIO = anio,
-      
       MES = mes,
-      
       GENERAL_ANTES = columnas_general_antes,
-      
       GENERAL_DESPUES = ncol(general),
-      
       FUERZA_ANTES = columnas_fuerza_antes,
-      
       FUERZA_DESPUES = ncol(fuerza),
-      
       OCUPADOS_ANTES = columnas_ocupados_antes,
-      
       OCUPADOS_DESPUES = ncol(ocupados),
-      
       NO_OCUPADOS_ANTES = columnas_no_ocupados_antes,
-      
       NO_OCUPADOS_DESPUES = ncol(no_ocupados)
       
     )
@@ -337,6 +324,8 @@ for (anio in anios) {
     
     #### 1.1.3.6) Homogeneizar las llaves ----
     
+    # Convierte las variables de la llave al mismo tipo de texto.
+    # Evita incompatibilidades al unir los módulos GEIH.
     general <- general %>%
       mutate(
         DIRECTORIO = as.character(DIRECTORIO),
@@ -371,6 +360,8 @@ for (anio in anios) {
     
     #### 1.1.3.7) Verificar duplicados ----
     
+    # Identifica llaves repetidas en cada módulo.
+    # Comprueba que cada unión pueda preservar las filas.
     duplicados_general <- general %>%
       group_by(
         DIRECTORIO,
@@ -431,23 +422,21 @@ for (anio in anios) {
       )
     
     
+    # Resume los duplicados encontrados en cada módulo.
+    # Deja una verificación por año y mes antes de unir.
     verificacion_llaves[[contador]] <- data.frame(
-      
       ANIO = anio,
-      
       MES = mes,
-      
       DUP_GENERAL = nrow(duplicados_general),
-      
       DUP_FUERZA = nrow(duplicados_fuerza),
-      
       DUP_OCUPADOS = nrow(duplicados_ocupados),
-      
       DUP_NO_OCUPADOS = nrow(duplicados_no_ocupados)
       
     )
     
     
+    # Detiene el loop si una llave está duplicada.
+    # Evita que los joins multipliquen las observaciones.
     if (
       nrow(duplicados_general) > 0 |
       nrow(duplicados_fuerza) > 0 |
@@ -468,13 +457,14 @@ for (anio in anios) {
     
     #### 1.1.3.8) Pegue de los módulos ----
     
-    # Características generales es la base del pegue
-    
+    # Usa características generales como base y une los otros
+    # Módulos mediante la llave GEIH.
+    # Construye la base mensual integrada.
     n_general <- nrow(general)
     
     
-    # Pegar fuerza de trabajo
-    
+    # Agrega el módulo de fuerza de trabajo.
+    # Incorpora PET, FT, FFT y P6240 a la base mensual.
     base_mes <- general %>%
       left_join(
         fuerza,
@@ -484,8 +474,8 @@ for (anio in anios) {
     filas_despues_fuerza <- nrow(base_mes)
     
     
-    # Pegar ocupados
-    
+    # Agrega el módulo de ocupados.
+    # Incorpora las variables de ocupación e ingresos.
     base_mes <- base_mes %>%
       left_join(
         ocupados,
@@ -495,8 +485,8 @@ for (anio in anios) {
     filas_despues_ocupados <- nrow(base_mes)
     
     
-    # Pegar no ocupados
-    
+    # Agrega el módulo de no ocupados.
+    # Completa la información laboral de la base mensual.
     base_mes <- base_mes %>%
       left_join(
         no_ocupados,
@@ -508,23 +498,22 @@ for (anio in anios) {
     
     #### 1.1.3.9) Verificar que los pegues no aumenten filas ----
     
+    # Compara las filas antes y después de cada join.
+    # Verifica que las llaves mantengan una observación por
+    # Persona.
     verificacion_pegues[[contador]] <- data.frame(
-      
       ANIO = anio,
-      
       MES = mes,
-      
       GENERAL = n_general,
-      
       DESPUES_FUERZA = filas_despues_fuerza,
-      
       DESPUES_OCUPADOS = filas_despues_ocupados,
-      
       DESPUES_NO_OCUPADOS = filas_despues_no_ocupados
       
     )
     
     
+    # Detiene el loop si un join aumenta el número de filas.
+    # Protege la integridad de la base mensual construida.
     if (
       filas_despues_fuerza != n_general |
       filas_despues_ocupados != n_general |
@@ -544,6 +533,8 @@ for (anio in anios) {
     
     #### 1.1.3.10) Crear ANIO ----
     
+    # Extrae el año desde PERIODO.
+    # Permite separar GEIH 2023 y GEIH 2024.
     base_mes <- base_mes %>%
       mutate(
         ANIO = as.numeric(
@@ -558,9 +549,13 @@ for (anio in anios) {
     
     #### 1.1.3.11) Guardar base mensual ----
     
+    # Guarda la base mensual ya integrada.
+    # Permite construir la base anual al finalizar sus meses.
     bases_mensuales_anio[[i]] <- base_mes
     
     
+    # Informa el año y mes que terminó de procesarse.
+    # Permite seguir el avance del loop en la consola.
     cat(
       "Procesado:",
       anio,
@@ -570,13 +565,17 @@ for (anio in anios) {
     )
     
     
+    # Avanza la posición de almacenamiento de las verificaciones.
+    # Conserva un registro independiente por mes.
     contador <- contador + 1
     
   }
   
   
-  ### 1.1.4) Construir base anual ----
+### 1.1.4) Construir las bases anuales ----
   
+  # Une los 12 meses del año actual.
+  # Construye una base anual de GEIH por año.
   bases_anuales[[anio]] <- bind_rows(
     bases_mensuales_anio
   )
@@ -584,57 +583,49 @@ for (anio in anios) {
 }
 
 
-### 1.1.5) Construir bases GEIH finales ----
+### 1.1.5) Construir la base GEIH final ----
 
+# Extrae las bases anuales y las une.
+# Crea la base GEIH completa usada en los numerales siguientes.
 GEIH_2023 <- bases_anuales[["GEIH_2023"]]
-
 GEIH_2024 <- bases_anuales[["GEIH_2024"]]
-
 
 GEIH <- bind_rows(
   GEIH_2023,
   GEIH_2024
 )
 
+### 1.1.6) Verificaciones solicitadas ----
 
-# Revisar dimensiones
-
-dim(GEIH_2023)
-
-dim(GEIH_2024)
-
-dim(GEIH)
-
-
-# Revisar observaciones por año
-
-table(GEIH$ANIO)
-
-
-### 1.1.6) Tablas de verificación ----
-
+# Consolida la verificación de llaves de todos los meses.
+# Evidencia que no hubo duplicados en los módulos GEIH.
 tabla_llaves <- bind_rows(
   verificacion_llaves
 )
 
+tabla_llaves
+
+# Consolida las filas observadas después de cada pegue.
+# Evidencia que los joins no aumentaron registros.
 tabla_pegues <- bind_rows(
   verificacion_pegues
 )
 
+tabla_pegues
+
+# Consolida la comparación de columnas antes y después del select.
+# Evidencia la eficiencia de la selección de variables.
 tabla_eficiencia <- bind_rows(
   verificacion_eficiencia
 )
-
-
-tabla_llaves
-
-tabla_pegues
 
 tabla_eficiencia
 
 
 ### 1.1.7) Exportar verificaciones ----
 
+# Exporta las verificaciones de llaves, filas y columnas.
+# Entrega las tablas solicitadas en el numeral 1.1.
 write.csv(
   tabla_llaves,
   paste0(
@@ -668,29 +659,31 @@ write.csv(
 ## 1.2) Descripción general de los datos ----
 
 
-### 1.2.1) Observaciones por módulo en 2024 ----
+### 1.2.1) Tamaño de los módulos por mes ----
 
+# Conteo de observaciones de los cuatro módulos para cada mes de 2024.
 tabla_modulos <- bind_rows(
   conteos_modulos
 )
-
 
 tabla_modulos_2024 <- tabla_modulos %>%
   filter(
     ANIO == "GEIH_2024"
   )
 
-
+# Filtra los conteos para conservar únicamente 2024.
+# Concentra las verificaciones requeridas para ese año.
 tabla_modulos_2024
 
 
-### 1.2.2) Verificar relación entre módulos ----
+### 1.2.2) Relación entre los módulos ----
 
-# Características generales contiene a todas las personas.
-# Fuerza de trabajo contiene a la población en edad de trabajar.
-# Ocupados y no ocupados deben dividir esa población.
+# Verificar la relación entre el tamaño de los módulos y sus universos.
 
 
+# Compara los tamaños de los módulos con sus universos laborales.
+# Verifica las relaciones entre características generales,
+# Fuerza de trabajo, ocupados y no ocupados.
 tabla_modulos_2024 <- tabla_modulos_2024 %>%
   mutate(
     
@@ -706,13 +699,17 @@ tabla_modulos_2024 <- tabla_modulos_2024 %>%
 tabla_modulos_2024
 
 
-### 1.2.3) Verificar relaciones conceptuales del mercado laboral ----
+### 1.2.3) Consistencia de las definiciones laborales ----
 
-# Conceptualmente:
+# Verificar las relaciones conceptuales solicitadas para las definiciones
+# Laborales:
 # PET = Fuerza de trabajo + Fuera de la fuerza de trabajo
 # Fuerza de trabajo = Ocupados + Desocupados
 
 
+# Suma las variables laborales por mes y verifica sus identidades.
+# Comprueba las definiciones de PET, fuerza de trabajo,
+# Ocupados y desocupados solicitadas en 1.2.
 tabla_consistencia_laboral_2024 <- GEIH_2024 %>%
   group_by(
     MES
@@ -768,6 +765,7 @@ tabla_consistencia_laboral_2024
 
 ### 1.2.4) Total anual 2024 ----
 
+# Total de las observaciones de los módulos durante 2024.
 total_2024 <- data.frame(
   
   ANIO = "GEIH_2024",
@@ -816,6 +814,8 @@ total_2024 <- data.frame(
 )
 
 
+# Combina los resultados mensuales con el total anual.
+# Deja una tabla única con los 12 meses y 2024 completo.
 tabla_1_2 <- bind_rows(
   tabla_modulos_2024,
   total_2024
@@ -827,6 +827,8 @@ tabla_1_2
 
 ### 1.2.5) Exportar tablas ----
 
+# Exporta el tamaño de módulos y la consistencia laboral.
+# Entrega las tablas solicitadas en el numeral 1.2.
 write.csv(
   tabla_1_2,
   paste0(
@@ -850,8 +852,35 @@ write.csv(
 ## 1.3) Construcción y documentación de la base analítica ----
 
 
-### 1.3.1) Variables esperadas ----
+### 1.3.a) Características generales, seguridad social en salud y educación ----
 
+# Estas variables se seleccionan dentro del loop, en 1.1.3.4.
+
+
+### 1.3.b) Fuerza de trabajo ----
+
+# Estas variables se seleccionan dentro del loop, en 1.1.3.4.
+
+
+### 1.3.c) Ocupados ----
+
+# Estas variables se seleccionan dentro del loop, en 1.1.3.4.
+
+
+### 1.3.d) No ocupados ----
+
+# Estas variables se seleccionan dentro del loop, en 1.1.3.4.
+
+
+### 1.3.e) Variables necesarias para formalidad ----
+
+# Estas variables se conservan para construir EI en el punto 2.3.
+# EI no se construye en este punto.
+
+
+# Variables esperadas para verificar la selección solicitada en 1.3.
+# Reúne los nombres de variables que debe contener GEIH.
+# Permite verificar la selección de 1.3 y la variable ANIO.
 variables_esperadas <- c(
   
   # Llave
@@ -921,19 +950,18 @@ variables_esperadas <- c(
 )
 
 
-### 1.3.2) Verificar variables de la base ----
+### 1.3.1) Verificación de la base analítica ----
 
+# Verificar que la base contenga únicamente las variables solicitadas y ANIO.
 verificacion_variables_presentes <- all(
   variables_esperadas %in% names(GEIH)
 )
 
+verificacion_variables_presentes
 
 verificacion_variables_adicionales <- all(
   names(GEIH) %in% variables_esperadas
 )
-
-
-verificacion_variables_presentes
 
 verificacion_variables_adicionales
 
@@ -950,8 +978,9 @@ if (
 }
 
 
-### 1.3.3) Diccionario de variables ----
+### 1.3.2) Diccionario de variables ----
 
+# Diccionario de las variables solicitadas en los literales de 1.3.
 diccionario_variables <- data.frame(
   
   VARIABLE = c(
@@ -1077,8 +1106,12 @@ diccionario_variables <- data.frame(
 diccionario_variables
 
 
-### 1.3.4) Etiquetas para sexo ----
+### 1.3.3) Etiquetas necesarias ----
 
+
+#### 1.3.3.1) Etiquetas para sexo ----
+
+# Etiquetas necesarias para interpretar el sexo.
 etiquetas_sexo <- data.frame(
   
   P3271 = c(
@@ -1097,8 +1130,9 @@ etiquetas_sexo <- data.frame(
 etiquetas_sexo
 
 
-### 1.3.5) Etiquetas para posición ocupacional ----
+#### 1.3.3.2) Etiquetas para posición ocupacional ----
 
+# Etiquetas necesarias para interpretar P6430.
 etiquetas_posicion <- data.frame(
   
   P6430 = 1:9,
@@ -1131,8 +1165,9 @@ etiquetas_posicion <- data.frame(
 etiquetas_posicion
 
 
-### 1.3.6) Exportar diccionario ----
+### 1.3.4) Exportar diccionario ----
 
+# Exportar el diccionario solicitado en 1.3.
 write.csv(
   diccionario_variables,
   paste0(
@@ -1143,14 +1178,17 @@ write.csv(
 )
 
 
-## 1.4) Incorporación de EMICRON 2024 y unión con GEIH ----
+## 1.4) Incorporación de la EMICRON 2024 y unión con la GEIH ----
 
 
-### 1.4.1) Leer los módulos de EMICRON ----
+### 1.4.a) Construcción de la base de la EMICRON ----
 
-# Los archivos de EMICRON se leen con el separador
-# predeterminado de read.csv().
 
+#### 1.4.a.1) Leer los módulos de EMICRON ----
+
+# Lee los cuatro módulos solicitados de EMICRON.
+# Reúne la información que después se integrará con la llave
+# Interna de la encuesta.
 emicron_identificacion <- read.csv(
   paste0(
     ruta_emicron,
@@ -1183,8 +1221,11 @@ emicron_ventas <- read.csv(
 )
 
 
-### 1.4.2) Seleccionar variables necesarias ----
+#### 1.4.a.2) Seleccionar variables necesarias ----
 
+# Conserva únicamente las variables necesarias de cada módulo.
+# Construye la base EMICRON solicitada sin cargar variables
+# Ajenas al Punto 1.
 emicron_identificacion <- emicron_identificacion %>%
   select(
     DIRECTORIO,
@@ -1238,8 +1279,10 @@ emicron_ventas <- emicron_ventas %>%
   )
 
 
-### 1.4.3) Preparar la llave de EMICRON ----
+#### 1.4.a.3) Preparar la llave de EMICRON ----
 
+# Define la llave interna y convierte sus componentes a texto.
+# Permite unir los cuatro módulos con tipos compatibles.
 llave_emicron <- c(
   "DIRECTORIO",
   "SECUENCIA_P",
@@ -1279,8 +1322,11 @@ emicron_ventas <- emicron_ventas %>%
   )
 
 
-### 1.4.4) Verificar valores faltantes en la llave ----
+#### 1.4.a.4) Verificar la llave ----
 
+# Cuenta valores faltantes en cada componente de la llave.
+# Verifica que los registros puedan identificarse antes del
+# Pegue de los módulos.
 tabla_na_llaves_emicron <- data.frame(
   
   MODULO = c(
@@ -1317,6 +1363,16 @@ tabla_na_llaves_emicron <- data.frame(
 tabla_na_llaves_emicron
 
 
+# Exporta la verificación de valores faltantes de la llave.
+# Deja evidencia de la integridad de la llave de EMICRON.
+write.csv(
+  tabla_na_llaves_emicron,
+  paste0(
+    ruta_outputs,
+    "/1_4_na_llaves_emicron.csv"
+  ),
+  row.names = FALSE
+)
 if (
   sum(tabla_na_llaves_emicron$NA_DIRECTORIO) > 0 |
   sum(tabla_na_llaves_emicron$NA_SECUENCIA_P) > 0 |
@@ -1330,7 +1386,8 @@ if (
 }
 
 
-### 1.4.5) Verificar duplicados ----
+# Identifica llaves duplicadas en los cuatro módulos.
+# Comprueba que los joins internos no multipliquen registros.
 
 duplicados_identificacion <- emicron_identificacion %>%
   group_by(
@@ -1414,6 +1471,18 @@ tabla_llaves_emicron <- data.frame(
 tabla_llaves_emicron
 
 
+# Exporta el resumen de llaves duplicadas por módulo.
+# Documenta la verificación solicitada en 1.4.a.
+write.csv(
+  tabla_llaves_emicron,
+  paste0(
+    ruta_outputs,
+    "/1_4_llaves_emicron.csv"
+  ),
+  row.names = FALSE
+)
+
+
 if (
   nrow(duplicados_identificacion) > 0 |
   nrow(duplicados_caracteristicas) > 0 |
@@ -1428,8 +1497,10 @@ if (
 }
 
 
-### 1.4.6) Construir la base EMICRON ----
+#### 1.4.a.5) Construir la base EMICRON ----
 
+# Une los cuatro módulos de EMICRON mediante la llave interna.
+# Construye una única base EMICRON para el enlace con GEIH.
 n_emicron_original <- nrow(
   emicron_identificacion
 )
@@ -1450,8 +1521,8 @@ emicron <- emicron_identificacion %>%
   )
 
 
-# Verificar que el pegue no aumente las filas
-
+# Compara las filas de identificación antes y después del pegue.
+# Verifica que la base EMICRON conserve sus registros.
 if (nrow(emicron) != n_emicron_original) {
   
   stop(
@@ -1461,11 +1532,19 @@ if (nrow(emicron) != n_emicron_original) {
 }
 
 
-dim(emicron)
+### 1.4.b) Documentación de la relación entre las dos encuestas ----
+
+# Este literal corresponde a la documentación metodológica presentada en el
+# Informe. No requiere objetos adicionales en el script.
 
 
-### 1.4.7) Distribución de SECUENCIA_ENCUESTA ----
+### 1.4.c) Determinación de la llave y análisis del período de referencia ----
 
+
+#### 1.4.c.1) Distribución de SECUENCIA_ENCUESTA ----
+
+# Cuenta los registros para cada valor de SECUENCIA_ENCUESTA.
+# Muestra la distribución solicitada para examinar la llave.
 tabla_secuencia_encuesta <- emicron %>%
   group_by(
     SECUENCIA_ENCUESTA
@@ -1482,8 +1561,23 @@ tabla_secuencia_encuesta <- emicron %>%
 tabla_secuencia_encuesta
 
 
-### 1.4.8) Número de propietarios por hogar ----
+# Exporta la distribución de SECUENCIA_ENCUESTA.
+# Conserva la evidencia empírica del literal 1.4.c.
+write.csv(
+  tabla_secuencia_encuesta,
+  paste0(
+    ruta_outputs,
+    "/1_4_secuencia_encuesta.csv"
+  ),
+  row.names = FALSE
+)
 
+
+#### 1.4.c.2) SECUENCIA_ENCUESTA dentro de los hogares ----
+
+# Cuenta cuántos propietarios aparecen dentro de cada hogar.
+# Permite observar la estructura de SECUENCIA_ENCUESTA dentro
+# De los hogares EMICRON.
 tabla_propietarios_hogar <- emicron %>%
   group_by(
     DIRECTORIO,
@@ -1508,8 +1602,22 @@ tabla_propietarios_hogar <- emicron %>%
 tabla_propietarios_hogar
 
 
-### 1.4.9) Comparar SECUENCIA_ENCUESTA con ORDEN ----
+# Exporta la tabla de propietarios por hogar.
+# Documenta la evidencia solicitada en 1.4.c.
+write.csv(
+  tabla_propietarios_hogar,
+  paste0(
+    ruta_outputs,
+    "/1_4_propietarios_hogar.csv"
+  ),
+  row.names = FALSE
+)
 
+
+#### 1.4.c.3) Comparación con ORDEN ----
+
+# Compara SECUENCIA_ENCUESTA con ORDEN dentro de cada hogar.
+# Establece empíricamente la correspondencia de la persona.
 geih_personas <- GEIH %>%
   select(
     DIRECTORIO,
@@ -1537,6 +1645,8 @@ comparacion_orden <- emicron %>%
   )
 
 
+# Resume las coincidencias de cada registro EMICRON con ORDEN.
+# Identifica si la relación entre ambas variables es única.
 tabla_orden_persona <- comparacion_orden %>%
   group_by(
     DIRECTORIO,
@@ -1552,6 +1662,8 @@ tabla_orden_persona <- comparacion_orden %>%
   )
 
 
+# Cuenta coincidencias únicas, ausentes o múltiples.
+# Sustenta la decisión sobre la llave de persona.
 resumen_relacion_orden <- tabla_orden_persona %>%
   summarise(
     
@@ -1586,13 +1698,23 @@ resumen_relacion_orden <- tabla_orden_persona %>%
 resumen_relacion_orden
 
 
-### 1.4.10) Construir la llave de persona ----
+# Exporta el resumen de la comparación con ORDEN.
+# Deja evidencia de la determinación de la llave.
+write.csv(
+  resumen_relacion_orden,
+  paste0(
+    ruta_outputs,
+    "/1_4_relacion_orden.csv"
+  ),
+  row.names = FALSE
+)
 
-# La comparación anterior permite evaluar empíricamente la relación entre
-# SECUENCIA_ENCUESTA y ORDEN. Una coincidencia única muestra que el valor de
-# SECUENCIA_ENCUESTA identifica el mismo orden de persona dentro del hogar.
-# Si aparecen múltiples coincidencias, la relación sería ambigua y el código
-# se detiene antes de construir la llave.
+
+#### 1.4.c.4) Construcción de la llave de persona ----
+
+# Verifica que la relación observada sea única antes de construir la
+# Llave de persona.
+# Evita usar una correspondencia ambigua entre las encuestas.
 
 if (resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0) {
   
@@ -1612,127 +1734,53 @@ if (resumen_relacion_orden$UNA_COINCIDENCIA == 0) {
 }
 
 
-# Con base en la evidencia observada se usa SECUENCIA_ENCUESTA como ORDEN
-# para construir la llave de persona entre EMICRON y GEIH.
-
+# Copia SECUENCIA_ENCUESTA como ORDEN en EMICRON.
+# Permite utilizar la llave común DIRECTORIO, SECUENCIA_P y
+# ORDEN para unir EMICRON con GEIH.
 emicron_persona <- emicron %>%
   mutate(
     ORDEN = SECUENCIA_ENCUESTA
   )
 
 
-### 1.4.11) Preparar MES_REF ----
+#### 1.4.c.5) Comparación entre MES_REF y MES ----
 
-# Convertir MES_REF a texto para manejar tanto
-# códigos numéricos como nombres de meses.
-
+# Convierte los nombres reales de MES_REF en códigos de 1 a 12.
+# Permite comparar el período de referencia de EMICRON con MES.
 emicron_persona <- emicron_persona %>%
   mutate(
-    
-    MES_REF_TEXTO =
-      as.character(MES_REF),
-    
-    MES_REF_NUM = case_when(
-      
-      MES_REF_TEXTO %in% c(
-        "1",
-        "ENERO",
-        "Enero",
-        "enero"
-      ) ~ 1,
-      
-      MES_REF_TEXTO %in% c(
-        "2",
-        "FEBRERO",
-        "Febrero",
-        "febrero"
-      ) ~ 2,
-      
-      MES_REF_TEXTO %in% c(
-        "3",
-        "MARZO",
-        "Marzo",
-        "marzo"
-      ) ~ 3,
-      
-      MES_REF_TEXTO %in% c(
-        "4",
-        "ABRIL",
-        "Abril",
-        "abril"
-      ) ~ 4,
-      
-      MES_REF_TEXTO %in% c(
-        "5",
-        "MAYO",
-        "Mayo",
-        "mayo"
-      ) ~ 5,
-      
-      MES_REF_TEXTO %in% c(
-        "6",
-        "JUNIO",
-        "Junio",
-        "junio"
-      ) ~ 6,
-      
-      MES_REF_TEXTO %in% c(
-        "7",
-        "JULIO",
-        "Julio",
-        "julio"
-      ) ~ 7,
-      
-      MES_REF_TEXTO %in% c(
-        "8",
-        "AGOSTO",
-        "Agosto",
-        "agosto"
-      ) ~ 8,
-      
-      MES_REF_TEXTO %in% c(
-        "9",
-        "SEPTIEMBRE",
-        "Septiembre",
-        "septiembre"
-      ) ~ 9,
-      
-      MES_REF_TEXTO %in% c(
-        "10",
-        "OCTUBRE",
-        "Octubre",
-        "octubre"
-      ) ~ 10,
-      
-      MES_REF_TEXTO %in% c(
-        "11",
-        "NOVIEMBRE",
-        "Noviembre",
-        "noviembre"
-      ) ~ 11,
-      
-      MES_REF_TEXTO %in% c(
-        "12",
-        "DICIEMBRE",
-        "Diciembre",
-        "diciembre"
-      ) ~ 12,
-      
-      TRUE ~ NA_real_
-      
+    MES_REF_NUM = as.numeric(
+      factor(
+        MES_REF,
+        levels = c(
+          "ENERO",
+          "FEBRERO",
+          "MARZO",
+          "ABRIL",
+          "MAYO",
+          "JUNIO",
+          "JULIO",
+          "AGOSTO",
+          "SEPTIEMBRE",
+          "OCTUBRE",
+          "NOVIEMBRE",
+          "DICIEMBRE"
+        )
+      )
     )
-    
   )
 
 
+# Cruza los nombres de MES_REF con sus códigos numéricos.
+# Verifica que la conversión respete el orden calendario.
 table(
   emicron_persona$MES_REF,
   emicron_persona$MES_REF_NUM
 )
 
 
-### 1.4.12) Comparar MES_REF con MES de GEIH ----
-
+# Une MES_REF con el mes de GEIH usando la llave de persona.
+# Prepara la evidencia para comparar los períodos de referencia.
 comparacion_temporal <- emicron_persona %>%
   select(
     DIRECTORIO,
@@ -1753,13 +1801,12 @@ comparacion_temporal <- emicron_persona %>%
     by = llave_geih
   ) %>%
   mutate(
-    MES_GEIH =
-      as.numeric(
-        as.character(MES)
-      )
+    MES_GEIH = MES
   )
 
 
+# Cuenta los registros con un MES disponible en GEIH.
+# Define el denominador de las relaciones temporales.
 n_comparables <- sum(
   !is.na(
     comparacion_temporal$MES_GEIH
@@ -1767,8 +1814,11 @@ n_comparables <- sum(
 )
 
 
-### 1.4.13) Evaluar relaciones temporales ----
+#### 1.4.c.6) Evaluación de las relaciones temporales ----
 
+# Cuenta coincidencias en el mismo mes, un mes atrás y un mes
+# Adelante.
+# Responde las tres hipótesis temporales del literal 1.4.c.
 tabla_relacion_meses <- data.frame(
   
   RELACION = c(
@@ -1816,6 +1866,9 @@ tabla_relacion_meses <- data.frame(
 )
 
 
+# Calcula el porcentaje de cada relación temporal.
+# Permite comparar las tres hipótesis sobre el período de
+# Referencia.
 tabla_relacion_meses <- tabla_relacion_meses %>%
   mutate(
     PORCENTAJE =
@@ -1831,14 +1884,35 @@ tabla_relacion_meses <- tabla_relacion_meses %>%
 tabla_relacion_meses
 
 
-### 1.4.14) Preparar GEIH 2024 ----
+# Exporta la comparación entre MES_REF y MES.
+# Documenta las relaciones temporales evaluadas.
+write.csv(
+  tabla_relacion_meses,
+  paste0(
+    ruta_outputs,
+    "/1_4_relacion_meses.csv"
+  ),
+  row.names = FALSE
+)
 
+
+### 1.4.d) Pegue de las dos encuestas ----
+
+
+#### 1.4.d.1) Preparar GEIH 2024 ----
+
+# Filtra la base GEIH para conservar el año 2024.
+# Limita el pegue al período solicitado por el enunciado.
 geih_2024_micro <- GEIH %>%
   filter(
     ANIO == 2024
   )
 
 
+#### 1.4.d.2) Verificar unicidad de la llave ----
+
+# Busca duplicados en la llave de GEIH 2024.
+# Verifica que el join con EMICRON preserve sus filas.
 duplicados_geih_2024 <- geih_2024_micro %>%
   group_by(
     DIRECTORIO,
@@ -1854,11 +1928,8 @@ duplicados_geih_2024 <- geih_2024_micro %>%
   )
 
 
-nrow(
-  duplicados_geih_2024
-)
-
-
+# Detiene el pegue si la llave de GEIH 2024 no es única.
+# Evita multiplicar registros de EMICRON en base_micro.
 if (nrow(duplicados_geih_2024) > 0) {
   
   stop(
@@ -1868,8 +1939,10 @@ if (nrow(duplicados_geih_2024) > 0) {
 }
 
 
-### 1.4.15) Pegue EMICRON - GEIH 2024 ----
+#### 1.4.d.3) Construir base_micro y calcular correspondencia ----
 
+# Guarda el número de registros EMICRON antes del join.
+# Permite verificar que el pegue preserve su universo.
 n_emicron_antes <- nrow(
   emicron_persona
 )
@@ -1882,8 +1955,8 @@ base_micro <- emicron_persona %>%
   )
 
 
-# Verificar que el pegue no aumente las filas
-
+# Compara las filas de EMICRON antes y después del join.
+# Verifica la integridad de base_micro.
 if (nrow(base_micro) != n_emicron_antes) {
   
   stop(
@@ -1893,8 +1966,9 @@ if (nrow(base_micro) != n_emicron_antes) {
 }
 
 
-### 1.4.16) Porcentaje de correspondencia ----
-
+# Identifica los registros EMICRON que encontraron contraparte en
+# GEIH mediante la presencia de P3271.
+# Permite calcular el número y porcentaje de emparejados.
 base_micro <- base_micro %>%
   mutate(
     EMPAREJADO =
@@ -1902,6 +1976,8 @@ base_micro <- base_micro %>%
   )
 
 
+# Cuenta registros emparejados y no emparejados.
+# Resume la correspondencia entre EMICRON y GEIH.
 resumen_pegue <- base_micro %>%
   summarise(
     
@@ -1931,8 +2007,22 @@ resumen_pegue <- base_micro %>%
 resumen_pegue
 
 
-### 1.4.17) Validar sexo, edad y clase ----
+# Exporta el resumen de correspondencia.
+# Entrega el resultado solicitado en 1.4.d.
+write.csv(
+  resumen_pegue,
+  paste0(
+    ruta_outputs,
+    "/1_4_resumen_pegue.csv"
+  ),
+  row.names = FALSE
+)
 
+
+### 1.4.e) Validación de la calidad del pegue ----
+
+# Compara sexo, edad y clase entre las dos encuestas emparejadas.
+# Valida la calidad del enlace solicitado en 1.4.e.
 validacion_pegue <- base_micro %>%
   filter(
     EMPAREJADO
@@ -1974,8 +2064,25 @@ validacion_pegue <- base_micro %>%
 validacion_pegue
 
 
-### 1.4.18) Auditoría mensual ----
+# Exporta los porcentajes de coincidencia de la validación.
+# Entrega la evidencia solicitada en 1.4.e.
+write.csv(
+  validacion_pegue,
+  paste0(
+    ruta_outputs,
+    "/1_4_validacion_pegue.csv"
+  ),
+  row.names = FALSE
+)
 
+
+### 1.4.f) Auditoría del pegue ----
+
+
+#### 1.4.f.1) Auditoría mensual ----
+
+# Resume registros emparejados y no emparejados por MES_REF.
+# Muestra la correspondencia mensual de EMICRON con GEIH.
 auditoria_mensual <- base_micro %>%
   group_by(
     MES_REF,
@@ -2014,8 +2121,23 @@ auditoria_mensual <- base_micro %>%
 auditoria_mensual
 
 
-### 1.4.19) Revisar no emparejados en GEIH 2023 ----
+# Exporta la auditoría mensual del pegue.
+# Entrega la revisión mensual solicitada en 1.4.f.
+write.csv(
+  auditoria_mensual,
+  paste0(
+    ruta_outputs,
+    "/1_4_auditoria_mensual.csv"
+  ),
+  row.names = FALSE
+)
 
+
+#### 1.4.f.2) No emparejados y GEIH 2023 ----
+
+# Conserva los registros EMICRON que no se emparejaron con GEIH 2024.
+# Permite revisar la razón estructural solicitada para ese
+# Subconjunto.
 no_emparejados <- base_micro %>%
   filter(
     !EMPAREJADO
@@ -2029,6 +2151,8 @@ no_emparejados <- base_micro %>%
   )
 
 
+# Busca los no emparejados en la base GEIH 2023.
+# Cuantifica los registros que no tienen contraparte en 2024.
 comparacion_2023 <- no_emparejados %>%
   left_join(
     GEIH_2023 %>%
@@ -2046,6 +2170,8 @@ comparacion_2023 <- no_emparejados %>%
   )
 
 
+# Cuenta los no emparejados y los encontrados en GEIH 2023.
+# Resume la razón estructural del no emparejamiento.
 resumen_fuera_2024 <- comparacion_2023 %>%
   summarise(
     
@@ -2070,8 +2196,22 @@ resumen_fuera_2024 <- comparacion_2023 %>%
 resumen_fuera_2024
 
 
-### 1.4.20) Relación temporal con GEIH 2023 ----
+# Exporta la auditoría de registros fuera de GEIH 2024.
+# Documenta la revisión solicitada en 1.4.f.
+write.csv(
+  resumen_fuera_2024,
+  paste0(
+    ruta_outputs,
+    "/1_4_fuera_2024.csv"
+  ),
+  row.names = FALSE
+)
 
+
+#### 1.4.f.3) Relación temporal complementaria ----
+
+# Cruza los meses de EMICRON y GEIH 2023 para los encontrados.
+# Complementa la explicación temporal del no emparejamiento.
 auditoria_2023 <- comparacion_2023 %>%
   filter(
     EN_GEIH_2023
@@ -2089,8 +2229,26 @@ auditoria_2023 <- comparacion_2023 %>%
 auditoria_2023
 
 
-### 1.4.21) Distribución de posición ocupacional ----
+# Exporta la relación temporal complementaria con GEIH 2023.
+# Conserva la evidencia adicional solicitada en 1.4.f.
+write.csv(
+  auditoria_2023,
+  paste0(
+    ruta_outputs,
+    "/1_4_auditoria_2023.csv"
+  ),
+  row.names = FALSE
+)
 
+
+### 1.4.g) Interpretación ----
+
+
+#### 1.4.g.1) Distribución de P6430 ----
+
+# Calcula la distribución expandida de P6430 entre propietarios
+# Emparejados.
+# Responde la interpretación solicitada en 1.4.g.
 distribucion_posicion <- base_micro %>%
   filter(
     EMPAREJADO,
@@ -2120,42 +2278,12 @@ distribucion_posicion <- base_micro %>%
           sum(TOTAL_EXPANDIDO) *
           100,
         2
-      ),
+      )
     
-    POSICION_OCUPACIONAL = case_when(
-      
-      P6430 == 1 ~
-        "Obrero o empleado de empresa particular",
-      
-      P6430 == 2 ~
-        "Obrero o empleado del gobierno",
-      
-      P6430 == 3 ~
-        "Empleado doméstico",
-      
-      P6430 == 4 ~
-        "Trabajador por cuenta propia",
-      
-      P6430 == 5 ~
-        "Patrón o empleador",
-      
-      P6430 == 6 ~
-        "Trabajador familiar sin remuneración",
-      
-      P6430 == 7 ~
-        "Trabajador sin remuneración en empresas de otros hogares",
-      
-      P6430 == 8 ~
-        "Jornalero o peón",
-      
-      P6430 == 9 ~
-        "Otro",
-      
-      TRUE ~
-        "No identificado"
-      
-    )
-    
+  ) %>%
+  left_join(
+    etiquetas_posicion,
+    by = "P6430"
   ) %>%
   arrange(
     desc(PORCENTAJE)
@@ -2165,118 +2293,8 @@ distribucion_posicion <- base_micro %>%
 distribucion_posicion
 
 
-### 1.4.22) Exportar resultados ----
-
-write.csv(
-  tabla_na_llaves_emicron,
-  paste0(
-    ruta_outputs,
-    "/1_4_na_llaves_emicron.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  tabla_llaves_emicron,
-  paste0(
-    ruta_outputs,
-    "/1_4_llaves_emicron.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  tabla_secuencia_encuesta,
-  paste0(
-    ruta_outputs,
-    "/1_4_secuencia_encuesta.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  tabla_propietarios_hogar,
-  paste0(
-    ruta_outputs,
-    "/1_4_propietarios_hogar.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  resumen_relacion_orden,
-  paste0(
-    ruta_outputs,
-    "/1_4_relacion_orden.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  tabla_relacion_meses,
-  paste0(
-    ruta_outputs,
-    "/1_4_relacion_meses.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  resumen_pegue,
-  paste0(
-    ruta_outputs,
-    "/1_4_resumen_pegue.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  validacion_pegue,
-  paste0(
-    ruta_outputs,
-    "/1_4_validacion_pegue.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  auditoria_mensual,
-  paste0(
-    ruta_outputs,
-    "/1_4_auditoria_mensual.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  resumen_fuera_2024,
-  paste0(
-    ruta_outputs,
-    "/1_4_fuera_2024.csv"
-  ),
-  row.names = FALSE
-)
-
-
-write.csv(
-  auditoria_2023,
-  paste0(
-    ruta_outputs,
-    "/1_4_auditoria_2023.csv"
-  ),
-  row.names = FALSE
-)
-
-
+# Exporta la distribución de P6430.
+# Entrega el resultado solicitado en 1.4.g.
 write.csv(
   distribucion_posicion,
   paste0(
@@ -2285,4 +2303,3 @@ write.csv(
   ),
   row.names = FALSE
 )
-
