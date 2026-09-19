@@ -3,7 +3,6 @@
 
 # 0) Configuración inicial ----
 
-
 ## 0.1) Limpiar ambiente ----
 
 # Elimina los objetos de sesiones anteriores.
@@ -17,6 +16,9 @@ rm(list = ls())
 # Permite utilizar las funciones de `here` y `dplyr`.
 library(here)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(openxlsx)
 
 
 ## 0.3) Rutas ----
@@ -54,9 +56,7 @@ if (!dir.exists(ruta_outputs)) {
 
 # 1) Conformación y unión de las bases de datos ----
 
-
 ## 1.1) Pegue de las bases de datos de la GEIH ----
-
 
 ### 1.1.1) Años, meses y llave de identificación ----
 
@@ -110,19 +110,15 @@ contador <- 1
 # Recorre cada año y cada mes de la GEIH.
 # Construye las 24 bases mensuales con la misma estructura.
 for (anio in anios) {
-  
   # Crea la lista de bases mensuales del año actual.
   # Permite unir sus 12 meses al terminar el año.
   bases_mensuales_anio <- list()
-  
-  
+
   for (i in 1:12) {
-    
     # Selecciona el mes correspondiente a la iteración actual.
     # Construye la ruta y registra el período procesado.
     mes <- meses[i]
-    
-    
+
     # Construye la ruta de la carpeta del año y mes actuales.
     # Permite leer los cuatro módulos del período.
     ruta_mes <- paste0(
@@ -132,21 +128,17 @@ for (anio in anios) {
       "/",
       mes
     )
-    
-    
+
     # Ajusta el nombre del archivo de no ocupados para marzo de 2024.
     # Permite leer el archivo real sin cambiar su nombre.
     archivo_no_ocupados <- "No ocupados.CSV"
-    
+
     if (anio == "GEIH_2024" & mes == "03_Marzo") {
-      
       archivo_no_ocupados <- "No ocupado.CSV"
-      
     }
-    
-    
+
     #### 1.1.3.1) Leer los módulos ----
-    
+
     # Lee los cuatro módulos mensuales de GEIH.
     # Obtiene las bases que se unirán mediante la llave GEIH.
     general <- read.csv(
@@ -156,8 +148,7 @@ for (anio in anios) {
       ),
       sep = ";"
     )
-    
-    
+
     fuerza <- read.csv(
       paste0(
         ruta_mes,
@@ -165,8 +156,7 @@ for (anio in anios) {
       ),
       sep = ";"
     )
-    
-    
+
     ocupados <- read.csv(
       paste0(
         ruta_mes,
@@ -174,8 +164,7 @@ for (anio in anios) {
       ),
       sep = ";"
     )
-    
-    
+
     no_ocupados <- read.csv(
       paste0(
         ruta_mes,
@@ -184,10 +173,9 @@ for (anio in anios) {
       ),
       sep = ";"
     )
-    
-    
+
     #### 1.1.3.2) Guardar número de observaciones ----
-    
+
     # Registra el número de filas de cada módulo.
     # Produce la evidencia del tamaño mensual solicitada en 1.2.
     conteos_modulos[[contador]] <- data.frame(
@@ -197,24 +185,21 @@ for (anio in anios) {
       FUERZA_MODULO = nrow(fuerza),
       OCUPADOS = nrow(ocupados),
       NO_OCUPADOS = nrow(no_ocupados)
-      
     )
-    
-    
+
     #### 1.1.3.3) Guardar número original de columnas ----
-    
+
     # Guarda el número de columnas antes de seleccionar variables.
     # Permite documentar la reducción de las bases.
     columnas_general_antes <- ncol(general)
     columnas_fuerza_antes <- ncol(fuerza)
     columnas_ocupados_antes <- ncol(ocupados)
     columnas_no_ocupados_antes <- ncol(no_ocupados)
-    
-    
+
     #### 1.1.3.4) Seleccionar variables necesarias ----
-    
+
     # 1.3.a) Características generales, seguridad social en salud y educación
-    
+
     # Conserva las variables generales, educativas y de salud.
     # Responde a 1.3.a y deja las variables necesarias para los
     # Análisis posteriores.
@@ -235,15 +220,14 @@ for (anio in anios) {
         CLASE,
         FEX_C18,
         PT,
-        
+
         # 1.3.e) Variables necesarias para formalidad
         P6100,
         P6110
       )
-    
-    
+
     # 1.3.b) Fuerza de trabajo
-    
+
     # Conserva las variables de fuerza de trabajo.
     # Responde a 1.3.b y permite verificar sus relaciones.
     fuerza <- fuerza %>%
@@ -256,10 +240,9 @@ for (anio in anios) {
         FFT,
         P6240
       )
-    
-    
+
     # 1.3.c) Ocupados
-    
+
     # Conserva las variables de personas ocupadas y formalidad.
     # Responde a 1.3.c y conserva insumos para el Punto 2.3.
     ocupados <- ocupados %>%
@@ -288,10 +271,9 @@ for (anio in anios) {
         P6930,
         P6940
       )
-    
-    
+
     # 1.3.d) No ocupados
-    
+
     # Conserva la variable de personas no ocupadas.
     # Responde a 1.3.d y permite verificar la partición laboral.
     no_ocupados <- no_ocupados %>%
@@ -301,10 +283,9 @@ for (anio in anios) {
         ORDEN,
         DSI
       )
-    
-    
+
     #### 1.1.3.5) Evidencia de eficiencia ----
-    
+
     # Compara las columnas antes y después de la selección.
     # Documenta la eficiencia solicitada en 1.1.
     verificacion_eficiencia[[contador]] <- data.frame(
@@ -318,12 +299,10 @@ for (anio in anios) {
       OCUPADOS_DESPUES = ncol(ocupados),
       NO_OCUPADOS_ANTES = columnas_no_ocupados_antes,
       NO_OCUPADOS_DESPUES = ncol(no_ocupados)
-      
     )
-    
-    
+
     #### 1.1.3.6) Homogeneizar las llaves ----
-    
+
     # Convierte las variables de la llave al mismo tipo de texto.
     # Evita incompatibilidades al unir los módulos GEIH.
     general <- general %>%
@@ -332,34 +311,30 @@ for (anio in anios) {
         SECUENCIA_P = as.character(SECUENCIA_P),
         ORDEN = as.character(ORDEN)
       )
-    
-    
+
     fuerza <- fuerza %>%
       mutate(
         DIRECTORIO = as.character(DIRECTORIO),
         SECUENCIA_P = as.character(SECUENCIA_P),
         ORDEN = as.character(ORDEN)
       )
-    
-    
+
     ocupados <- ocupados %>%
       mutate(
         DIRECTORIO = as.character(DIRECTORIO),
         SECUENCIA_P = as.character(SECUENCIA_P),
         ORDEN = as.character(ORDEN)
       )
-    
-    
+
     no_ocupados <- no_ocupados %>%
       mutate(
         DIRECTORIO = as.character(DIRECTORIO),
         SECUENCIA_P = as.character(SECUENCIA_P),
         ORDEN = as.character(ORDEN)
       )
-    
-    
+
     #### 1.1.3.7) Verificar duplicados ----
-    
+
     # Identifica llaves repetidas en cada módulo.
     # Comprueba que cada unión pueda preservar las filas.
     duplicados_general <- general %>%
@@ -375,8 +350,7 @@ for (anio in anios) {
       filter(
         n > 1
       )
-    
-    
+
     duplicados_fuerza <- fuerza %>%
       group_by(
         DIRECTORIO,
@@ -390,8 +364,7 @@ for (anio in anios) {
       filter(
         n > 1
       )
-    
-    
+
     duplicados_ocupados <- ocupados %>%
       group_by(
         DIRECTORIO,
@@ -405,8 +378,7 @@ for (anio in anios) {
       filter(
         n > 1
       )
-    
-    
+
     duplicados_no_ocupados <- no_ocupados %>%
       group_by(
         DIRECTORIO,
@@ -420,8 +392,7 @@ for (anio in anios) {
       filter(
         n > 1
       )
-    
-    
+
     # Resume los duplicados encontrados en cada módulo.
     # Deja una verificación por año y mes antes de unir.
     verificacion_llaves[[contador]] <- data.frame(
@@ -431,19 +402,16 @@ for (anio in anios) {
       DUP_FUERZA = nrow(duplicados_fuerza),
       DUP_OCUPADOS = nrow(duplicados_ocupados),
       DUP_NO_OCUPADOS = nrow(duplicados_no_ocupados)
-      
     )
-    
-    
+
     # Detiene el loop si una llave está duplicada.
     # Evita que los joins multipliquen las observaciones.
     if (
       nrow(duplicados_general) > 0 |
-      nrow(duplicados_fuerza) > 0 |
-      nrow(duplicados_ocupados) > 0 |
-      nrow(duplicados_no_ocupados) > 0
+        nrow(duplicados_fuerza) > 0 |
+        nrow(duplicados_ocupados) > 0 |
+        nrow(duplicados_no_ocupados) > 0
     ) {
-      
       stop(
         paste(
           "Se encontraron llaves duplicadas en",
@@ -451,18 +419,15 @@ for (anio in anios) {
           mes
         )
       )
-      
     }
-    
-    
+
     #### 1.1.3.8) Pegue de los módulos ----
-    
+
     # Usa características generales como base y une los otros
     # Módulos mediante la llave GEIH.
     # Construye la base mensual integrada.
     n_general <- nrow(general)
-    
-    
+
     # Agrega el módulo de fuerza de trabajo.
     # Incorpora PET, FT, FFT y P6240 a la base mensual.
     base_mes <- general %>%
@@ -470,10 +435,9 @@ for (anio in anios) {
         fuerza,
         by = llave_geih
       )
-    
+
     filas_despues_fuerza <- nrow(base_mes)
-    
-    
+
     # Agrega el módulo de ocupados.
     # Incorpora las variables de ocupación e ingresos.
     base_mes <- base_mes %>%
@@ -481,10 +445,9 @@ for (anio in anios) {
         ocupados,
         by = llave_geih
       )
-    
+
     filas_despues_ocupados <- nrow(base_mes)
-    
-    
+
     # Agrega el módulo de no ocupados.
     # Completa la información laboral de la base mensual.
     base_mes <- base_mes %>%
@@ -492,12 +455,11 @@ for (anio in anios) {
         no_ocupados,
         by = llave_geih
       )
-    
+
     filas_despues_no_ocupados <- nrow(base_mes)
-    
-    
+
     #### 1.1.3.9) Verificar que los pegues no aumenten filas ----
-    
+
     # Compara las filas antes y después de cada join.
     # Verifica que las llaves mantengan una observación por
     # Persona.
@@ -508,18 +470,15 @@ for (anio in anios) {
       DESPUES_FUERZA = filas_despues_fuerza,
       DESPUES_OCUPADOS = filas_despues_ocupados,
       DESPUES_NO_OCUPADOS = filas_despues_no_ocupados
-      
     )
-    
-    
+
     # Detiene el loop si un join aumenta el número de filas.
     # Protege la integridad de la base mensual construida.
     if (
       filas_despues_fuerza != n_general |
-      filas_despues_ocupados != n_general |
-      filas_despues_no_ocupados != n_general
+        filas_despues_ocupados != n_general |
+        filas_despues_no_ocupados != n_general
     ) {
-      
       stop(
         paste(
           "El pegue modificó el número de filas en",
@@ -527,12 +486,10 @@ for (anio in anios) {
           mes
         )
       )
-      
     }
-    
-    
+
     #### 1.1.3.10) Crear ANIO ----
-    
+
     # Extrae el año desde PERIODO.
     # Permite separar GEIH 2023 y GEIH 2024.
     base_mes <- base_mes %>%
@@ -545,15 +502,13 @@ for (anio in anios) {
           )
         )
       )
-    
-    
+
     #### 1.1.3.11) Guardar base mensual ----
-    
+
     # Guarda la base mensual ya integrada.
     # Permite construir la base anual al finalizar sus meses.
     bases_mensuales_anio[[i]] <- base_mes
-    
-    
+
     # Informa el año y mes que terminó de procesarse.
     # Permite seguir el avance del loop en la consola.
     cat(
@@ -563,23 +518,19 @@ for (anio in anios) {
       mes,
       "\n"
     )
-    
-    
+
     # Avanza la posición de almacenamiento de las verificaciones.
     # Conserva un registro independiente por mes.
     contador <- contador + 1
-    
   }
-  
-  
-### 1.1.4) Construir las bases anuales ----
-  
+
+  ### 1.1.4) Construir las bases anuales ----
+
   # Une los 12 meses del año actual.
   # Construye una base anual de GEIH por año.
   bases_anuales[[anio]] <- bind_rows(
     bases_mensuales_anio
   )
-  
 }
 
 
@@ -658,7 +609,6 @@ write.csv(
 
 ## 1.2) Descripción general de los datos ----
 
-
 ### 1.2.1) Tamaño de los módulos por mes ----
 
 # Conteo de observaciones de los cuatro módulos para cada mes de 2024.
@@ -680,19 +630,14 @@ tabla_modulos_2024
 
 # Verificar la relación entre el tamaño de los módulos y sus universos.
 
-
 # Compara los tamaños de los módulos con sus universos laborales.
 # Verifica las relaciones entre características generales,
 # Fuerza de trabajo, ocupados y no ocupados.
 tabla_modulos_2024 <- tabla_modulos_2024 %>%
   mutate(
-    
-    GENERAL_MAYOR_PET =
-      GENERAL >= FUERZA_MODULO,
-    
-    PARTICION_PET =
-      OCUPADOS + NO_OCUPADOS == FUERZA_MODULO
-    
+    GENERAL_MAYOR_PET = GENERAL >= FUERZA_MODULO,
+
+    PARTICION_PET = OCUPADOS + NO_OCUPADOS == FUERZA_MODULO
   )
 
 
@@ -706,7 +651,6 @@ tabla_modulos_2024
 # PET = Fuerza de trabajo + Fuera de la fuerza de trabajo
 # Fuerza de trabajo = Ocupados + Desocupados
 
-
 # Suma las variables laborales por mes y verifica sus identidades.
 # Comprueba las definiciones de PET, fuerza de trabajo,
 # Ocupados y desocupados solicitadas en 1.2.
@@ -715,48 +659,37 @@ tabla_consistencia_laboral_2024 <- GEIH_2024 %>%
     MES
   ) %>%
   summarise(
-    
-    TOTAL_PET =
-      sum(
-        PET == 1,
-        na.rm = TRUE
-      ),
-    
-    TOTAL_FT =
-      sum(
-        FT == 1,
-        na.rm = TRUE
-      ),
-    
-    TOTAL_FFT =
-      sum(
-        FFT == 1,
-        na.rm = TRUE
-      ),
-    
-    TOTAL_OCI =
-      sum(
-        OCI == 1,
-        na.rm = TRUE
-      ),
-    
-    TOTAL_DSI =
-      sum(
-        DSI == 1,
-        na.rm = TRUE
-      ),
-    
+    TOTAL_PET = sum(
+      PET == 1,
+      na.rm = TRUE
+    ),
+
+    TOTAL_FT = sum(
+      FT == 1,
+      na.rm = TRUE
+    ),
+
+    TOTAL_FFT = sum(
+      FFT == 1,
+      na.rm = TRUE
+    ),
+
+    TOTAL_OCI = sum(
+      OCI == 1,
+      na.rm = TRUE
+    ),
+
+    TOTAL_DSI = sum(
+      DSI == 1,
+      na.rm = TRUE
+    ),
+
     .groups = "drop"
-    
   ) %>%
   mutate(
-    
-    PET_IGUAL_FT_MAS_FFT =
-      TOTAL_PET == TOTAL_FT + TOTAL_FFT,
-    
-    FT_IGUAL_OCI_MAS_DSI =
-      TOTAL_FT == TOTAL_OCI + TOTAL_DSI
-    
+    PET_IGUAL_FT_MAS_FFT = TOTAL_PET == TOTAL_FT + TOTAL_FFT,
+
+    FT_IGUAL_OCI_MAS_DSI = TOTAL_FT == TOTAL_OCI + TOTAL_DSI
   )
 
 
@@ -767,50 +700,42 @@ tabla_consistencia_laboral_2024
 
 # Total de las observaciones de los módulos durante 2024.
 total_2024 <- data.frame(
-  
   ANIO = "GEIH_2024",
-  
+
   MES = "TOTAL_2024",
-  
-  GENERAL =
-    sum(
-      tabla_modulos_2024$GENERAL
-    ),
-  
-  FUERZA_MODULO =
-    sum(
-      tabla_modulos_2024$FUERZA_MODULO
-    ),
-  
-  OCUPADOS =
-    sum(
-      tabla_modulos_2024$OCUPADOS
-    ),
-  
-  NO_OCUPADOS =
-    sum(
-      tabla_modulos_2024$NO_OCUPADOS
-    ),
-  
-  GENERAL_MAYOR_PET =
-    sum(
-      tabla_modulos_2024$GENERAL
-    ) >=
+
+  GENERAL = sum(
+    tabla_modulos_2024$GENERAL
+  ),
+
+  FUERZA_MODULO = sum(
+    tabla_modulos_2024$FUERZA_MODULO
+  ),
+
+  OCUPADOS = sum(
+    tabla_modulos_2024$OCUPADOS
+  ),
+
+  NO_OCUPADOS = sum(
+    tabla_modulos_2024$NO_OCUPADOS
+  ),
+
+  GENERAL_MAYOR_PET = sum(
+    tabla_modulos_2024$GENERAL
+  ) >=
     sum(
       tabla_modulos_2024$FUERZA_MODULO
     ),
-  
-  PARTICION_PET =
-    sum(
-      tabla_modulos_2024$OCUPADOS
-    ) +
+
+  PARTICION_PET = sum(
+    tabla_modulos_2024$OCUPADOS
+  ) +
     sum(
       tabla_modulos_2024$NO_OCUPADOS
     ) ==
     sum(
       tabla_modulos_2024$FUERZA_MODULO
     )
-  
 )
 
 
@@ -851,46 +776,39 @@ write.csv(
 
 ## 1.3) Construcción y documentación de la base analítica ----
 
-
 ### 1.3.a) Características generales, seguridad social en salud y educación ----
 
 # Estas variables se seleccionan dentro del loop, en 1.1.3.4.
-
 
 ### 1.3.b) Fuerza de trabajo ----
 
 # Estas variables se seleccionan dentro del loop, en 1.1.3.4.
 
-
 ### 1.3.c) Ocupados ----
 
 # Estas variables se seleccionan dentro del loop, en 1.1.3.4.
 
-
 ### 1.3.d) No ocupados ----
 
 # Estas variables se seleccionan dentro del loop, en 1.1.3.4.
-
 
 ### 1.3.e) Variables necesarias para formalidad ----
 
 # Estas variables se conservan para construir EI en el punto 2.3.
 # EI no se construye en este punto.
 
-
 # Variables esperadas para verificar la selección solicitada en 1.3.
 # Reúne los nombres de variables que debe contener GEIH.
 # Permite verificar la selección de 1.3 y la variable ANIO.
 variables_esperadas <- c(
-  
   # Llave
-  
+
   "DIRECTORIO",
   "SECUENCIA_P",
   "ORDEN",
-  
+
   # Características generales
-  
+
   "PERIODO",
   "MES",
   "P3271",
@@ -903,23 +821,23 @@ variables_esperadas <- c(
   "CLASE",
   "FEX_C18",
   "PT",
-  
+
   # Fuerza de trabajo
-  
+
   "PET",
   "FT",
   "FFT",
   "P6240",
-  
+
   # Ocupados
-  
+
   "OCI",
   "RAMA2D_R4",
   "P6430",
   "INGLABO",
-  
+
   # Variables necesarias para formalidad
-  
+
   "P6100",
   "P6110",
   "P3045S1",
@@ -938,15 +856,14 @@ variables_esperadas <- c(
   "P6920",
   "P6930",
   "P6940",
-  
+
   # No ocupados
-  
+
   "DSI",
-  
+
   # Variable construida
-  
+
   "ANIO"
-  
 )
 
 
@@ -968,13 +885,11 @@ verificacion_variables_adicionales
 
 if (
   !verificacion_variables_presentes |
-  !verificacion_variables_adicionales
+    !verificacion_variables_adicionales
 ) {
-  
   stop(
     "La base analítica no contiene exactamente las variables esperadas."
   )
-  
 }
 
 
@@ -982,9 +897,7 @@ if (
 
 # Diccionario de las variables solicitadas en los literales de 1.3.
 diccionario_variables <- data.frame(
-  
   VARIABLE = c(
-    
     "DIRECTORIO",
     "SECUENCIA_P",
     "ORDEN",
@@ -1000,44 +913,40 @@ diccionario_variables <- data.frame(
     "CLASE",
     "FEX_C18",
     "PT",
-    
+
     "PET",
     "FT",
     "FFT",
     "P6240",
-    
+
     "OCI",
     "RAMA2D_R4",
     "P6430",
     "INGLABO",
-    
+
     "DSI"
-    
   ),
-  
+
   MODULO = c(
-    
     rep(
       "Características generales",
       15
     ),
-    
+
     rep(
       "Fuerza de trabajo",
       4
     ),
-    
+
     rep(
       "Ocupados",
       4
     ),
-    
+
     "No ocupados"
-    
   ),
-  
+
   DESCRIPCION = c(
-    
     "Identificador del directorio",
     "Secuencia del hogar",
     "Número de orden de la persona",
@@ -1053,23 +962,21 @@ diccionario_variables <- data.frame(
     "Clase geográfica",
     "Factor de expansión",
     "Población total",
-    
+
     "Población en edad de trabajar",
     "Población en la fuerza de trabajo",
     "Población fuera de la fuerza de trabajo",
     "Actividad principal",
-    
+
     "Población ocupada",
     "Rama de actividad económica",
     "Posición ocupacional",
     "Ingreso laboral",
-    
+
     "Población desocupada"
-    
   ),
-  
+
   CATEGORIA_UNIDAD = c(
-    
     "Identificador",
     "Identificador",
     "Identificador",
@@ -1085,21 +992,19 @@ diccionario_variables <- data.frame(
     "Categoría",
     "Factor de expansión",
     "Indicador",
-    
+
     "Indicador",
     "Indicador",
     "Indicador",
     "Categorías",
-    
+
     "Indicador",
     "Código CIIU Rev. 4",
     "Categorías",
     "Pesos colombianos",
-    
+
     "Indicador"
-    
   )
-  
 )
 
 
@@ -1108,22 +1013,19 @@ diccionario_variables
 
 ### 1.3.3) Etiquetas necesarias ----
 
-
 #### 1.3.3.1) Etiquetas para sexo ----
 
 # Etiquetas necesarias para interpretar el sexo.
 etiquetas_sexo <- data.frame(
-  
   P3271 = c(
     1,
     2
   ),
-  
+
   SEXO = c(
     "Hombre",
     "Mujer"
   )
-  
 )
 
 
@@ -1134,31 +1036,27 @@ etiquetas_sexo
 
 # Etiquetas necesarias para interpretar P6430.
 etiquetas_posicion <- data.frame(
-  
   P6430 = 1:9,
-  
+
   POSICION_OCUPACIONAL = c(
-    
     "Obrero o empleado de empresa particular",
-    
+
     "Obrero o empleado del gobierno",
-    
+
     "Empleado doméstico",
-    
+
     "Trabajador por cuenta propia",
-    
+
     "Patrón o empleador",
-    
+
     "Trabajador familiar sin remuneración",
-    
+
     "Trabajador sin remuneración en empresas de otros hogares",
-    
+
     "Jornalero o peón",
-    
+
     "Otro"
-    
   )
-  
 )
 
 
@@ -1180,9 +1078,7 @@ write.csv(
 
 ## 1.4) Incorporación de la EMICRON 2024 y unión con la GEIH ----
 
-
 ### 1.4.a) Construcción de la base de la EMICRON ----
-
 
 #### 1.4.a.1) Leer los módulos de EMICRON ----
 
@@ -1328,35 +1224,33 @@ emicron_ventas <- emicron_ventas %>%
 # Verifica que los registros puedan identificarse antes del
 # Pegue de los módulos.
 tabla_na_llaves_emicron <- data.frame(
-  
   MODULO = c(
     "Identificación",
     "Características",
     "Inclusión financiera",
     "Ventas o ingresos"
   ),
-  
+
   NA_DIRECTORIO = c(
     sum(is.na(emicron_identificacion$DIRECTORIO)),
     sum(is.na(emicron_caracteristicas$DIRECTORIO)),
     sum(is.na(emicron_inclusion$DIRECTORIO)),
     sum(is.na(emicron_ventas$DIRECTORIO))
   ),
-  
+
   NA_SECUENCIA_P = c(
     sum(is.na(emicron_identificacion$SECUENCIA_P)),
     sum(is.na(emicron_caracteristicas$SECUENCIA_P)),
     sum(is.na(emicron_inclusion$SECUENCIA_P)),
     sum(is.na(emicron_ventas$SECUENCIA_P))
   ),
-  
+
   NA_SECUENCIA_ENCUESTA = c(
     sum(is.na(emicron_identificacion$SECUENCIA_ENCUESTA)),
     sum(is.na(emicron_caracteristicas$SECUENCIA_ENCUESTA)),
     sum(is.na(emicron_inclusion$SECUENCIA_ENCUESTA)),
     sum(is.na(emicron_ventas$SECUENCIA_ENCUESTA))
   )
-  
 )
 
 
@@ -1375,14 +1269,12 @@ write.csv(
 )
 if (
   sum(tabla_na_llaves_emicron$NA_DIRECTORIO) > 0 |
-  sum(tabla_na_llaves_emicron$NA_SECUENCIA_P) > 0 |
-  sum(tabla_na_llaves_emicron$NA_SECUENCIA_ENCUESTA) > 0
+    sum(tabla_na_llaves_emicron$NA_SECUENCIA_P) > 0 |
+    sum(tabla_na_llaves_emicron$NA_SECUENCIA_ENCUESTA) > 0
 ) {
-  
   stop(
     "Se encontraron valores faltantes en la llave de EMICRON."
   )
-  
 }
 
 
@@ -1450,21 +1342,19 @@ duplicados_ventas <- emicron_ventas %>%
 
 
 tabla_llaves_emicron <- data.frame(
-  
   MODULO = c(
     "Identificación",
     "Características",
     "Inclusión financiera",
     "Ventas o ingresos"
   ),
-  
+
   LLAVES_DUPLICADAS = c(
     nrow(duplicados_identificacion),
     nrow(duplicados_caracteristicas),
     nrow(duplicados_inclusion),
     nrow(duplicados_ventas)
   )
-  
 )
 
 
@@ -1485,15 +1375,13 @@ write.csv(
 
 if (
   nrow(duplicados_identificacion) > 0 |
-  nrow(duplicados_caracteristicas) > 0 |
-  nrow(duplicados_inclusion) > 0 |
-  nrow(duplicados_ventas) > 0
+    nrow(duplicados_caracteristicas) > 0 |
+    nrow(duplicados_inclusion) > 0 |
+    nrow(duplicados_ventas) > 0
 ) {
-  
   stop(
     "Se encontraron llaves duplicadas en los módulos de EMICRON."
   )
-  
 }
 
 
@@ -1524,11 +1412,9 @@ emicron <- emicron_identificacion %>%
 # Compara las filas de identificación antes y después del pegue.
 # Verifica que la base EMICRON conserve sus registros.
 if (nrow(emicron) != n_emicron_original) {
-  
   stop(
     "El pegue de los módulos EMICRON aumentó el número de filas."
   )
-  
 }
 
 
@@ -1537,9 +1423,7 @@ if (nrow(emicron) != n_emicron_original) {
 # Este literal corresponde a la documentación metodológica presentada en el
 # Informe. No requiere objetos adicionales en el script.
 
-
 ### 1.4.c) Determinación de la llave y análisis del período de referencia ----
-
 
 #### 1.4.c.1) Distribución de SECUENCIA_ENCUESTA ----
 
@@ -1640,8 +1524,7 @@ comparacion_orden <- emicron %>%
     )
   ) %>%
   mutate(
-    COINCIDE_ORDEN =
-      SECUENCIA_ENCUESTA == ORDEN
+    COINCIDE_ORDEN = SECUENCIA_ENCUESTA == ORDEN
   )
 
 
@@ -1666,32 +1549,27 @@ tabla_orden_persona <- comparacion_orden %>%
 # Sustenta la decisión sobre la llave de persona.
 resumen_relacion_orden <- tabla_orden_persona %>%
   summarise(
-    
     REGISTROS_EMICRON = n(),
-    
-    UNA_COINCIDENCIA =
-      sum(
+
+    UNA_COINCIDENCIA = sum(
+      COINCIDENCIAS == 1
+    ),
+
+    SIN_COINCIDENCIA = sum(
+      COINCIDENCIAS == 0
+    ),
+
+    MAS_DE_UNA_COINCIDENCIA = sum(
+      COINCIDENCIAS > 1
+    ),
+
+    PORCENTAJE_UNA_COINCIDENCIA = round(
+      mean(
         COINCIDENCIAS == 1
-      ),
-    
-    SIN_COINCIDENCIA =
-      sum(
-        COINCIDENCIAS == 0
-      ),
-    
-    MAS_DE_UNA_COINCIDENCIA =
-      sum(
-        COINCIDENCIAS > 1
-      ),
-    
-    PORCENTAJE_UNA_COINCIDENCIA =
-      round(
-        mean(
-          COINCIDENCIAS == 1
-        ) * 100,
-        2
-      )
-    
+      ) *
+        100,
+      2
+    )
   )
 
 
@@ -1717,20 +1595,16 @@ write.csv(
 # Evita usar una correspondencia ambigua entre las encuestas.
 
 if (resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0) {
-  
   stop(
     "SECUENCIA_ENCUESTA presenta más de una coincidencia con ORDEN."
   )
-  
 }
 
 
 if (resumen_relacion_orden$UNA_COINCIDENCIA == 0) {
-  
   stop(
     "No se encontró evidencia de correspondencia entre SECUENCIA_ENCUESTA y ORDEN."
   )
-  
 }
 
 
@@ -1820,25 +1694,22 @@ n_comparables <- sum(
 # Adelante.
 # Responde las tres hipótesis temporales del literal 1.4.c.
 tabla_relacion_meses <- data.frame(
-  
   RELACION = c(
     "Mismo mes",
     "Un mes atrás",
     "Un mes adelante"
   ),
-  
+
   COINCIDENCIAS = c(
-    
     # Mismo mes
-    
+
     sum(
-      comparacion_temporal$MES_REF_NUM ==
-        comparacion_temporal$MES_GEIH,
+      comparacion_temporal$MES_REF_NUM == comparacion_temporal$MES_GEIH,
       na.rm = TRUE
     ),
-    
+
     # MES_REF un mes atrás
-    
+
     sum(
       comparacion_temporal$MES_REF_NUM ==
         ifelse(
@@ -1848,9 +1719,9 @@ tabla_relacion_meses <- data.frame(
         ),
       na.rm = TRUE
     ),
-    
+
     # MES_REF un mes adelante
-    
+
     sum(
       comparacion_temporal$MES_REF_NUM ==
         ifelse(
@@ -1860,9 +1731,7 @@ tabla_relacion_meses <- data.frame(
         ),
       na.rm = TRUE
     )
-    
   )
-  
 )
 
 
@@ -1871,13 +1740,12 @@ tabla_relacion_meses <- data.frame(
 # Referencia.
 tabla_relacion_meses <- tabla_relacion_meses %>%
   mutate(
-    PORCENTAJE =
-      round(
-        COINCIDENCIAS /
-          n_comparables *
-          100,
-        2
-      )
+    PORCENTAJE = round(
+      COINCIDENCIAS /
+        n_comparables *
+        100,
+      2
+    )
   )
 
 
@@ -1897,7 +1765,6 @@ write.csv(
 
 
 ### 1.4.d) Pegue de las dos encuestas ----
-
 
 #### 1.4.d.1) Preparar GEIH 2024 ----
 
@@ -1931,11 +1798,9 @@ duplicados_geih_2024 <- geih_2024_micro %>%
 # Detiene el pegue si la llave de GEIH 2024 no es única.
 # Evita multiplicar registros de EMICRON en base_micro.
 if (nrow(duplicados_geih_2024) > 0) {
-  
   stop(
     "La llave de GEIH 2024 tiene registros duplicados."
   )
-  
 }
 
 
@@ -1958,11 +1823,9 @@ base_micro <- emicron_persona %>%
 # Compara las filas de EMICRON antes y después del join.
 # Verifica la integridad de base_micro.
 if (nrow(base_micro) != n_emicron_antes) {
-  
   stop(
     "El pegue entre EMICRON y GEIH aumentó el número de filas."
   )
-  
 }
 
 
@@ -1971,8 +1834,7 @@ if (nrow(base_micro) != n_emicron_antes) {
 # Permite calcular el número y porcentaje de emparejados.
 base_micro <- base_micro %>%
   mutate(
-    EMPAREJADO =
-      !is.na(P3271)
+    EMPAREJADO = !is.na(P3271)
   )
 
 
@@ -1980,27 +1842,23 @@ base_micro <- base_micro %>%
 # Resume la correspondencia entre EMICRON y GEIH.
 resumen_pegue <- base_micro %>%
   summarise(
-    
     REGISTROS_EMICRON = n(),
-    
-    EMPAREJADOS =
-      sum(
+
+    EMPAREJADOS = sum(
+      EMPAREJADO
+    ),
+
+    NO_EMPAREJADOS = sum(
+      !EMPAREJADO
+    ),
+
+    PORCENTAJE_EMPAREJADO = round(
+      mean(
         EMPAREJADO
-      ),
-    
-    NO_EMPAREJADOS =
-      sum(
-        !EMPAREJADO
-      ),
-    
-    PORCENTAJE_EMPAREJADO =
-      round(
-        mean(
-          EMPAREJADO
-        ) * 100,
-        2
-      )
-    
+      ) *
+        100,
+      2
+    )
   )
 
 
@@ -2028,36 +1886,32 @@ validacion_pegue <- base_micro %>%
     EMPAREJADO
   ) %>%
   summarise(
-    
-    COINCIDENCIA_SEXO =
-      round(
-        mean(
-          as.character(P35) ==
-            as.character(P3271),
-          na.rm = TRUE
-        ) * 100,
-        2
-      ),
-    
-    COINCIDENCIA_EDAD =
-      round(
-        mean(
-          P241 == P6040,
-          na.rm = TRUE
-        ) * 100,
-        2
-      ),
-    
-    COINCIDENCIA_CLASE =
-      round(
-        mean(
-          as.character(CLASE_TE) ==
-            as.character(CLASE),
-          na.rm = TRUE
-        ) * 100,
-        2
-      )
-    
+    COINCIDENCIA_SEXO = round(
+      mean(
+        as.character(P35) == as.character(P3271),
+        na.rm = TRUE
+      ) *
+        100,
+      2
+    ),
+
+    COINCIDENCIA_EDAD = round(
+      mean(
+        P241 == P6040,
+        na.rm = TRUE
+      ) *
+        100,
+      2
+    ),
+
+    COINCIDENCIA_CLASE = round(
+      mean(
+        as.character(CLASE_TE) == as.character(CLASE),
+        na.rm = TRUE
+      ) *
+        100,
+      2
+    )
   )
 
 
@@ -2078,7 +1932,6 @@ write.csv(
 
 ### 1.4.f) Auditoría del pegue ----
 
-
 #### 1.4.f.1) Auditoría mensual ----
 
 # Resume registros emparejados y no emparejados por MES_REF.
@@ -2089,29 +1942,25 @@ auditoria_mensual <- base_micro %>%
     MES_REF_NUM
   ) %>%
   summarise(
-    
     REGISTROS_EMICRON = n(),
-    
-    EMPAREJADOS =
-      sum(
+
+    EMPAREJADOS = sum(
+      EMPAREJADO
+    ),
+
+    PORCENTAJE_CORRESPONDENCIA = round(
+      mean(
         EMPAREJADO
-      ),
-    
-    PORCENTAJE_CORRESPONDENCIA =
-      round(
-        mean(
-          EMPAREJADO
-        ) * 100,
-        2
-      ),
-    
-    NO_EMPAREJADOS =
-      sum(
-        !EMPAREJADO
-      ),
-    
+      ) *
+        100,
+      2
+    ),
+
+    NO_EMPAREJADOS = sum(
+      !EMPAREJADO
+    ),
+
     .groups = "drop"
-    
   ) %>%
   arrange(
     MES_REF_NUM
@@ -2165,8 +2014,7 @@ comparacion_2023 <- no_emparejados %>%
     by = llave_geih
   ) %>%
   mutate(
-    EN_GEIH_2023 =
-      !is.na(MES)
+    EN_GEIH_2023 = !is.na(MES)
   )
 
 
@@ -2174,22 +2022,19 @@ comparacion_2023 <- no_emparejados %>%
 # Resume la razón estructural del no emparejamiento.
 resumen_fuera_2024 <- comparacion_2023 %>%
   summarise(
-    
     NO_EMPAREJADOS_2024 = n(),
-    
-    ENCONTRADOS_GEIH_2023 =
-      sum(
+
+    ENCONTRADOS_GEIH_2023 = sum(
+      EN_GEIH_2023
+    ),
+
+    PORCENTAJE = round(
+      mean(
         EN_GEIH_2023
-      ),
-    
-    PORCENTAJE =
-      round(
-        mean(
-          EN_GEIH_2023
-        ) * 100,
-        2
-      )
-    
+      ) *
+        100,
+      2
+    )
   )
 
 
@@ -2243,7 +2088,6 @@ write.csv(
 
 ### 1.4.g) Interpretación ----
 
-
 #### 1.4.g.1) Distribución de P6430 ----
 
 # Calcula la distribución expandida de P6430 entre propietarios
@@ -2258,28 +2102,22 @@ distribucion_posicion <- base_micro %>%
     P6430
   ) %>%
   summarise(
-    
     REGISTROS = n(),
-    
-    TOTAL_EXPANDIDO =
-      sum(
-        F_EXP,
-        na.rm = TRUE
-      ),
-    
+
+    TOTAL_EXPANDIDO = sum(
+      F_EXP,
+      na.rm = TRUE
+    ),
+
     .groups = "drop"
-    
   ) %>%
   mutate(
-    
-    PORCENTAJE =
-      round(
-        TOTAL_EXPANDIDO /
-          sum(TOTAL_EXPANDIDO) *
-          100,
-        2
-      )
-    
+    PORCENTAJE = round(
+      TOTAL_EXPANDIDO /
+        sum(TOTAL_EXPANDIDO) *
+        100,
+      2
+    )
   ) %>%
   left_join(
     etiquetas_posicion,
@@ -2302,4 +2140,885 @@ write.csv(
     "/1_4_posicion_ocupacional.csv"
   ),
   row.names = FALSE
+)
+
+# Punto 2----
+#  Construcción de los principales indicadores de mercado laboral
+
+## 2.1) Tasas y poblaciones ----
+
+### 2.1.1) Definición de trimestres y factor de expansión trimestral ----
+
+# Asigna a cada mes su trimestre correspondiente para 2023 y 2024.
+# Permite agrupar las observaciones en los 8 trimestres de análisis.
+GEIH <- GEIH %>%
+  mutate(
+    TRIMESTRE = case_when(
+      MES %in% 1:3 ~ "Enero - marzo",
+      MES %in% 4:6 ~ "Abril - junio",
+      MES %in% 7:9 ~ "Julio - septiembre",
+      MES %in% 10:12 ~ "Octubre - diciembre"
+    ),
+
+    PERIODO_TRIM = paste(
+      TRIMESTRE,
+      ANIO
+    ),
+
+    FEX_TRIM = FEX_C18 / 3
+  )
+
+
+### 2.1.2) Cálculo de poblaciones y tasas por trimestre y sexo ----
+
+# Agrupa por año, trimestre, etiqueta trimestral y sexo al nacer.
+# Calcula las poblaciones expandidas y las tasas oficiales de mercado laboral.
+orden_trimestres <- c(
+  "Enero - marzo 2023",
+  "Abril - junio 2023",
+  "Julio - septiembre 2023",
+  "Octubre - diciembre 2023",
+  "Enero - marzo 2024",
+  "Abril - junio 2024",
+  "Julio - septiembre 2024",
+  "Octubre - diciembre 2024"
+)
+
+tabla_indicadores_trim <- GEIH %>%
+  #Filtramos por la variable sexo
+  filter(
+    P3271 %in% c(1, 2)
+  ) %>%
+  group_by(
+    ANIO,
+    TRIMESTRE,
+    PERIODO_TRIM,
+    P3271
+  ) %>%
+  summarise(
+    POBLACION_TOTAL = sum(
+      PT * FEX_TRIM,
+      na.rm = TRUE
+    ),
+
+    PET_CALC = sum(
+      (PET == 1) * FEX_TRIM,
+      na.rm = TRUE
+    ),
+
+    FT_CALC = sum(
+      (FT == 1) * FEX_TRIM,
+      na.rm = TRUE
+    ),
+
+    OCUPADOS_CALC = sum(
+      (OCI == 1) * FEX_TRIM,
+      na.rm = TRUE
+    ),
+
+    DESOCUPADOS_CALC = sum(
+      (DSI == 1) * FEX_TRIM,
+      na.rm = TRUE
+    ),
+
+    .groups = "drop"
+  ) %>%
+  mutate(
+    TGP = round(
+      (FT_CALC / PET_CALC) * 100,
+      2
+    ),
+
+    TO = round(
+      (OCUPADOS_CALC / PET_CALC) * 100,
+      2
+    ),
+
+    TD = round(
+      (DESOCUPADOS_CALC / FT_CALC) * 100,
+      2
+    ),
+
+    POBLACION_TOTAL = round(
+      POBLACION_TOTAL,
+      0
+    ),
+
+    PET_CALC = round(
+      PET_CALC,
+      0
+    ),
+
+    FT_CALC = round(
+      FT_CALC,
+      0
+    ),
+
+    OCUPADOS_CALC = round(
+      OCUPADOS_CALC,
+      0
+    ),
+
+    DESOCUPADOS_CALC = round(
+      DESOCUPADOS_CALC,
+      0
+    )
+  )
+
+
+### 2.1.3) Verificación de consistencia entre FT, Ocupados y Desocupados ----
+
+# Comprueba que la fuerza de trabajo coincida con ocupados más desocupados.
+# Produce la evidencia de consistencia requerida en el numeral 2.1.
+verificacion_consistencia_tasas <- tabla_indicadores_trim %>%
+  mutate(
+    DIFERENCIA = FT_CALC - (OCUPADOS_CALC + DESOCUPADOS_CALC),
+    CONSISTENTE = abs(DIFERENCIA) <= 1
+  ) %>%
+  select(
+    ANIO,
+    TRIMESTRE,
+    PERIODO_TRIM,
+    P3271,
+    FT_CALC,
+    OCUPADOS_CALC,
+    DESOCUPADOS_CALC,
+    DIFERENCIA,
+    CONSISTENTE
+  )
+
+verificacion_consistencia_tasas
+
+# Exporta la verificación de consistencia.
+# Deja evidencia del chequeo de identidades laborales.
+write.csv(
+  verificacion_consistencia_tasas,
+  paste0(
+    ruta_outputs,
+    "/2_1_consistencia_tasas.csv"
+  ),
+  row.names = FALSE
+)
+
+if (!all(verificacion_consistencia_tasas$CONSISTENTE)) {
+  stop(
+    "La verificación de consistencia entre FT, Ocupados y Desocupados falló."
+  )
+}
+
+
+### 2.1.4) Reestructuración a la estructura solicitada ----
+
+# Define los nombres de los indicadores en el orden exacto del enunciado.
+# Permite estructurar las tablas de salida con filas fijas.
+nombres_indicadores <- c(
+  "TGP" = "Tasa global de participación (TGP)",
+  "TO" = "Tasa de ocupación (TO)",
+  "TD" = "Tasa de desempleo (TD)",
+  "POBLACION_TOTAL" = "Población total",
+  "PET_CALC" = "Población en edad de trabajar (PET)",
+  "FT_CALC" = "Fuerza de trabajo",
+  "OCUPADOS_CALC" = "Población ocupada",
+  "DESOCUPADOS_CALC" = "Población desocupada"
+)
+
+# Transforma los datos de hombres al formato ancho con trimestres en columnas.
+# Genera el dataframe final solicitado para hombres.
+tabla_tasas_hombres <- tabla_indicadores_trim %>%
+  filter(
+    P3271 == 1
+  ) %>%
+  select(
+    PERIODO_TRIM,
+    TGP,
+    TO,
+    TD,
+    POBLACION_TOTAL,
+    PET_CALC,
+    FT_CALC,
+    OCUPADOS_CALC,
+    DESOCUPADOS_CALC
+  ) %>%
+  pivot_longer(
+    cols = -PERIODO_TRIM,
+    names_to = "VARIABLE",
+    values_to = "VALOR"
+  ) %>%
+  mutate(
+    `Tasas (%) y poblaciones` = factor(
+      nombres_indicadores[VARIABLE],
+      levels = nombres_indicadores
+    ),
+    PERIODO_TRIM = factor(
+      PERIODO_TRIM,
+      levels = orden_trimestres
+    )
+  ) %>%
+  select(
+    `Tasas (%) y poblaciones`,
+    PERIODO_TRIM,
+    VALOR
+  ) %>%
+  pivot_wider(
+    names_from = PERIODO_TRIM,
+    values_from = VALOR
+  ) %>%
+  arrange(
+    `Tasas (%) y poblaciones`
+  )
+
+tabla_tasas_hombres
+
+# Transforma los datos de mujeres al formato ancho con trimestres en columnas.
+# Genera el dataframe final solicitado para mujeres.
+tabla_tasas_mujeres <- tabla_indicadores_trim %>%
+  filter(
+    P3271 == 2
+  ) %>%
+  select(
+    PERIODO_TRIM,
+    TGP,
+    TO,
+    TD,
+    POBLACION_TOTAL,
+    PET_CALC,
+    FT_CALC,
+    OCUPADOS_CALC,
+    DESOCUPADOS_CALC
+  ) %>%
+  pivot_longer(
+    cols = -PERIODO_TRIM,
+    names_to = "VARIABLE",
+    values_to = "VALOR"
+  ) %>%
+  mutate(
+    `Tasas (%) y poblaciones` = factor(
+      nombres_indicadores[VARIABLE],
+      levels = nombres_indicadores
+    ),
+    PERIODO_TRIM = factor(
+      PERIODO_TRIM,
+      levels = orden_trimestres
+    )
+  ) %>%
+  select(
+    `Tasas (%) y poblaciones`,
+    PERIODO_TRIM,
+    VALOR
+  ) %>%
+  pivot_wider(
+    names_from = PERIODO_TRIM,
+    values_from = VALOR
+  ) %>%
+  arrange(
+    `Tasas (%) y poblaciones`
+  )
+
+tabla_tasas_mujeres
+
+
+### 2.1.5) Exportar tablas a Excel ----
+
+# Exporta las tablas de tasas y poblaciones para hombres y mujeres.
+# Genera los archivos 2_1_tasas_hombres.xlsx y 2_1_tasas_mujeres.xlsx.
+write.xlsx(
+  tabla_tasas_hombres,
+  paste0(
+    ruta_outputs,
+    "/2_1_tasas_hombres.xlsx"
+  )
+)
+
+write.xlsx(
+  tabla_tasas_mujeres,
+  paste0(
+    ruta_outputs,
+    "/2_1_tasas_mujeres.xlsx"
+  )
+)
+
+
+## 2.2) Análisis de las tasas de mercado laboral ----
+
+### 2.2.1) Preparar datos para el gráfico de series de tiempo ----
+
+# Une las tasas de hombres y mujeres en un dataframe largo para ggplot2.
+# Permite graficar TGP, TO y TD en paneles con escalas independientes.
+datos_grafico_tasas <- tabla_indicadores_trim %>%
+  mutate(
+    SEXO = ifelse(
+      P3271 == 1,
+      "Hombre",
+      "Mujer"
+    ),
+    PERIODO_TRIM = factor(
+      PERIODO_TRIM,
+      levels = orden_trimestres
+    )
+  ) %>%
+  select(
+    PERIODO_TRIM,
+    SEXO,
+    `Tasa global de participación (TGP)` = TGP,
+    `Tasa de ocupación (TO)` = TO,
+    `Tasa de desempleo (TD)` = TD
+  ) %>%
+  pivot_longer(
+    cols = c(
+      "Tasa global de participación (TGP)",
+      "Tasa de ocupación (TO)",
+      "Tasa de desempleo (TD)"
+    ),
+    names_to = "TASA",
+    values_to = "VALOR"
+  ) %>%
+  mutate(
+    TASA = factor(
+      TASA,
+      levels = c(
+        "Tasa global de participación (TGP)",
+        "Tasa de ocupación (TO)",
+        "Tasa de desempleo (TD)"
+      )
+    )
+  )
+
+### 2.2.2) Construir el gráfico de series de tiempo ----
+
+# Genera el gráfico con tres facetas (una por tasa) y escalas libres en Y.
+# Permite comparar la evolución y las brechas de género entre 2023 y 2024.
+grafico_tasas <- ggplot(
+  datos_grafico_tasas,
+  aes(
+    x = PERIODO_TRIM,
+    y = VALOR,
+    group = SEXO,
+    color = SEXO,
+    shape = SEXO,
+    linetype = SEXO
+  )
+) +
+  geom_line(
+    linewidth = 0.9
+  ) +
+  geom_point(
+    size = 2.5
+  ) +
+  facet_wrap(
+    ~TASA,
+    scales = "free_y",
+    ncol = 3
+  ) +
+  scale_color_manual(
+    values = c(
+      "Hombre" = "darkblue",
+      "Mujer" = "violet"
+    )
+  ) +
+  labs(
+    title = "Evolución de las tasas de mercado laboral según sexo en Colombia",
+    subtitle = "Total nacional por trimestres (2023 - 2024)",
+    x = "Trimestre",
+    y = "Tasa (%)",
+    color = "Sexo al nacer",
+    shape = "Sexo al nacer",
+    linetype = "Sexo al nacer",
+    caption = "Fuente: DANE - Gran Encuesta Integrada de Hogares (GEIH) 2023-2024."
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1,
+      size = 8
+    ),
+    strip.text = element_text(
+      face = "bold",
+      size = 9
+    ),
+    legend.position = "bottom",
+    plot.title = element_text(
+      face = "bold",
+      size = 12
+    ),
+    plot.subtitle = element_text(
+      size = 10,
+      color = "gray30"
+    )
+  )
+
+grafico_tasas
+
+### 2.2.3) Exportar gráfico de series de tiempo ----
+
+# Guarda el gráfico en alta resolución en la carpeta outputs.
+# Entrega la visualización autocontenida solicitada en 2.2.
+ggsave(
+  filename = paste0(
+    ruta_outputs,
+    "/2_2_tasas_sexo.png"
+  ),
+  plot = grafico_tasas,
+  width = 12,
+  height = 6,
+  dpi = 300
+)
+
+
+## 2.3) Población ocupada según formalidad ----
+
+### 2.3.1) Construcción de la variable de formalidad (EI) ----
+
+# Construye la variable EI (1 = Formal, 0 = Informal) adaptando el código
+# Del anexo estadístico de Empleo informal y seguridad social del DANE.
+# Aplica la definición del sector y empleo informal para ocupados (OCI == 1).
+GEIH_2024_DIC <- GEIH %>%
+  filter(
+    ANIO == 2024,
+    MES == 12,
+    OCI == 1
+  )
+
+# Códigos de las 13 ciudades y áreas metropolitanas según la GEIH.
+# Identifica Bogotá, Medellín, Cali, Barranquilla, Bucaramanga, Manizales,
+# Pereira, Cúcuta, Pasto, Ibagué, Montería, Cartagena y Villavicencio.
+areas_13ciudades <- c(
+  5,
+  8,
+  11,
+  13,
+  17,
+  23,
+  50,
+  52,
+  54,
+  66,
+  68,
+  73,
+  76
+)
+
+# Adapta los criterios del anexo del DANE:
+# 1. Unidades económicas de hasta 5 personas (P3045S1, P3046, P3069 <= 5)
+# 2. Trabajadores familiares sin remuneración (P6430 == 6)
+# 3. Empleados domésticos (P6430 == 3)
+# 4. Trabajadores por cuenta propia no profesionales/técnicos
+# 5. Cotización a pensión (P6920 == 1) y/o salud (P6100 == 1 & P6110 == 1)
+# Un ocupado es FORMAL (EI = 1) si cotiza a pensiones en una unidad formal
+# O es profesional/técnico independiente cotizante. De lo contrario es INFORMAL (EI = 0).
+GEIH_13ciudades_dic <- GEIH_2024_DIC %>%
+  filter(
+    as.numeric(AREA) %in% areas_13ciudades
+  ) %>%
+  mutate(
+    # Tamaño de la empresa o unidad económica (hasta 5 trabajadores)
+    TAMANO_EMPRESA = case_when(
+      !is.na(P3045S1) & P3045S1 <= 5 ~ "Hasta 5",
+      !is.na(P3046) & P3046 <= 5 ~ "Hasta 5",
+      !is.na(P3069) & P3069 <= 5 ~ "Hasta 5",
+      !is.na(P3045S1) & P3045S1 > 5 ~ "Más de 5",
+      !is.na(P3046) & P3046 > 5 ~ "Más de 5",
+      !is.na(P3069) & P3069 > 5 ~ "Más de 5",
+      TRUE ~ "No informa"
+    ),
+
+    # Cuenta propia profesional o técnico según OFICIO_C8 (grupos 1, 2, 3)
+    PROFESIONAL_TECNICO = case_when(
+      P6430 == 4 &
+        as.numeric(substr(as.character(OFICIO_C8), 1, 1)) %in% 1:3 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # Cotización efectiva a pensiones en el empleo
+    COTIZA_PENSION = ifelse(
+      !is.na(P6920) & P6920 == 1,
+      1,
+      0
+    ),
+
+    # Indicador de Empleo Formal (EI = 1) / Informal (EI = 0)
+    # Siguiendo la definición oficial del DANE:
+    # Son informales: cuenta propia no profesionales, patrones en unidades <= 5,
+    # Asalariados en unidades <= 5 o sin cotización a pensiones,
+    # Trabajadores familiares sin remuneración y empleados domésticos sin pensión.
+    EI = case_when(
+      # Asalariados de empresas > 5 personas que cotizan a pensión -> Formal
+      P6430 %in%
+        c(1, 2) &
+        TAMANO_EMPRESA == "Más de 5" &
+        COTIZA_PENSION == 1 ~ 1,
+
+      # Cuenta propia profesionales o técnicos que cotizan a pensión -> Formal
+      PROFESIONAL_TECNICO == 1 & COTIZA_PENSION == 1 ~ 1,
+
+      # Patrones de empresas > 5 personas que cotizan a pensión -> Formal
+      P6430 == 5 & TAMANO_EMPRESA == "Más de 5" & COTIZA_PENSION == 1 ~ 1,
+
+      # Empleados del gobierno (P6430 == 2) que cotizan a pensión -> Formal
+      P6430 == 2 & COTIZA_PENSION == 1 ~ 1,
+
+      # Todos los demás ocupados se clasifican como informales (EI = 0)
+      TRUE ~ 0
+    )
+  )
+
+### 2.3.2) Dataframe con total expandido según formalidad y sexo ----
+
+# Calcula el número de ocupados formales e informales expandido con FEX_C18.
+# Obtiene los porcentajes dentro de cada sexo para las 13 ciudades.
+tabla_formalidad_sexo <- GEIH_13ciudades_dic %>%
+  mutate(
+    SEXO = ifelse(
+      P3271 == 1,
+      "Hombre",
+      "Mujer"
+    ),
+    CONDICION = ifelse(
+      EI == 1,
+      "Formal",
+      "Informal"
+    )
+  ) %>%
+  group_by(
+    SEXO,
+    CONDICION
+  ) %>%
+  summarise(
+    TOTAL_EXPANDIDO = sum(
+      FEX_C18,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  group_by(
+    SEXO
+  ) %>%
+  mutate(
+    PORCENTAJE = round(
+      TOTAL_EXPANDIDO / sum(TOTAL_EXPANDIDO) * 100,
+      1
+    )
+  ) %>%
+  ungroup()
+
+tabla_formalidad_sexo
+
+# Exporta la tabla de formalidad por sexo.
+# Conserva la evidencia numérica del numeral 2.3.
+write.csv(
+  tabla_formalidad_sexo,
+  paste0(
+    ruta_outputs,
+    "/2_3_tabla_formalidad_13ciudades.csv"
+  ),
+  row.names = FALSE
+)
+
+### 2.3.3) Construir y exportar el gráfico de torta ----
+
+# Genera el gráfico de torta con facetas por sexo para comparar informalidad.
+# Incluye etiquetas de porcentaje y formato autocontenido.
+grafico_formalidad <- ggplot(
+  tabla_formalidad_sexo,
+  aes(
+    x = "",
+    y = PORCENTAJE,
+    fill = CONDICION
+  )
+) +
+  geom_col(
+    width = 1,
+    color = "white",
+    linewidth = 0.8
+  ) +
+  coord_polar(
+    theta = "y"
+  ) +
+  facet_wrap(
+    ~SEXO
+  ) +
+  geom_text(
+    aes(
+      label = paste0(PORCENTAJE, "%")
+    ),
+    position = position_stack(vjust = 0.5),
+    color = "white",
+    fontface = "bold",
+    size = 4.5
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Formal" = "#2CA02C",
+      "Informal" = "#D62728"
+    )
+  ) +
+  labs(
+    title = "Distribución de personas ocupadas según condición de formalidad y sexo",
+    subtitle = "Total 13 ciudades y áreas metropolitanas - Diciembre de 2024",
+    fill = "Condición laboral",
+    caption = "Fuente: DANE - GEIH (Diciembre 2024). Metodología oficial de empleo informal."
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      size = 12,
+      hjust = 0.5
+    ),
+    plot.subtitle = element_text(
+      size = 10,
+      color = "gray30",
+      hjust = 0.5
+    ),
+    strip.text = element_text(
+      face = "bold",
+      size = 11
+    ),
+    legend.position = "bottom"
+  )
+
+grafico_formalidad
+
+ggsave(
+  filename = paste0(
+    ruta_outputs,
+    "/2_3_formalidad_13ciudades.png"
+  ),
+  plot = grafico_formalidad,
+  width = 9,
+  height = 5,
+  dpi = 300
+)
+
+
+## 2.4) Población ocupada según posición ocupacional ----
+
+### 2.4.1) Preparar datos de enero de 2023 ----
+
+# Filtra la base para enero de 2023 y personas ocupadas.
+# Utiliza las variables P6430, OCI, P3271 y FEX_C18.
+GEIH_2023_ENE <- GEIH %>%
+  filter(
+    ANIO == 2023,
+    MES == 1,
+    OCI == 1,
+    !is.na(P6430)
+  )
+
+### 2.4.2) Calcular totales expandidos y proporciones por grupo ----
+
+# Calcula la población ocupada por posición ocupacional para el total nacional,
+# Hombres y mujeres, asegurando que sumen 100 % dentro de cada grupo.
+posicion_total <- GEIH_2023_ENE %>%
+  group_by(
+    P6430
+  ) %>%
+  summarise(
+    TOTAL_EXP = sum(
+      FEX_C18,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    GRUPO = "Total nacional",
+    PORCENTAJE = round(
+      TOTAL_EXP / sum(TOTAL_EXP) * 100,
+      1
+    )
+  )
+
+posicion_hombres <- GEIH_2023_ENE %>%
+  filter(
+    P3271 == 1
+  ) %>%
+  group_by(
+    P6430
+  ) %>%
+  summarise(
+    TOTAL_EXP = sum(
+      FEX_C18,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    GRUPO = "Hombres",
+    PORCENTAJE = round(
+      TOTAL_EXP / sum(TOTAL_EXP) * 100,
+      1
+    )
+  )
+
+posicion_mujeres <- GEIH_2023_ENE %>%
+  filter(
+    P3271 == 2
+  ) %>%
+  group_by(
+    P6430
+  ) %>%
+  summarise(
+    TOTAL_EXP = sum(
+      FEX_C18,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    GRUPO = "Mujeres",
+    PORCENTAJE = round(
+      TOTAL_EXP / sum(TOTAL_EXP) * 100,
+      1
+    )
+  )
+
+# Consolida los tres grupos y agrega las etiquetas de posición ocupacional.
+# Permite ordenar las categorías según el tamaño en el Total Nacional.
+posicion_consolidada <- bind_rows(
+  posicion_total,
+  posicion_hombres,
+  posicion_mujeres
+) %>%
+  left_join(
+    etiquetas_posicion,
+    by = "P6430"
+  )
+
+# Define el orden de las posiciones ocupacionales de mayor a menor tamaño nacional.
+orden_posiciones <- posicion_total %>%
+  left_join(
+    etiquetas_posicion,
+    by = "P6430"
+  ) %>%
+  arrange(
+    TOTAL_EXP
+  ) %>%
+  pull(
+    POSICION_OCUPACIONAL
+  )
+
+posicion_consolidada <- posicion_consolidada %>%
+  mutate(
+    POSICION_OCUPACIONAL = factor(
+      POSICION_OCUPACIONAL,
+      levels = orden_posiciones
+    ),
+    GRUPO = factor(
+      GRUPO,
+      levels = c(
+        "Total nacional",
+        "Hombres",
+        "Mujeres"
+      )
+    )
+  )
+
+### 2.4.3) Verificación de suma de proporciones ----
+
+# Comprueba que las proporciones sumen 100 % en cada grupo de análisis.
+# Garantiza la consistencia estadística de la distribución ocupacional.
+verificacion_suma_posicion <- posicion_consolidada %>%
+  group_by(
+    GRUPO
+  ) %>%
+  summarise(
+    SUMA_PORCENTAJE = sum(
+      PORCENTAJE
+    ),
+    .groups = "drop"
+  )
+
+verificacion_suma_posicion
+
+### 2.4.4) Proporción conjunta de cuenta propia y patrones ----
+
+# Suma la proporción nacional de trabajadores por cuenta propia y patrones.
+# Proporciona la cifra clave requerida para la interpretación hacia el Punto 3.
+prop_cuenta_propia_patron <- posicion_total %>%
+  filter(
+    P6430 %in% c(4, 5)
+  ) %>%
+  summarise(
+    PORCENTAJE_CONJUNTO = sum(PORCENTAJE)
+  ) %>%
+  pull(
+    PORCENTAJE_CONJUNTO
+  )
+
+cat(
+  "Proporción de ocupados como cuenta propia y patrones:",
+  prop_cuenta_propia_patron,
+  "%\n"
+)
+
+### 2.4.5) Construir y exportar el gráfico de barras horizontales ----
+
+# Genera el gráfico de barras horizontales agrupadas por posición ocupacional.
+# Muestra en una sola gráfica el Total Nacional, Hombres y Mujeres con etiquetas.
+grafico_posicion <- ggplot(
+  posicion_consolidada,
+  aes(
+    x = POSICION_OCUPACIONAL,
+    y = PORCENTAJE,
+    fill = GRUPO
+  )
+) +
+  geom_col(
+    position = position_dodge(width = 0.8),
+    width = 0.7
+  ) +
+  coord_flip() +
+  geom_text(
+    aes(
+      label = paste0(PORCENTAJE, "%")
+    ),
+    position = position_dodge(width = 0.8),
+    hjust = -0.15,
+    size = 2.8
+  ) +
+  scale_y_continuous(
+    limits = c(0, max(posicion_consolidada$PORCENTAJE) * 1.15)
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Total nacional" = "#2CA02C",
+      "Hombres" = "#1F77B4",
+      "Mujeres" = "#E377C2"
+    )
+  ) +
+  labs(
+    title = "Distribución de personas ocupadas según posición ocupacional",
+    subtitle = "Total nacional, hombres y mujeres - Enero de 2023",
+    x = "Posición ocupacional",
+    y = "Proporción (%)",
+    fill = "Grupo de análisis",
+    caption = "Fuente: DANE - GEIH (Enero 2023)."
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      size = 12
+    ),
+    plot.subtitle = element_text(
+      size = 10,
+      color = "gray30"
+    ),
+    axis.text.y = element_text(
+      size = 8
+    ),
+    legend.position = "bottom"
+  )
+
+grafico_posicion
+
+ggsave(
+  filename = paste0(
+    ruta_outputs,
+    "/2_4_posicion_nacional.png"
+  ),
+  plot = grafico_posicion,
+  width = 11,
+  height = 6,
+  dpi = 300
 )
