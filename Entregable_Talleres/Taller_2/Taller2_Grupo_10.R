@@ -2499,10 +2499,10 @@ grafico_tasas <- ggplot(
   )
 ) +
   geom_line(
-    linewidth = 0.9
+    linewidth = 1.2
   ) +
   geom_point(
-    size = 2.5
+    size = 3
   ) +
   facet_wrap(
     ~TASA,
@@ -2513,6 +2513,12 @@ grafico_tasas <- ggplot(
     values = c(
       "Hombre" = "darkblue",
       "Mujer" = "violet"
+    )
+  ) +
+  scale_x_discrete(
+    labels = c(
+      "T1\n2023", "T2\n2023", "T3\n2023", "T4\n2023",
+      "T1\n2024", "T2\n2024", "T3\n2024", "T4\n2024"
     )
   ) +
   labs(
@@ -2528,21 +2534,25 @@ grafico_tasas <- ggplot(
   theme_bw() +
   theme(
     axis.text.x = element_text(
-      angle = 45,
-      hjust = 1,
-      size = 8
+      angle = 0,
+      hjust = 0.5,
+      size = 10
     ),
     strip.text = element_text(
       face = "bold",
-      size = 9
+      size = 12
     ),
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    legend.title = element_text(size = 11),
     legend.position = "bottom",
     plot.title = element_text(
       face = "bold",
-      size = 12
+      size = 16
     ),
     plot.subtitle = element_text(
-      size = 10,
+      size = 12,
       color = "gray30"
     )
   )
@@ -2710,7 +2720,8 @@ grafico_formalidad <- ggplot(
       label = paste0(PORCENTAJE, "%")
     ),
     position = position_stack(vjust = 0.5),
-    color = "white"
+    color = "white",
+    size = 5
   ) +
   scale_fill_manual(
     values = c(
@@ -2725,7 +2736,12 @@ grafico_formalidad <- ggplot(
   ) +
   theme_void() +
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    legend.text = element_text(size = 11),
+    legend.title = element_text(size = 11),
+    strip.text = element_text(size = 12, face = "bold"),
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12)
   )
 
 ggsave(
@@ -2923,7 +2939,7 @@ grafico_posicion <- ggplot(
     ),
     position = position_dodge(width = 0.8),
     hjust = -0.15,
-    size = 2.8
+    size = 3.5
   ) +
   scale_y_continuous(
     limits = c(0, max(posicion_consolidada$PORCENTAJE) * 1.15)
@@ -2947,15 +2963,19 @@ grafico_posicion <- ggplot(
   theme(
     plot.title = element_text(
       face = "bold",
-      size = 12
+      size = 16
     ),
     plot.subtitle = element_text(
-      size = 10,
+      size = 12,
       color = "gray30"
     ),
     axis.text.y = element_text(
-      size = 8
+      size = 10
     ),
+    axis.text.x = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    legend.title = element_text(size = 11),
     legend.position = "bottom"
   )
 
@@ -3358,8 +3378,8 @@ indicadores_credito_ahorro
 
 ### 3.2.4) Construir y exportar el gráfico de barras agrupadas ----
 
-# Genera el gráfico de barras agrupadas comparando formas de pago por rama.
-# Incorpora formato autocontenido, paleta armónica y etiquetas de datos.
+# Genera barras horizontales agrupadas para leer las siete formas de pago.
+# La orientación separa las etiquetas de las cuatro ramas en cada categoría.
 grafico_formas_pago <- ggplot(
   tabla_formas_pago,
   aes(
@@ -3374,17 +3394,18 @@ grafico_formas_pago <- ggplot(
   ) +
   geom_text(
     aes(
-      label = paste0(PORCENTAJE, "%")
+      label = ifelse(PORCENTAJE > 0, paste0(PORCENTAJE, "%"), "")
     ),
     position = position_dodge(width = 0.8),
-    vjust = -0.4,
-    size = 2.6
+    hjust = -0.15,
+    size = 3
   ) +
   scale_y_continuous(
-    limits = c(0, 110),
+    limits = c(0, 112),
     breaks = seq(0, 100, 20),
     labels = function(x) paste0(x, "%")
   ) +
+  coord_flip() +
   scale_fill_manual(
     values = c(
       "Agropecuario" = "#2CA02C",
@@ -3405,17 +3426,17 @@ grafico_formas_pago <- ggplot(
   theme(
     plot.title = element_text(
       face = "bold",
-      size = 12
+      size = 16
     ),
     plot.subtitle = element_text(
-      size = 10,
+      size = 12,
       color = "gray30"
     ),
-    axis.text.x = element_text(
-      angle = 18,
-      hjust = 1,
-      size = 9
-    ),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 11),
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    legend.title = element_text(size = 11),
     legend.position = "bottom"
   )
 
@@ -3547,7 +3568,7 @@ grafico_cruce <- ggplot(
     position = position_stack(vjust = 0.5),
     color = "white",
     fontface = "bold",
-    size = 3.8
+    size = 4.5
   ) +
   scale_fill_manual(
     values = c(
@@ -3572,12 +3593,17 @@ grafico_cruce <- ggplot(
   theme(
     plot.title = element_text(
       face = "bold",
-      size = 12
+      size = 16
     ),
     plot.subtitle = element_text(
-      size = 10,
+      size = 12,
       color = "gray30"
     ),
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    legend.title = element_text(size = 11),
     legend.position = "bottom"
   )
 

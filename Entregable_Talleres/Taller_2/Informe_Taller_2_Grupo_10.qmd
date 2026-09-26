@@ -1,0 +1,305 @@
+---
+title: ""
+lang: es
+format:
+  pdf:
+    pdf-engine: xelatex
+    documentclass: article
+    papersize: letter
+    fontsize: 9pt
+    geometry: [top=1.65cm, bottom=1.65cm, left=1.7cm, right=1.7cm]
+    colorlinks: false
+    number-sections: false
+    fig-pos: H
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{graphicx}
+        \usepackage{booktabs}
+        \usepackage{xcolor}
+        \usepackage{fancyhdr}
+        \definecolor{ink}{gray}{0}
+        \definecolor{soft}{gray}{1}
+        \pagestyle{fancy}
+        \fancyhf{}
+        \fancyhead[L]{\small\color{ink}Taller 2 · Grupo 10}
+        \fancyhead[R]{\small\color{ink}Informe académico · borrador}
+        \fancyfoot[C]{\thepage}
+        \renewcommand{\headrulewidth}{0.35pt}
+        \setlength{\headheight}{13pt}
+        \setlength{\parskip}{3pt}
+        \setlength{\parindent}{0pt}
+        \usepackage{titlesec}
+        \titleformat{\section}{\large\bfseries\color{ink}}{}{0em}{}
+        \titleformat{\subsection}{\normalsize\bfseries\color{ink}}{}{0em}{}
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+library(openxlsx)
+library(knitr)
+library(png)
+if (.Platform$OS.type == "windows") invisible(suppressWarnings(
+  Sys.setlocale("LC_CTYPE", "Spanish_Colombia.1252")
+))
+
+salidas <- file.path("..", "..", "outputs")
+directorio_figuras <- "Informe_Taller_2_Grupo_10_figuras"
+dir.create(directorio_figuras, showWarnings = FALSE)
+leer_csv <- function(nombre) read.csv(file.path(salidas, nombre), check.names = FALSE,
+                                      fileEncoding = "UTF-8")
+fmt_entero <- function(x) format(round(as.numeric(x)), big.mark = ".", decimal.mark = ",",
+                                  scientific = FALSE, trim = TRUE)
+fmt_pct <- function(x, digitos = 1) formatC(as.numeric(x), format = "f", digits = digitos,
+                                             decimal.mark = ",")
+tabla_latex <- function(datos, escala = 0.80) {
+  tex <- knitr::kable(datos, format = "latex", booktabs = TRUE, escape = TRUE,
+                       row.names = FALSE,
+                       linesep = "")
+  cat("\\begin{center}\\resizebox{", escala, "\\textwidth}{!}{%\n", tex,
+      "\n}\\end{center}\n", sep = "")
+}
+figura_recortada <- function(nombre) {
+  img <- png::readPNG(file.path(salidas, nombre))
+  rojo <- img[, , 1]
+  verde <- img[, , 2]
+  azul <- img[, , 3]
+  if (dim(img)[3] == 4) {
+    alfa <- img[, , 4]
+    rojo <- rojo * alfa + 1 - alfa
+    verde <- verde * alfa + 1 - alfa
+    azul <- azul * alfa + 1 - alfa
+  }
+  luminosidad <- 0.2126 * rojo + 0.7152 * verde + 0.0722 * azul
+  tinta <- luminosidad < 0.965
+  filas <- which(rowSums(tinta) > 0)
+  columnas <- which(colSums(tinta) > 0)
+  margen <- 24
+  img <- img[max(1, min(filas) - margen):min(nrow(luminosidad), max(filas) + margen),
+             max(1, min(columnas) - margen):min(ncol(luminosidad), max(columnas) + margen),
+             , drop = FALSE]
+  destino <- file.path(directorio_figuras, paste0(tools::file_path_sans_ext(nombre), "_color.png"))
+  png::writePNG(img, destino)
+  knitr::include_graphics(destino)
+}
+```
+
+\begin{center}
+{\Large\bfseries\color{ink}Taller 2: mercado laboral y micronegocios en Colombia}\\[4pt]
+{\normalsize Informe explicativo del script del Grupo 10}\\[3pt]
+{\small Taller de programación en R · Universidad de los Andes · 2026-02}\\[5pt]
+\fbox{\parbox{0.88\textwidth}{\centering\small Borrador para revisión del grupo. Los resultados del numeral 2.3 y el punto 4 requieren trabajo adicional antes de la entrega.}}
+\end{center}
+
+# 1. Conformación y unión de las bases
+
+## 1.1. GEIH: construcción y controles
+
+La Gran Encuesta Integrada de Hogares (GEIH) permite estudiar la población y el mercado laboral. El script recorre los doce meses de 2023 y 2024 mediante dos ciclos anidados. En cada mes lee los módulos de características generales, fuerza de trabajo, ocupados y no ocupados; conserva las variables requeridas; une los módulos por `DIRECTORIO`, `SECUENCIA_P` y `ORDEN`; y apila las bases mensuales para formar cada año. `DIRECTORIO` identifica la unidad entrevistada, `SECUENCIA_P` el hogar dentro de ella y `ORDEN` a la persona. El módulo general es la base del `left_join` porque contiene el universo más amplio de personas encuestadas [1].
+
+El procedimiento comprueba que la llave de persona no esté duplicada en ningún módulo y que cada unión conserve las filas de características generales. Los archivos de control registran cero duplicados y ningún aumento de filas en los 24 meses. Para limitar memoria, el script selecciona columnas antes de unir, almacena cada mes en una lista y retira objetos intermedios; el archivo de eficiencia documenta la reducción de variables.
+
+## 1.2. Tamaño y estructura de GEIH 2024
+
+**Tabla 1.** Registros muestrales por módulo, GEIH 2024. El total anual suma registros mensuales; no representa personas únicas a lo largo del año.
+
+```{r}
+#| results: asis
+x <- leer_csv("1_2_descripcion_geih_2024.csv")
+x <- x[, c("MES", "GENERAL", "FUERZA_MODULO", "OCUPADOS", "NO_OCUPADOS")]
+names(x) <- c("Mes", "General", "Fuerza", "Ocupados", "No ocupados")
+x$Mes <- sub("^[0-9]{2}_", "", x$Mes)
+for (j in 2:5) x[[j]] <- fmt_entero(x[[j]])
+tabla_latex(x, 0.72)
+```
+
+En 2024, características generales contiene 829.683 registros, frente a 657.803 de población en edad de trabajar (PET). Los módulos de ocupados (353.672) y no ocupados (304.131) particionan la PET: su suma es 657.803. El script comprueba además, mes a mes, las identidades PET = fuerza de trabajo + población fuera de la fuerza de trabajo y fuerza de trabajo = ocupados + desocupados [1].
+
+## 1.3. Base analítica y diccionario
+
+El script retiene las variables de identificación, demografía, territorio, mercado laboral y expansión solicitadas; añade las necesarias para formalidad y deriva `ANIO` de `PERIODO`. La selección temprana reduce el ancho de las bases y facilita verificar su contenido. `DPTO` identifica el departamento; `AREA`, el dominio de ciudad o área metropolitana; `CLASE`, la clase geográfica. Miden dimensiones diferentes y no son intercambiables.
+
+**Tabla 2.** Diccionario de variables exigidas en 1.3(a–d), elaborado a partir del archivo exportado por el script. Las categorías resumidas deben cotejarse con el diccionario oficial antes de entregar [1].
+
+```{r}
+#| results: asis
+d <- leer_csv("1_3_diccionario_variables.csv")
+names(d) <- c("Variable", "Módulo", "Descripción", "Categoría / unidad")
+d[[2]] <- sub("Características generales", "General", d[[2]])
+d[[2]] <- sub("Fuerza de trabajo", "Fuerza", d[[2]])
+tabla_latex(d, 0.86)
+```
+
+## 1.4. Integración GEIH–EMICRON
+
+La Encuesta de Micronegocios (EMICRON) parte de una submuestra de ocupados elegibles de la GEIH, pero es una operación independiente. Sus cuatro módulos se unen internamente por `DIRECTORIO`, `SECUENCIA_P` y `SECUENCIA_ENCUESTA`. El script verifica que los cuatro carezcan de llaves duplicadas y que la unión preserve los 78.501 registros de identificación. `F_EXP` expande micronegocios; `FEX_C18` expande personas de la GEIH. Sus universos y diseños no permiten sustituirlos entre sí [1, 2].
+
+La comparación empírica muestra una coincidencia única entre `SECUENCIA_ENCUESTA` y `ORDEN` para los 78.501 registros de EMICRON. Por eso el script construye `ORDEN` a partir de la primera y enlaza personas con las tres variables de identificación, sin añadir el mes a la llave. En los registros comparables, `MES_REF` de EMICRON aparece un mes después de `MES` de GEIH en el 100 % de los casos; no se observan coincidencias en el mismo mes ni un mes atrás. Esto es coherente con que las preguntas sobre actividad e ingresos se refieran al período anterior [2].
+
+**Tabla 3.** Auditoría mensual del enlace con GEIH 2024.
+
+```{r}
+#| results: asis
+a <- leer_csv("1_4_auditoria_mensual.csv")
+a <- a[, c("MES_REF", "REGISTROS_EMICRON", "EMPAREJADOS",
+            "NO_EMPAREJADOS", "PORCENTAJE_CORRESPONDENCIA")]
+names(a) <- c("Mes ref.", "EMICRON", "Enlazados", "Sin enlace", "Enlace (%)")
+for (j in 2:4) a[[j]] <- fmt_entero(a[[j]])
+a[[5]] <- fmt_pct(a[[5]], 0)
+tabla_latex(a, 0.74)
+```
+
+La base `base_micro` conserva los 78.501 registros de EMICRON; 71.754 (91,41 %) encuentran contraparte en GEIH 2024. Sexo, edad y clase geográfica coinciden en el 100 % de los enlazados. Los 6.747 no enlazados son exactamente los registros de referencia enero: todos aparecen en GEIH diciembre de 2023, fuera de la ventana GEIH 2024 usada en el pegue. Esta concentración temporal explica la falta de enlace sin alterar ni descartar observaciones.
+
+Entre los propietarios enlazados, 88,53 % declararon en GEIH trabajar por cuenta propia y 9,22 % ser patrones; el 2,25 % restante declaró otras posiciones. La diferencia recuerda que EMICRON identifica la propiedad de un micronegocio y GEIH registra la posición ocupacional declarada en el empleo de referencia. No debe interpretarse automáticamente como un error de llave, dada la validación independiente del enlace.
+
+# 2. Indicadores de mercado laboral
+
+## 2.1. Poblaciones y tasas trimestrales
+
+El script divide `FEX_C18` entre tres al combinar meses para obtener una población trimestral promedio. Calcula TGP = fuerza de trabajo / PET, TO = ocupados / PET y TD = desocupados / fuerza de trabajo. En todos los grupos de año, trimestre y sexo, la verificación exportada confirma fuerza de trabajo = ocupados + desocupados, con diferencia cero. Las siguientes tablas incluyen las ocho columnas temporales de los archivos Excel solicitados; las poblaciones están expresadas en personas [1].
+
+```{r}
+#| results: asis
+tabla_tasas <- function(archivo) {
+  t <- openxlsx::read.xlsx(file.path(salidas, archivo), check.names = FALSE)
+  t <- t[, c(1, 3, 2, 4, 5, 7, 6, 8, 9)]
+  names(t) <- c("Indicador", "E-M 23", "A-J 23", "J-S 23", "O-D 23",
+                "E-M 24", "A-J 24", "J-S 24", "O-D 24")
+  t[[1]] <- c("TGP (%)", "TO (%)", "TD (%)", "Población", "PET",
+              "Fuerza laboral", "Ocupados", "Desocupados")
+  for (j in 2:9) {
+    t[[j]] <- c(fmt_pct(t[1:3, j], 2), fmt_entero(t[4:8, j]))
+  }
+  tabla_latex(t, 0.92)
+}
+```
+
+**Tabla 4.** Tasas y poblaciones de hombres, total nacional.
+
+```{r}
+#| results: asis
+tabla_tasas("2_1_tasas_hombres.xlsx")
+```
+
+**Tabla 5.** Tasas y poblaciones de mujeres, total nacional.
+
+```{r}
+#| results: asis
+tabla_tasas("2_1_tasas_mujeres.xlsx")
+```
+
+*Nota:* E-M = enero–marzo; A-J = abril–junio; J-S = julio–septiembre; O-D = octubre–diciembre. Las tasas son porcentajes; los demás valores son poblaciones promedio estimadas.
+
+\newpage
+
+## 2.2. Evolución por sexo
+
+```{r}
+#| fig-cap: "Tasas de participación, ocupación y desempleo por sexo, 2023–2024. Fuente: procesamiento del Grupo 10 con GEIH."
+#| out-width: "100%"
+figura_recortada("2_2_tasas_sexo.png")
+```
+
+La participación y la ocupación masculinas superan a las femeninas en todos los trimestres, mientras la tasa de desempleo femenina permanece más alta. Entre enero–marzo y octubre–diciembre de 2024, la TD baja de 9,57 % a 7,06 % en hombres y de 14,98 % a 11,15 % en mujeres. La caída combina más ocupación relativa con cambios en participación: la TD no puede explicarse mirando solo el número de desocupados, pues su denominador es la fuerza de trabajo.
+
+\newpage
+
+## 2.3. Formalidad en las 13 ciudades: resultado por revisar
+
+```{r}
+#| fig-cap: "Clasificación de formalidad calculada por el script para diciembre de 2024. Resultado preliminar: requiere corregir o validar EI."
+#| out-width: "88%"
+figura_recortada("2_3_formalidad_13ciudades.png")
+```
+
+El script filtra ocupados de diciembre de 2024 en las 13 ciudades y aplica una regla sobre tamaño de empresa, posición ocupacional, oficio y cotización a pensión. Su salida clasifica como informales al 92,3 % de los hombres y al 91,8 % de las mujeres. Como contraste, el DANE reporta **42,5 %** de informalidad para las 13 ciudades en octubre–diciembre de 2024 (42,5 % hombres; 42,4 % mujeres) [3]. El período oficial es trimestral y el gráfico del script es mensual, de modo que no son cifras idénticamente comparables; aun así, una brecha cercana a 50 puntos porcentuales exige revisar el filtro geográfico, la codificación y la adaptación de `EI` antes de usar la figura como conclusión sustantiva.
+
+\newpage
+
+## 2.4. Posición ocupacional
+
+```{r}
+#| fig-cap: "Distribución de ocupados por posición ocupacional y sexo, enero de 2023. Fuente: procesamiento del Grupo 10 con GEIH."
+#| out-width: "100%"
+figura_recortada("2_4_posicion_nacional.png")
+```
+
+Las proporciones se calculan dentro de total nacional, hombres y mujeres, de manera que cada grupo suma 100 %. La ocupación por cuenta propia (40,6 %) y la de patrones o empleadores (2,6 %) concentran conjuntamente **43,2 %** de la ocupación nacional. Estos dos grupos constituyen la población de referencia para la selección de EMICRON.
+
+# 3. Micronegocios en Colombia
+
+## 3.1. Indicadores básicos de 2024
+
+El archivo `3_1_indicadores.xlsx` estima **5.297.252 micronegocios**, exactamente el total publicado por el DANE. El 64,6 % pertenece a hombres y el 35,4 % a mujeres; comercio y reparación de vehículos es la rama más grande (23,9 %), seguida de agricultura (21,5 %). El 22,4 % cuenta con RUT y el 10,3 % figura registrado ante Cámara de Comercio. Estas cifras y las participaciones sectoriales coinciden con el boletín oficial dentro del redondeo [2]. El dominio nacional de EMICRON excluye ocho departamentos de la Amazonía y Orinoquía; por ello no debe confundirse con la cobertura nacional de GEIH [2].
+
+**Tabla 6.** Selección de indicadores exportados por el script. El detalle de las doce ramas permanece en `3_1_indicadores.xlsx`.
+
+```{r}
+#| results: asis
+i <- openxlsx::read.xlsx(file.path(salidas, "3_1_indicadores.xlsx"), check.names = FALSE)
+i <- i[c(1:3, 4, 6, 8, 9, 17, 19:20), ]
+i <- i[, c("CATEGORIA", "TOTAL_EXPANDIDO", "PORCENTAJE")]
+names(i) <- c("Categoría", "Micronegocios", "Porcentaje")
+i$Micronegocios <- fmt_entero(i$Micronegocios)
+i$Porcentaje <- paste0(fmt_pct(i$Porcentaje), " %")
+tabla_latex(i, 0.74)
+```
+
+## 3.2. Inclusión financiera
+
+```{r}
+#| fig-cap: "Medios de pago aceptados por rama de actividad, EMICRON 2024. Fuente: procesamiento del Grupo 10 con EMICRON."
+#| out-width: "100%"
+figura_recortada("3_2_formas_pago.png")
+```
+
+El ciclo `for` recorre `P1764_1` a `P1764_7` y calcula con `F_EXP` la aceptación de cada forma de pago por rama. Predominan los medios que no requieren terminal especializado. El script calcula también solicitud de crédito y ahorro, pero no exporta esos porcentajes; falta verificarlos e incorporarlos. El gráfico describe asociaciones, no efectos causales del crédito sobre los medios de pago.
+
+\newpage
+
+## 3.3. Educación del propietario y RUT
+
+```{r}
+#| fig-cap: "Tenencia de RUT según nivel educativo del propietario enlazado. Fuente: procesamiento del Grupo 10 con GEIH–EMICRON."
+#| out-width: "88%"
+figura_recortada("3_3_cruce.png")
+```
+
+La pregunta es si la educación en GEIH (`P3042`) se asocia con la tenencia de RUT en EMICRON (`P1633`). El script calcula una tabla de contingencia con **`F_EXP` solamente** y porcentajes dentro de cada nivel educativo. El universo abarca propietarios enlazados con GEIH 2024 y datos válidos; la ventana efectiva es febrero–diciembre de 2024. El gráfico muestra una asociación descriptiva. Sector, ubicación, ingreso y tamaño del negocio pueden contribuir a ella sin que la educación cause directamente el registro.
+
+La tabla de contingencia está calculada como `tabla_contingencia_cruce` en memoria, pero el script aún no la exporta. Para la versión de entrega debe guardarse desde R en `outputs` e incorporarse aquí junto al gráfico.
+
+# 4. Análisis socioeconómico: pendiente
+
+El script revisado termina en el numeral 3.3. Aún faltan los tres gráficos distintos exigidos en el punto 4, sus respectivos análisis de máximo 150 palabras y la comprobación de sus condiciones (variables diferentes, desagregación geográfica, al menos una variable porcentual y al menos un gráfico basado en EMICRON o `base_micro`). Esta sección debe completarse con resultados generados por el grupo antes de entregar el informe.
+
+# Referencias y notas de verificación
+
+1. DANE. *Gran Encuesta Integrada de Hogares, GEIH 2023 y 2024*. Microdatos, formulario y diccionarios en [ANDA 2023](https://microdatos.dane.gov.co/index.php/catalog/782) y [ANDA 2024](https://microdatos.dane.gov.co/index.php/catalog/819).
+2. DANE. [*Boletín técnico: Encuesta de Micronegocios, EMICRON 2024*](https://www.dane.gov.co/files/operaciones/EMICRON/bol-EMICRON-2024.pdf). Total, sectores, sexo y registros de formalidad empresarial.
+3. DANE. [*Boletín técnico: Empleo informal y seguridad social, octubre–diciembre de 2024*](https://www.dane.gov.co/files/operaciones/GEIH/bol-GEIHEISS-oct-dic2024.pdf). Indicadores de las 13 ciudades y áreas metropolitanas.
+
+**Controles previos a la entrega.** Resolver la discrepancia de 2.3; exportar la tabla de 3.3 y los porcentajes de crédito y ahorro; completar la cifra exacta de 2.4 y el punto 4; y revisar que cada integrante pueda justificar código, resultados y decisiones metodológicas. Las tablas y gráficos anteriores proceden de los archivos que genera `Taller2_Grupo_10.R`; el PDF no reejecuta los microdatos.
+
+\clearpage
+\setcounter{page}{1}
+\fancyhead[R]{\small\color{ink}Anexo · uso de IA}
+
+# Anexo. Declaración de uso de inteligencia artificial
+
+**Borrador editable; el grupo debe completar y verificar esta declaración antes de la entrega.**
+
+| Elemento | Declaración que debe completar el grupo |
+|:--|:--|
+| Herramienta | Codex / ChatGPT: precisar versión o servicio utilizado. |
+| Propósito | Revisión, organización y refinamiento de un borrador explicativo basado en el script y las salidas preexistentes del grupo. |
+| Contenido tratado | Identificar los numerales, párrafos, tablas, figuras y verificaciones concretas en las que se utilizó la herramienta. |
+| Revisión humana | Describir quién contrastó el texto con el código, los archivos exportados, el enunciado y las publicaciones del DANE; indicar las correcciones realizadas. |
+| Decisiones pendientes | Documentar la corrección de formalidad, el punto 4 y cualquier modificación posterior del informe. |
+
+Esta plantilla no sustituye la declaración factual del grupo. El enunciado exige declarar todo uso efectivo de IA y limita su papel a editar, revisar o refinar trabajo elaborado por los estudiantes.
