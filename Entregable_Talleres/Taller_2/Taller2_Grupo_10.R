@@ -1501,7 +1501,8 @@ write.csv(
 #### 1.4.c.3) Comparación con ORDEN ----
 
 # Compara SECUENCIA_ENCUESTA con ORDEN dentro de cada hogar.
-# Establece empíricamente la correspondencia de la persona.
+# El cruce por hogar es intencionalmente muchos a muchos: genera los
+# candidatos que se contrastan antes de aceptar una llave de persona.
 geih_personas <- GEIH %>%
   select(
     DIRECTORIO,
@@ -1521,7 +1522,8 @@ comparacion_orden <- emicron %>%
     by = c(
       "DIRECTORIO",
       "SECUENCIA_P"
-    )
+    ),
+    relationship = "many-to-many"
   ) %>%
   mutate(
     COINCIDE_ORDEN = SECUENCIA_ENCUESTA == ORDEN
@@ -1601,9 +1603,11 @@ if (resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0) {
 }
 
 
-if (resumen_relacion_orden$UNA_COINCIDENCIA == 0) {
+if (resumen_relacion_orden$SIN_COINCIDENCIA > 0 ||
+    resumen_relacion_orden$UNA_COINCIDENCIA !=
+      resumen_relacion_orden$REGISTROS_EMICRON) {
   stop(
-    "No se encontró evidencia de correspondencia entre SECUENCIA_ENCUESTA y ORDEN."
+    "No todos los registros EMICRON tienen una coincidencia única con ORDEN."
   )
 }
 
@@ -2579,7 +2583,8 @@ ggsave(
 
 ### 2.3.1) Construcción de la variable de formalidad (EI) ----
 
-# Filtra ocupados de diciembre de 2024 en las 13 ciudades y crea EI.
+# Calcula EI en octubre-diciembre de 2024 para contrastar con DANE;
+# conserva diciembre por separado para la figura solicitada.
 areas_13ciudades <- c(
   5,
   8,
@@ -2596,59 +2601,118 @@ areas_13ciudades <- c(
   76
 )
 
-# La clasificación sigue los criterios del anexo estadístico del DANE.
-GEIH_13ciudades_dic <- GEIH %>%
+# Traducción de la pestaña Código_SAS del anexo estadístico DANE
+# anex-GEIHEISS-oct-dic2024.xlsx. EI = 1 formal; EI = 0 informal.
+# P3045S1 mide registro mercantil, P3046 contabilidad y P3069 es
+# tamaño de empresa por categorías (1-3: hasta cinco; 4-10: seis o más).
+# La rama 84/99, la posición, el registro y la seguridad social se
+# evalúan en el mismo orden que en el código oficial.
+GEIH_13ciudades_tri <- GEIH %>%
   filter(
     ANIO == 2024,
-    MES == 12,
+    MES %in% 10:12,
     OCI == 1,
     as.numeric(AREA) %in% areas_13ciudades
   ) %>%
   mutate(
-    # Clasifica el tamaño de la unidad económica.
-    TAMANO_EMPRESA = case_when(
-      P3045S1 <= 5 | P3046 <= 5 | P3069 <= 5 ~ "Hasta 5",
-      P3045S1 > 5 | P3046 > 5 | P3069 > 5 ~ "Más de 5",
-      TRUE ~ "No informa"
+    OFICIO_C8_2D = if_else(
+      !is.na(OFICIO_C8),
+      substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2),
+      NA_character_
     ),
-
-    # Identifica trabajadores por cuenta propia profesionales o técnicos.
-    PROFESIONAL_TECNICO = case_when(
-      P6430 == 4 &
-        as.numeric(substr(as.character(OFICIO_C8), 1, 1)) %in% 1:3 ~ 1,
-      TRUE ~ 0
+    ANIOS = ANIO - 1,
+    FORMAL = case_when(
+      P6430 == 3 ~ NA_real_,
+      P6430 == 6 ~ 0,
+      RAMA2D_R4 %in% c(84, 99) ~ 1,
+      P6430 == 8 ~ 0,
+      P6430 == 2 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 2 ~ 0,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 >= 4 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 <= 3 ~ 0,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
+      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
+      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
+      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
+      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
+      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      TRUE ~ NA_real_
     ),
-
-    # Identifica la cotización efectiva a pensión.
-    COTIZA_PENSION = ifelse(
-      !is.na(P6920) & P6920 == 1,
-      1,
-      0
+    SALUD = case_when(
+      P6430 %in% c(1, 3, 7) & P6100 %in% c(1, 2) & P6110 %in% c(1, 2, 4) ~ 1,
+      P6430 %in% c(1, 3, 7) & P6100 == 9 & P6450 == 2 ~ 1,
+      P6430 %in% c(1, 3, 7) & P6110 == 9 & P6450 == 2 ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
     ),
-
-    # Clasifica como formal o informal según las condiciones anteriores.
+    PENSION = case_when(
+      P6430 %in% c(1, 3, 7) & P6920 == 3 ~ 1,
+      P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% c(1, 2, 3) & P6940 %in% c(1, 3) ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
+    ),
     EI = case_when(
-      (
-        P6430 %in% c(1, 5) &
-          TAMANO_EMPRESA == "Más de 5" &
-          COTIZA_PENSION == 1
-      ) |
-        (
-          P6430 == 2 &
-            COTIZA_PENSION == 1
-        ) |
-        (
-          PROFESIONAL_TECNICO == 1 &
-            COTIZA_PENSION == 1
-        ) ~ 1,
-      TRUE ~ 0
+      P6430 == 2 ~ 1,
+      P6430 %in% c(6, 8) ~ 0,
+      P6430 %in% c(4, 5) ~ FORMAL,
+      P6430 %in% c(1, 3, 7) & SALUD == 1 & PENSION == 1 ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
     )
   )
+
+GEIH_13ciudades_dic <- GEIH_13ciudades_tri %>% filter(MES == 12)
+
+# El boletín de octubre-diciembre de 2024 informa 42,5 % para las
+# 13 ciudades. La comparación usa tres meses y FEX_C18/3; el
+# porcentaje no cambia al dividir los pesos por tres.
+control_ei_dane <- GEIH_13ciudades_tri %>%
+  summarise(
+    N_OCUPADOS = n(),
+    N_SIN_EI = sum(is.na(EI)),
+    INFORMALIDAD_CALCULADA = round(
+      100 * sum((FEX_C18 / 3)[EI == 0], na.rm = TRUE) /
+        sum((FEX_C18 / 3)[!is.na(EI)], na.rm = TRUE), 1
+    ),
+    INFORMALIDAD_DANE = 42.5,
+    DIFERENCIA_PP = round(INFORMALIDAD_CALCULADA - INFORMALIDAD_DANE, 1)
+  )
+
+write.csv(
+  control_ei_dane,
+  file.path(ruta_outputs, "2_3_control_ei_dane.csv"),
+  row.names = FALSE
+)
+print(control_ei_dane)
 
 ### 2.3.2) Dataframe con total expandido según formalidad y sexo ----
 
 # Agrupa la población expandida por sexo y condición de formalidad.
 tabla_formalidad_sexo <- GEIH_13ciudades_dic %>%
+  filter(!is.na(EI), P3271 %in% c(1, 2), !is.na(FEX_C18)) %>%
   mutate(
     SEXO = ifelse(
       P3271 == 1,
@@ -3376,6 +3440,13 @@ indicadores_credito_ahorro <- base_inclusion %>%
 
 indicadores_credito_ahorro
 
+# Deja evidencia reproducible de los dos porcentajes citados en el informe.
+write.csv(
+  indicadores_credito_ahorro,
+  file.path(ruta_outputs, "3_2_credito_ahorro.csv"),
+  row.names = FALSE
+)
+
 ### 3.2.4) Construir y exportar el gráfico de barras agrupadas ----
 
 # Genera barras horizontales agrupadas para leer las siete formas de pago.
@@ -3544,6 +3615,13 @@ tabla_contingencia_cruce <- datos_cruce %>%
   ungroup()
 
 tabla_contingencia_cruce
+
+# Exporta la tabla para que el informe muestre cifras además del gráfico.
+write.csv(
+  tabla_contingencia_cruce,
+  file.path(ruta_outputs, "3_3_tabla_educacion_rut.csv"),
+  row.names = FALSE
+)
 
 ### 3.3.4) Construir y exportar el gráfico de relación ----
 

@@ -92,7 +92,7 @@ figura_recortada <- function(nombre) {
 {\Large\bfseries\color{ink}Taller 2: mercado laboral y micronegocios en Colombia}\\[4pt]
 {\normalsize Informe explicativo del script del Grupo 10}\\[3pt]
 {\small Taller de programación en R · Universidad de los Andes · 2026-02}\\[5pt]
-\fbox{\parbox{0.88\textwidth}{\centering\small Borrador para revisión del grupo. Los resultados del numeral 2.3 y el punto 4 requieren trabajo adicional antes de la entrega.}}
+\fbox{\parbox{0.88\textwidth}{\centering\small Borrador para revisión del grupo. La clasificación del numeral 2.3 fue contrastada con el DANE; el punto 4 aún requiere trabajo antes de la entrega.}}
 \end{center}
 
 # 1. Conformación y unión de las bases
@@ -101,7 +101,7 @@ figura_recortada <- function(nombre) {
 
 La Gran Encuesta Integrada de Hogares (GEIH) permite estudiar la población y el mercado laboral. El script recorre los doce meses de 2023 y 2024 mediante dos ciclos anidados. En cada mes lee los módulos de características generales, fuerza de trabajo, ocupados y no ocupados; conserva las variables requeridas; une los módulos por `DIRECTORIO`, `SECUENCIA_P` y `ORDEN`; y apila las bases mensuales para formar cada año. `DIRECTORIO` identifica la unidad entrevistada, `SECUENCIA_P` el hogar dentro de ella y `ORDEN` a la persona. El módulo general es la base del `left_join` porque contiene el universo más amplio de personas encuestadas [1].
 
-El procedimiento comprueba que la llave de persona no esté duplicada en ningún módulo y que cada unión conserve las filas de características generales. Los archivos de control registran cero duplicados y ningún aumento de filas en los 24 meses. Para limitar memoria, el script selecciona columnas antes de unir, almacena cada mes en una lista y retira objetos intermedios; el archivo de eficiencia documenta la reducción de variables.
+El procedimiento comprueba que la llave de persona no esté duplicada en ningún módulo y que cada unión conserve las filas de características generales. Los archivos de control registran cero duplicados y ningún aumento de filas en los 24 meses. Para limitar memoria, el script selecciona columnas antes de unir, almacena cada mes en una lista y retira objetos intermedios; `1_1_eficiencia.csv` documenta la reducción de variables (script, §§ 1.1.3.4–1.1.3.9).
 
 ## 1.2. Tamaño y estructura de GEIH 2024
 
@@ -117,7 +117,7 @@ for (j in 2:5) x[[j]] <- fmt_entero(x[[j]])
 tabla_latex(x, 0.72)
 ```
 
-En 2024, características generales contiene 829.683 registros, frente a 657.803 de población en edad de trabajar (PET). Los módulos de ocupados (353.672) y no ocupados (304.131) particionan la PET: su suma es 657.803. El script comprueba además, mes a mes, las identidades PET = fuerza de trabajo + población fuera de la fuerza de trabajo y fuerza de trabajo = ocupados + desocupados [1].
+En 2024, características generales contiene 829.683 registros, frente a 657.803 de población en edad de trabajar (PET, personas de 15 años o más). Los módulos de ocupados (353.672) y no ocupados (304.131) particionan la PET: no ocupados comprende desocupados y personas fuera de la fuerza de trabajo. El script comprueba mes a mes las identidades PET = fuerza de trabajo + población fuera de la fuerza de trabajo y fuerza de trabajo = ocupados + desocupados (§§ 1.2.2–1.2.3) [1].
 
 ## 1.3. Base analítica y diccionario
 
@@ -136,9 +136,11 @@ tabla_latex(d, 0.86)
 
 ## 1.4. Integración GEIH–EMICRON
 
-La Encuesta de Micronegocios (EMICRON) parte de una submuestra de ocupados elegibles de la GEIH, pero es una operación independiente. Sus cuatro módulos se unen internamente por `DIRECTORIO`, `SECUENCIA_P` y `SECUENCIA_ENCUESTA`. El script verifica que los cuatro carezcan de llaves duplicadas y que la unión preserve los 78.501 registros de identificación. `F_EXP` expande micronegocios; `FEX_C18` expande personas de la GEIH. Sus universos y diseños no permiten sustituirlos entre sí [1, 2].
+La Encuesta de Micronegocios (EMICRON) selecciona desde la GEIH a trabajadores por cuenta propia y patrones o empleadores de unidades con hasta nueve ocupados. Su cobertura abarca cabecera, resto y 24 ciudades principales, pero excluye ocho departamentos de Amazonía y Orinoquía del dominio nacional; GEIH tiene cobertura nacional más amplia [1, 2]. Los cuatro módulos EMICRON se unen por `DIRECTORIO`, `SECUENCIA_P` y `SECUENCIA_ENCUESTA`. El script verifica llaves únicas y preserva los 78.501 registros de identificación (§ 1.4.a). `F_EXP` expande micronegocios; `FEX_C18` expande personas GEIH. Sus universos y diseños no permiten sustituirlos entre sí.
 
-La comparación empírica muestra una coincidencia única entre `SECUENCIA_ENCUESTA` y `ORDEN` para los 78.501 registros de EMICRON. Por eso el script construye `ORDEN` a partir de la primera y enlaza personas con las tres variables de identificación, sin añadir el mes a la llave. En los registros comparables, `MES_REF` de EMICRON aparece un mes después de `MES` de GEIH en el 100 % de los casos; no se observan coincidencias en el mismo mes ni un mes atrás. Esto es coherente con que las preguntas sobre actividad e ingresos se refieran al período anterior [2].
+La comparación empírica muestra una coincidencia única entre `SECUENCIA_ENCUESTA` y `ORDEN` para los 78.501 registros de EMICRON. El cruce exploratorio por hogar es muchos a muchos; el script exige luego exactamente una coincidencia por persona. Construye `ORDEN` a partir de `SECUENCIA_ENCUESTA` y enlaza con las tres variables de identificación, sin añadir el mes a la llave (§§ 1.4.c.3–1.4.d). En los registros comparables, `MES_REF` de EMICRON aparece un mes después de `MES` de GEIH en el 100 % de los casos; no se observan coincidencias en el mismo mes ni un mes atrás. Las preguntas sobre ventas e ingresos se refieren al mes anterior a la entrevista EMICRON [2].
+
+\newpage
 
 **Tabla 3.** Auditoría mensual del enlace con GEIH 2024.
 
@@ -150,7 +152,7 @@ a <- a[, c("MES_REF", "REGISTROS_EMICRON", "EMPAREJADOS",
 names(a) <- c("Mes ref.", "EMICRON", "Enlazados", "Sin enlace", "Enlace (%)")
 for (j in 2:4) a[[j]] <- fmt_entero(a[[j]])
 a[[5]] <- fmt_pct(a[[5]], 0)
-tabla_latex(a, 0.74)
+tabla_latex(a, 0.72)
 ```
 
 La base `base_micro` conserva los 78.501 registros de EMICRON; 71.754 (91,41 %) encuentran contraparte en GEIH 2024. Sexo, edad y clase geográfica coinciden en el 100 % de los enlazados. Los 6.747 no enlazados son exactamente los registros de referencia enero: todos aparecen en GEIH diciembre de 2023, fuera de la ventana GEIH 2024 usada en el pegue. Esta concentración temporal explica la falta de enlace sin alterar ni descartar observaciones.
@@ -175,7 +177,7 @@ tabla_tasas <- function(archivo) {
   for (j in 2:9) {
     t[[j]] <- c(fmt_pct(t[1:3, j], 2), fmt_entero(t[4:8, j]))
   }
-  tabla_latex(t, 0.92)
+  tabla_latex(t, 0.88)
 }
 ```
 
@@ -209,15 +211,15 @@ La participación y la ocupación masculinas superan a las femeninas en todos lo
 
 \newpage
 
-## 2.3. Formalidad en las 13 ciudades: resultado por revisar
+## 2.3. Formalidad en las 13 ciudades
 
 ```{r}
-#| fig-cap: "Clasificación de formalidad calculada por el script para diciembre de 2024. Resultado preliminar: requiere corregir o validar EI."
+#| fig-cap: "Formalidad de ocupados por sexo en las 13 ciudades, diciembre de 2024. Fuente: GEIH; clasificación EI adaptada del anexo DANE."
 #| out-width: "88%"
 figura_recortada("2_3_formalidad_13ciudades.png")
 ```
 
-El script filtra ocupados de diciembre de 2024 en las 13 ciudades y aplica una regla sobre tamaño de empresa, posición ocupacional, oficio y cotización a pensión. Su salida clasifica como informales al 92,3 % de los hombres y al 91,8 % de las mujeres. Como contraste, el DANE reporta **42,5 %** de informalidad para las 13 ciudades en octubre–diciembre de 2024 (42,5 % hombres; 42,4 % mujeres) [3]. El período oficial es trimestral y el gráfico del script es mensual, de modo que no son cifras idénticamente comparables; aun así, una brecha cercana a 50 puntos porcentuales exige revisar el filtro geográfico, la codificación y la adaptación de `EI` antes de usar la figura como conclusión sustantiva.
+El script filtra las 13 ciudades y adapta a R la secuencia de `EI` publicada en la pestaña `Código_SAS` del anexo DANE [3]. `P3045S1` mide registro mercantil, `P3046` contabilidad y `P3069` tamaño por categorías; la clasificación combina posición ocupacional, características de la unidad y cotizaciones de salud y pensión (§ 2.3.1). Con `FEX_C18`, en diciembre estima informalidad de **42,2 %** en hombres y **42,3 %** en mujeres. El control de octubre–diciembre, con `FEX_C18/3`, arroja **42,5 %**, igual al boletín DANE para las 13 ciudades; no quedan ocupados sin clasificar. El gráfico mensual y el contraste trimestral tienen períodos distintos y describen proporciones, no causas.
 
 \newpage
 
@@ -258,7 +260,7 @@ tabla_latex(i, 0.74)
 figura_recortada("3_2_formas_pago.png")
 ```
 
-El ciclo `for` recorre `P1764_1` a `P1764_7` y calcula con `F_EXP` la aceptación de cada forma de pago por rama. Predominan los medios que no requieren terminal especializado. El script calcula también solicitud de crédito y ahorro, pero no exporta esos porcentajes; falta verificarlos e incorporarlos. El gráfico describe asociaciones, no efectos causales del crédito sobre los medios de pago.
+El ciclo `for` recorre `P1764_1` a `P1764_7` y calcula con `F_EXP` la aceptación de cada forma de pago por rama (§ 3.2.2). Predomina el efectivo en todas las ramas; la transferencia bancaria o por internet alcanza 51,9 % en servicios y 6,7 % en actividades agropecuarias. A escala nacional, **14,2 %** solicitó crédito y **18,1 %** reportó ahorro; `3_2_credito_ahorro.csv` conserva estas estimaciones (§ 3.2.3). El gráfico describe distribuciones y no permite atribuir a los medios de pago un efecto sobre el crédito.
 
 \newpage
 
@@ -272,7 +274,7 @@ figura_recortada("3_3_cruce.png")
 
 La pregunta es si la educación en GEIH (`P3042`) se asocia con la tenencia de RUT en EMICRON (`P1633`). El script calcula una tabla de contingencia con **`F_EXP` solamente** y porcentajes dentro de cada nivel educativo. El universo abarca propietarios enlazados con GEIH 2024 y datos válidos; la ventana efectiva es febrero–diciembre de 2024. El gráfico muestra una asociación descriptiva. Sector, ubicación, ingreso y tamaño del negocio pueden contribuir a ella sin que la educación cause directamente el registro.
 
-La tabla de contingencia está calculada como `tabla_contingencia_cruce` en memoria, pero el script aún no la exporta. Para la versión de entrega debe guardarse desde R en `outputs` e incorporarse aquí junto al gráfico.
+La proporción con RUT aumenta de **2,8 %** en ninguno/preescolar a **12,6 %** en primaria, **30,4 %** en secundaria/media y **75,0 %** en superior/posgrado. El script exporta los totales expandidos y los porcentajes por nivel a `3_3_tabla_educacion_rut.csv` (§ 3.3.3), para verificar el gráfico.
 
 # 4. Análisis socioeconómico: pendiente
 
@@ -282,9 +284,9 @@ El script revisado termina en el numeral 3.3. Aún faltan los tres gráficos dis
 
 1. DANE. *Gran Encuesta Integrada de Hogares, GEIH 2023 y 2024*. Microdatos, formulario y diccionarios en [ANDA 2023](https://microdatos.dane.gov.co/index.php/catalog/782) y [ANDA 2024](https://microdatos.dane.gov.co/index.php/catalog/819).
 2. DANE. [*Boletín técnico: Encuesta de Micronegocios, EMICRON 2024*](https://www.dane.gov.co/files/operaciones/EMICRON/bol-EMICRON-2024.pdf). Total, sectores, sexo y registros de formalidad empresarial.
-3. DANE. [*Boletín técnico: Empleo informal y seguridad social, octubre–diciembre de 2024*](https://www.dane.gov.co/files/operaciones/GEIH/bol-GEIHEISS-oct-dic2024.pdf). Indicadores de las 13 ciudades y áreas metropolitanas.
+3. DANE. [*Boletín técnico: Empleo informal y seguridad social, octubre–diciembre de 2024*](https://www.dane.gov.co/files/operaciones/GEIH/bol-GEIHEISS-oct-dic2024.pdf) y [anexo estadístico con `Código_SAS`](https://www.dane.gov.co/files/operaciones/GEIH/anex-GEIHEISS-oct-dic2024.xlsx). Metodología de `EI` e indicadores de las 13 ciudades.
 
-**Controles previos a la entrega.** Resolver la discrepancia de 2.3; exportar la tabla de 3.3 y los porcentajes de crédito y ahorro; completar la cifra exacta de 2.4 y el punto 4; y revisar que cada integrante pueda justificar código, resultados y decisiones metodológicas. Las tablas y gráficos anteriores proceden de los archivos que genera `Taller2_Grupo_10.R`; el PDF no reejecuta los microdatos.
+**Controles previos a la entrega.** Completar el punto 4 y comprobar que cada integrante pueda justificar código, resultados y decisiones metodológicas. La clasificación `EI` se verificó contra el trimestre oficial; los demás cuadros y gráficos proceden de las salidas de `Taller2_Grupo_10.R`. El PDF no reprocesa los microdatos.
 
 \clearpage
 \setcounter{page}{1}
@@ -300,6 +302,6 @@ El script revisado termina en el numeral 3.3. Aún faltan los tres gráficos dis
 | Propósito | Revisión, organización y refinamiento de un borrador explicativo basado en el script y las salidas preexistentes del grupo. |
 | Contenido tratado | Identificar los numerales, párrafos, tablas, figuras y verificaciones concretas en las que se utilizó la herramienta. |
 | Revisión humana | Describir quién contrastó el texto con el código, los archivos exportados, el enunciado y las publicaciones del DANE; indicar las correcciones realizadas. |
-| Decisiones pendientes | Documentar la corrección de formalidad, el punto 4 y cualquier modificación posterior del informe. |
+| Decisiones pendientes | Documentar la adaptación y validación de `EI`, el punto 4 y cualquier modificación posterior del informe. |
 
 Esta plantilla no sustituye la declaración factual del grupo. El enunciado exige declarar todo uso efectivo de IA y limita su papel a editar, revisar o refinar trabajo elaborado por los estudiantes.
