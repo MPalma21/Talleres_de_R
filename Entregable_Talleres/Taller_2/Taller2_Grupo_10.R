@@ -3699,3 +3699,503 @@ ggsave(
   height = 6,
   dpi = 300
 )
+
+
+# Punto 4 ----
+# Análisis socioeconómico de la población colombiana
+
+# En este punto se abordan tres dimensiones estructurales de la
+# economía colombiana durante 2024:
+# 4.1) Divergencia espacial y dualismo laboral departamental (Scatter + LOESS).
+# 4.2) Inclusión financiera digital y escala productiva de micronegocios (Violín + Boxplot).
+# 4.3) Desigualdad y concentración salarial urbana vs. rural (Curva de Lorenz en área).
+
+## 4.1) Informalidad laboral y divergencia salarial territorial ----
+
+### 4.1.1) Agregación departamental de informalidad e ingreso mediano ----
+
+# Función auxiliar de R base para estimar la mediana ponderada muestral.
+# Permite estimar estadísticos de tendencia central robustos con FEX_C18.
+mediana_ponderada <- function(x, w) {
+  val <- !is.na(x) & !is.na(w) & w > 0
+  x <- x[val]
+  w <- w[val]
+  if (length(x) == 0) return(NA_real_)
+  ord <- order(x)
+  x <- x[ord]
+  w <- w[ord]
+  cum_w <- cumsum(w) / sum(w)
+  x[which(cum_w >= 0.5)[1]]
+}
+
+# Evalúa la condición de formalidad laboral (EI) para todos los ocupados
+# de la GEIH 2024 adaptando la metodología oficial de 13 ciudades a escala
+# nacional departamental.
+ocupados_2024_analisis <- GEIH_2024 %>%
+  filter(OCI == 1) %>%
+  mutate(
+    OFICIO_C8_2D = if_else(
+      !is.na(OFICIO_C8),
+      substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2),
+      NA_character_
+    ),
+    ANIOS = ANIO - 1,
+    FORMAL = case_when(
+      P6430 == 3 ~ NA_real_,
+      P6430 == 6 ~ 0,
+      RAMA2D_R4 %in% c(84, 99) ~ 1,
+      P6430 == 8 ~ 0,
+      P6430 == 2 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 2 ~ 0,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 >= 4 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 <= 3 ~ 0,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
+      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
+      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
+      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
+      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
+      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
+      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
+      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
+      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      TRUE ~ NA_real_
+    ),
+    SALUD = case_when(
+      P6430 %in% c(1, 3, 7) & P6100 %in% c(1, 2) & P6110 %in% c(1, 2, 4) ~ 1,
+      P6430 %in% c(1, 3, 7) & P6100 == 9 & P6450 == 2 ~ 1,
+      P6430 %in% c(1, 3, 7) & P6110 == 9 & P6450 == 2 ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
+    ),
+    PENSION = case_when(
+      P6430 %in% c(1, 3, 7) & P6920 == 3 ~ 1,
+      P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% c(1, 2, 3) & P6940 %in% c(1, 3) ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
+    ),
+    EI = case_when(
+      P6430 == 2 ~ 1,
+      P6430 %in% c(6, 8) ~ 0,
+      P6430 %in% c(4, 5) ~ FORMAL,
+      P6430 %in% c(1, 3, 7) & SALUD == 1 & PENSION == 1 ~ 1,
+      P6430 %in% c(1, 3, 7) ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+
+# Define el diccionario departamental y la regionalización estándar DANE.
+dicc_deptos <- data.frame(
+  DPTO_COD = c(5, 8, 11, 13, 15, 17, 18, 19, 20, 23, 25, 27, 41, 44, 47, 50, 52, 54, 63, 66, 68, 70, 73, 76),
+  NOMBRE_DPTO = c(
+    "Antioquia", "Atlántico", "Bogotá D.C.", "Bolívar", "Boyacá", "Caldas",
+    "Caquetá", "Cauca", "Cesar", "Córdoba", "Cundinamarca", "Chocó",
+    "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander",
+    "Quindío", "Risaralda", "Santander", "Sucre", "Tolima", "Valle del Cauca"
+  ),
+  REGION = c(
+    "Central", "Caribe", "Bogotá D.C.", "Caribe", "Oriental", "Central",
+    "Amazonía/Orinoquía", "Pacífica", "Caribe", "Caribe", "Oriental", "Pacífica",
+    "Central", "Caribe", "Caribe", "Amazonía/Orinoquía", "Pacífica", "Oriental",
+    "Central", "Central", "Oriental", "Caribe", "Central", "Pacífica"
+  )
+)
+
+# Calcula tasas de informalidad laboral y mediana de ingreso por departamento.
+datos_deptos <- ocupados_2024_analisis %>%
+  mutate(DPTO_NUM = as.numeric(DPTO)) %>%
+  filter(!is.na(EI), DPTO_NUM %in% dicc_deptos$DPTO_COD) %>%
+  group_by(DPTO_NUM) %>%
+  summarise(
+    OCUPADOS_EXP = sum(FEX_C18 / 12, na.rm = TRUE),
+    INFORMALES_EXP = sum((FEX_C18 / 12)[EI == 0], na.rm = TRUE),
+    TASA_INFORMALIDAD = round(INFORMALES_EXP / OCUPADOS_EXP * 100, 1),
+    INGRESO_MEDIANO = round(mediana_ponderada(INGLABO[INGLABO > 0], FEX_C18[INGLABO > 0]), 0),
+    .groups = "drop"
+  ) %>%
+  left_join(dicc_deptos, by = c("DPTO_NUM" = "DPTO_COD"))
+
+# Exporta la tabla de resultados departamentales solicitada.
+write.csv(
+  datos_deptos,
+  file.path(ruta_outputs, "4_1_tabla_departamental.csv"),
+  row.names = FALSE
+)
+
+### 4.1.2) Construcción y exportación del gráfico 4_1_geografia_informalidad.png ----
+
+deptos_etiqueta <- datos_deptos %>%
+  filter(
+    NOMBRE_DPTO %in% c(
+      "Bogotá D.C.", "Antioquia", "Valle del Cauca", "Atlántico",
+      "Chocó", "La Guajira", "Nariño", "Sucre", "Santander", "Cundinamarca"
+    )
+  )
+
+grafico_4_1 <- ggplot(
+  datos_deptos,
+  aes(
+    x = TASA_INFORMALIDAD,
+    y = INGRESO_MEDIANO / 1e6
+  )
+) +
+  geom_smooth(
+    method = "loess",
+    color = "#4A5568",
+    se = TRUE,
+    fill = "#CBD5E0",
+    alpha = 0.35,
+    linewidth = 0.9
+  ) +
+  geom_point(
+    aes(
+      size = OCUPADOS_EXP / 1e6,
+      color = REGION
+    ),
+    alpha = 0.85
+  ) +
+  geom_text(
+    data = deptos_etiqueta,
+    aes(label = NOMBRE_DPTO),
+    vjust = -0.9,
+    size = 3.2,
+    fontface = "bold",
+    color = "gray20",
+    check_overlap = TRUE
+  ) +
+  scale_size_continuous(
+    range = c(2.5, 9),
+    breaks = c(0.5, 1, 2, 4)
+  ) +
+  scale_color_manual(
+    values = c(
+      "Bogotá D.C." = "#E41A1C",
+      "Central" = "#377EB8",
+      "Caribe" = "#4DAF4A",
+      "Pacífica" = "#984EA3",
+      "Oriental" = "#FF7F00",
+      "Amazonía/Orinoquía" = "#A65628"
+    )
+  ) +
+  scale_x_continuous(
+    limits = c(30, 90),
+    breaks = seq(30, 90, 10),
+    labels = function(x) paste0(x, "%")
+  ) +
+  scale_y_continuous(
+    limits = c(0.4, 2.0),
+    breaks = seq(0.4, 2.0, 0.2),
+    labels = function(x) paste0("$", format(x, nsmall = 1, decimal.mark = ","), "M")
+  ) +
+  labs(
+    title = "Dualismo territorial: Tasa de informalidad laboral e ingreso mediano departamental",
+    subtitle = "Colombia, 2024. Muestra total nacional de la GEIH (ocupados con ingresos laborales monetarios)",
+    x = "Tasa de informalidad laboral departamental (%) [Definición oficial DANE]",
+    y = "Mediana del ingreso laboral mensual (Millones de COP)",
+    size = "Ocupados (Millones)",
+    color = "Región geográfica",
+    caption = "Fuente: GEIH 2024 (DANE). Cálculos Grupo 10. Ponderador: FEX_C18 / 12. Mediana calculada sobre ocupados con INGLABO > 0."
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10.5, color = "gray30"),
+    axis.text = element_text(size = 9.5),
+    axis.title = element_text(size = 11, face = "bold"),
+    legend.position = "right",
+    legend.title = element_text(size = 9.5, face = "bold"),
+    legend.text = element_text(size = 9)
+  )
+
+ggsave(
+  filename = file.path(ruta_outputs, "4_1_geografia_informalidad.png"),
+  plot = grafico_4_1,
+  width = 9.5,
+  height = 6,
+  dpi = 300
+)
+
+## 4.2) Inclusión financiera digital y escala de ventas en micronegocios ----
+
+### 4.2.1) Preparación de base_micro y clasificación de inclusión ----
+
+datos_micros <- base_micro %>%
+  filter(
+    !is.na(VENTAS_MES_ANTERIOR),
+    VENTAS_MES_ANTERIOR > 0,
+    !is.na(F_EXP),
+    F_EXP > 0
+  ) %>%
+  mutate(
+    ADOPCION_DIGITAL = case_when(
+      P1764_2 == 1 ~ "Transferencias y billeteras",
+      P1764_1 == 1 & (is.na(P1764_2) | P1764_2 != 1) ~ "Solo efectivo",
+      TRUE ~ "Otro canal"
+    ),
+    ACCESO_CREDITO = case_when(
+      P1765 == 1 ~ "Con crédito aprobado",
+      TRUE ~ "Sin crédito formal"
+    ),
+    VENTAS_MILLONES = VENTAS_MES_ANTERIOR / 1e6
+  ) %>%
+  filter(ADOPCION_DIGITAL %in% c("Solo efectivo", "Transferencias y billeteras"))
+
+resumen_micros <- datos_micros %>%
+  group_by(ADOPCION_DIGITAL, ACCESO_CREDITO) %>%
+  summarise(
+    N_MUESTRA = n(),
+    TOTAL_MICROS = round(sum(F_EXP), 0),
+    VENTAS_MEDIANA = round(mediana_ponderada(VENTAS_MES_ANTERIOR, F_EXP), 0),
+    .groups = "drop"
+  )
+
+write.csv(
+  resumen_micros,
+  file.path(ruta_outputs, "4_2_tabla_inclusion_ventas.csv"),
+  row.names = FALSE
+)
+
+### 4.2.2) Construcción y exportación del gráfico 4_2_inclusion_ventas_micro.png ----
+
+grafico_4_2 <- ggplot(
+  datos_micros,
+  aes(
+    x = ADOPCION_DIGITAL,
+    y = VENTAS_MILLONES,
+    fill = ACCESO_CREDITO
+  )
+) +
+  geom_violin(
+    aes(weight = F_EXP),
+    position = position_dodge(0.8),
+    trim = TRUE,
+    alpha = 0.45,
+    scale = "width",
+    color = "gray35"
+  ) +
+  geom_boxplot(
+    aes(weight = F_EXP),
+    position = position_dodge(0.8),
+    width = 0.22,
+    outlier.shape = NA,
+    alpha = 0.9,
+    color = "black"
+  ) +
+  scale_y_log10(
+    limits = c(0.1, 100),
+    breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0),
+    labels = function(x) paste0("$", format(x, nsmall = 1, decimal.mark = ","), "M")
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Con crédito aprobado" = "#1B9E77",
+      "Sin crédito formal" = "#D95F02"
+    )
+  ) +
+  labs(
+    title = "Inclusión financiera y escala productiva de los micronegocios en Colombia",
+    subtitle = "Distribución de ventas brutas mensuales según adopción de pagos electrónicos y acceso a crédito (EMICRON 2024)",
+    x = "Canal de pagos aceptado en la unidad productiva",
+    y = "Ventas brutas mensuales (Escala logarítmica en Millones de COP)",
+    fill = "Condición de crédito bancario:",
+    caption = "Fuente: EMICRON 2024 (DANE). Universo: Micronegocios con ventas positivas. Ponderador anual: F_EXP."
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10.5, color = "gray30"),
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 11, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 10, face = "bold"),
+    legend.text = element_text(size = 9.5)
+  )
+
+ggsave(
+  filename = file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"),
+  plot = grafico_4_2,
+  width = 9.5,
+  height = 6,
+  dpi = 300
+)
+
+## 4.3) Desigualdad salarial y concentración de la masa laboral ----
+
+### 4.3.1) Construcción de la curva de Lorenz y estimación del Coeficiente de Gini ----
+
+datos_lorenz <- ocupados_2024_analisis %>%
+  filter(!is.na(INGLABO), INGLABO > 0, !is.na(FEX_C18), FEX_C18 > 0) %>%
+  mutate(
+    DOMINIO = if_else(as.numeric(CLASE) == 1, "Cabecera urbana", "Centros poblados y rural")
+  )
+
+curva_lorenz_dominio <- function(df_sub, nombre_dominio) {
+  df_sub <- df_sub[order(df_sub$INGLABO), ]
+  w <- df_sub$FEX_C18
+  y <- df_sub$INGLABO
+  w_total <- sum(w)
+  y_total <- sum(w * y)
+  
+  p_acum <- c(0, cumsum(w) / w_total * 100)
+  l_acum <- c(0, cumsum(w * y) / y_total * 100)
+  
+  dp <- diff(p_acum / 100)
+  sl <- (l_acum[-1] + l_acum[-length(l_acum)]) / 200
+  gini <- 1 - 2 * sum(dp * sl)
+  
+  idx <- unique(round(seq(1, length(p_acum), length.out = min(600, length(p_acum)))))
+  
+  data.frame(
+    DOMINIO = nombre_dominio,
+    P_POBLACION = p_acum[idx],
+    L_INGRESO = l_acum[idx],
+    GINI = round(gini, 3)
+  )
+}
+
+lorenz_urbano <- curva_lorenz_dominio(
+  datos_lorenz %>% filter(DOMINIO == "Cabecera urbana"),
+  "Cabecera urbana"
+)
+lorenz_rural <- curva_lorenz_dominio(
+  datos_lorenz %>% filter(DOMINIO == "Centros poblados y rural"),
+  "Centros poblados y rural"
+)
+lorenz_total <- bind_rows(lorenz_urbano, lorenz_rural)
+
+write.csv(
+  data.frame(
+    DOMINIO = c("Cabecera urbana", "Centros poblados y rural"),
+    GINI_SALARIAL = c(unique(lorenz_urbano$GINI), unique(lorenz_rural$GINI))
+  ),
+  file.path(ruta_outputs, "4_3_tabla_lorenz_gini.csv"),
+  row.names = FALSE
+)
+
+### 4.3.2) Construcción y exportación del gráfico 4_3_desigualdad_lorenz.png ----
+
+grafico_4_3 <- ggplot(
+  lorenz_total,
+  aes(
+    x = P_POBLACION,
+    y = L_INGRESO,
+    group = DOMINIO
+  )
+) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = "gray40",
+    linewidth = 0.8
+  ) +
+  geom_area(
+    aes(fill = DOMINIO),
+    alpha = 0.25,
+    position = "identity"
+  ) +
+  geom_line(
+    aes(color = DOMINIO),
+    linewidth = 1.15
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Cabecera urbana" = "#1F78B4",
+      "Centros poblados y rural" = "#E31A1C"
+    )
+  ) +
+  scale_color_manual(
+    values = c(
+      "Cabecera urbana" = "#1F78B4",
+      "Centros poblados y rural" = "#E31A1C"
+    )
+  ) +
+  scale_x_continuous(
+    limits = c(0, 100),
+    breaks = seq(0, 100, 20),
+    labels = function(x) paste0(x, "%"),
+    expand = c(0, 0)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 100),
+    breaks = seq(0, 100, 20),
+    labels = function(x) paste0(x, "%"),
+    expand = c(0, 0)
+  ) +
+  annotate(
+    "text",
+    x = 28,
+    y = 35,
+    label = "Línea de perfecta igualdad (45°)",
+    color = "gray25",
+    fontface = "italic",
+    size = 3.8,
+    angle = 45
+  ) +
+  annotate(
+    "label",
+    x = 62,
+    y = 22,
+    label = "Cabecera urbana\nGini salarial = 0,475",
+    fill = "white",
+    color = "#1F78B4",
+    fontface = "bold",
+    size = 3.8
+  ) +
+  annotate(
+    "label",
+    x = 74,
+    y = 38,
+    label = "Centros poblados y rural\nGini salarial = 0,433",
+    fill = "white",
+    color = "#E31A1C",
+    fontface = "bold",
+    size = 3.8
+  ) +
+  labs(
+    title = "Desigualdad salarial y concentración de la masa laboral: Curvas de Lorenz por dominio",
+    subtitle = "Participación acumulada de ocupados vs masa salarial total (Colombia, GEIH 2024)",
+    x = "Porcentaje acumulado de la población ocupada (%)",
+    y = "Porcentaje acumulado de la masa salarial mensual (%)",
+    color = "Dominio geográfico:",
+    fill = "Dominio geográfico:",
+    caption = "Fuente: GEIH 2024 (DANE). Ocupados con ingreso laboral positivo (INGLABO > 0). Factor de expansión: FEX_C18."
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 10.5, color = "gray30"),
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 11, face = "bold"),
+    legend.position = "bottom",
+    legend.title = element_text(size = 10, face = "bold"),
+    legend.text = element_text(size = 9.5)
+  )
+
+ggsave(
+  filename = file.path(ruta_outputs, "4_3_desigualdad_lorenz.png"),
+  plot = grafico_4_3,
+  width = 9.5,
+  height = 6,
+  dpi = 300
+)
+

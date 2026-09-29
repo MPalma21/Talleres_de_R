@@ -11,3 +11,6 @@ Thumbs.db
 *~
 *.swp
 
+# Archivos de trabajo temporal y auxiliares
+scratch/
+Entregable_Talleres/Taller_2/Informe_Taller_2_Grupo_10_figuras/
