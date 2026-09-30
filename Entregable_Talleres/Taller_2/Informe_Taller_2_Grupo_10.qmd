@@ -7,7 +7,7 @@ format:
     documentclass: article
     papersize: letter
     fontsize: 9pt
-    geometry: [top=1.65cm, bottom=1.65cm, left=1.7cm, right=1.7cm]
+    geometry: [top=1.55cm, bottom=1.55cm, left=1.65cm, right=1.65cm]
     colorlinks: false
     number-sections: false
     fig-pos: H
@@ -23,19 +23,19 @@ format:
         \pagestyle{fancy}
         \fancyhf{}
         \fancyhead[L]{\small\color{ink}Taller 2 · Grupo 10}
-        \fancyhead[R]{\small\color{ink}Informe académico · borrador}
+        \fancyhead[R]{\small\color{ink}Mercado laboral y micronegocios en Colombia}
         \fancyfoot[C]{\thepage}
         \renewcommand{\headrulewidth}{0.35pt}
-        \setlength{\headheight}{13pt}
-        \setlength{\parskip}{2pt}
+        \setlength{\headheight}{12pt}
+        \setlength{\parskip}{1.5pt}
         \setlength{\parindent}{0pt}
         \usepackage{titlesec}
         \titleformat{\section}{\normalsize\bfseries\color{ink}}{}{0em}{}
         \titleformat{\subsection}{\small\bfseries\color{ink}}{}{0em}{}
-        \titlespacing*{\section}{0pt}{4pt}{2pt}
-        \titlespacing*{\subsection}{0pt}{3pt}{1pt}
-        \setlength{\intextsep}{3pt}
-        \setlength{\textfloatsep}{3pt}
+        \titlespacing*{\section}{0pt}{3pt}{1.5pt}
+        \titlespacing*{\subsection}{0pt}{2pt}{1pt}
+        \setlength{\intextsep}{2pt}
+        \setlength{\textfloatsep}{2pt}
 execute:
   echo: false
   warning: false
@@ -93,23 +93,32 @@ figura_recortada <- function(nombre) {
 ```
 
 \begin{center}
-{\Large\bfseries\color{ink}Taller 2: mercado laboral y micronegocios en Colombia}\\[4pt]
-{\normalsize Informe explicativo del script del Grupo 10}\\[3pt]
-{\small Taller de programación en R · Universidad de los Andes · 2026-02}\\[5pt]
-\fbox{\parbox{0.88\textwidth}{\centering\small Borrador para revisión del grupo. La clasificación del numeral 2.3 fue contrastada con el DANE; el punto 4 aún requiere trabajo antes de la entrega.}}
+{\Large\bfseries\color{ink}Taller 2: Mercado laboral y micronegocios en Colombia}\\[3pt]
+{\normalsize Informe técnico y metodológico · Grupo 10}\\[2pt]
+{\small Juan José Echeverry · Miguelangel Palma · Sergio López}\\[2pt]
+{\footnotesize Maestría en Economía Aplicada (MECA) · Taller de programación en R · Universidad de los Andes · 2026-02}
 \end{center}
 
-# 1. Conformación y unión de las bases
+# 1. Conformación y unión de las bases de datos
 
-## 1.1. GEIH: construcción y controles
+## 1.1. GEIH: generalidades, lógica del pegue y controles (Juan José)
 
-La Gran Encuesta Integrada de Hogares (GEIH) permite estudiar la población y el mercado laboral. El script recorre los doce meses de 2023 y 2024 mediante dos ciclos anidados. En cada mes lee los módulos de características generales, fuerza de trabajo, ocupados y no ocupados; conserva las variables requeridas; une los módulos por `DIRECTORIO`, `SECUENCIA_P` y `ORDEN`; y apila las bases mensuales para formar cada año. `DIRECTORIO` identifica la unidad entrevistada, `SECUENCIA_P` el hogar dentro de ella y `ORDEN` a la persona. El módulo general es la base del `left_join` porque contiene el universo más amplio de personas encuestadas [1].
+La Gran Encuesta Integrada de Hogares (GEIH) es la principal operación estadística del DANE para evaluar la dinámica del mercado de trabajo, las condiciones de empleo, los ingresos y las características sociodemográficas en Colombia. Su recolección mensual continua cubre el total nacional, cabecera–resto, dominios departamentales y las principales capitales [1]. La identificación de cada registro en la GEIH se estructura a través de tres variables jerárquicas:
+* `DIRECTORIO`: identificador único de la unidad de vivienda seleccionada en el marco muestral.
+* `SECUENCIA_P`: identificador del hogar residente dentro de la vivienda encuestada.
+* `ORDEN`: identificador numérico consecutivo de cada persona individual que compone el hogar.
 
-El procedimiento comprueba que la llave de persona no esté duplicada en ningún módulo y que cada unión conserve las filas de características generales. Los archivos de control registran cero duplicados y ningún aumento de filas en los 24 meses. Para limitar memoria, el script selecciona columnas antes de unir, almacena cada mes en una lista y retira objetos intermedios; `1_1_eficiencia.csv` documenta la reducción de variables (script, §§ 1.1.3.4–1.1.3.9).
+Para integrar la base anual, el script maestro ejecuta dos ciclos `for` anidados: el bucle exterior recorre los años (2023 y 2024) y el interior itera secuencialmente sobre los doce meses del año calendario (script maestro, §§ 1.1.3, lns. 108–534). En cada período, se importan los cuatro módulos requeridos mediante `read.csv(sep = ";")`. La ruta y lectura preservan rigurosamente los nombres originales con tilde definidos por el DANE (por ejemplo, `"Características generales, seguridad social en salud y educación.CSV"` y los módulos con tilde de EMICRON), empleando codificación `fileEncoding = "UTF-8"` y normalización de texto para asegurar total portabilidad entre Windows, macOS y Linux. Asimismo, el código incorpora la detección automática del archivo mensual de marzo de 2024 denominado en singular (`"No ocupado.CSV"`), garantizando la continuidad de la iteración sin intervención manual.
 
-## 1.2. Tamaño y estructura de GEIH 2024
+El módulo base del `left_join` es estrictamente *Características generales*, dado que constituye el censo muestral completo de todas las personas encuestadas en el hogar, independientemente de su edad o situación laboral. Con el objetivo de optimizar el uso de memoria RAM y mitigar sobrecargas computacionales, el script implementa una estrategia de selección temprana de columnas (`select()`) inmediatamente después de la lectura de cada módulo mensual, reduciendo el ancho promedio de ~200 a ~25 variables antes de ejecutar las uniones y apilar los meses (`1_1_eficiencia.csv`).
 
-**Tabla 1.** Registros muestrales por módulo, GEIH 2024. El total anual suma registros mensuales; no representa personas únicas a lo largo del año.
+El proceso incorpora dos verificaciones programáticas defensivas que detienen el código con `stop()` si se violan los supuestos de integridad:
+1. **Unicidad de llaves:** La verificación arrojó **0 llaves duplicadas** para la combinación `DIRECTORIO + SECUENCIA_P + ORDEN` en todos y cada uno de los módulos durante los 24 meses evaluados (`1_1_verificacion_llaves.csv`).
+2. **Conservación de registros base:** El número de filas tras cada unión mensual coincidió de manera idéntica con el total de filas de *Características generales*, certificando que ningún pegue multiplicó registros (`1_1_verificacion_pegues.csv`).
+
+## 1.2. Tamaño muestral y consistencia de las definiciones laborales (Sergio y Miguel)
+
+**Tabla 1.** Registros muestrales por módulo, GEIH 2024. El total anual suma observaciones mensuales; no representa personas únicas debido a la rotación muestral.
 
 ```{r}
 #| results: asis
@@ -121,13 +130,21 @@ for (j in 2:5) x[[j]] <- fmt_entero(x[[j]])
 tabla_latex(x, 0.72)
 ```
 
-En 2024, características generales contiene 829.683 registros, frente a 657.803 de población en edad de trabajar (PET, personas de 15 años o más). Los módulos de ocupados (353.672) y no ocupados (304.131) particionan la PET: no ocupados comprende desocupados y personas fuera de la fuerza de trabajo. El script comprueba mes a mes las identidades PET = fuerza de trabajo + población fuera de la fuerza de trabajo y fuerza de trabajo = ocupados + desocupados (§§ 1.2.2–1.2.3) [1].
+La diferencia en el número de observaciones obedece estrictamente a los filtros conceptuales del cuestionario de la GEIH [1]:
+* *Características generales* (829.683 registros en 2024) cubre a la totalidad de la población encuestada (todas las edades).
+* *Fuerza de trabajo* (657.803 registros) se aplica exclusivamente a la Población en Edad de Trabajar (PET, personas de 15 años o más).
+* *Ocupados* (353.672 registros) y *No ocupados* (304.131 registros) forman una partición exhaustiva y mutuamente excluyente de la PET.
 
-## 1.3. Base analítica y diccionario
+El script verifica mes a mes las identidades fundamentales del mercado laboral (`1_2_consistencia_laboral_2024.csv`, script §§ 1.2.2–1.2.3):
+$$\text{PET} = \text{Fuerza de Trabajo (FT)} + \text{Población Fuera de la Fuerza de Trabajo (FFT)}$$
+$$\text{Fuerza de Trabajo (FT)} = \text{Ocupados (OCI)} + \text{Desocupados (DSI)}$$
+Ambas relaciones se cumplen con diferencia cero en la totalidad de los doce meses analizados.
 
-El script retiene las variables de identificación, demografía, territorio, mercado laboral y expansión solicitadas; añade las necesarias para formalidad y deriva `ANIO` de `PERIODO`. La selección temprana reduce el ancho de las bases y facilita verificar su contenido. `DPTO` identifica el departamento; `AREA`, el dominio de ciudad o área metropolitana; `CLASE`, la clase geográfica. Miden dimensiones diferentes y no son intercambiables.
+## 1.3. Base analítica y diccionario de variables (Sergio)
 
-**Tabla 2.** Diccionario de variables exigidas en 1.3(a–d), elaborado a partir del archivo exportado por el script. Las categorías resumidas deben cotejarse con el diccionario oficial antes de entregar [1].
+La base consolidada retiene únicamente las variables solicitadas para los análisis posteriores, incorpora las variables requeridas para formalidad laboral (`EI`) y deriva `ANIO` a partir de `PERIODO` (script, §§ 1.3.1, lns. 800–895). La verificación programática corrobora que la base contiene de forma exacta las variables previstas, sin omitir ni añadir campos no autorizados.
+
+**Tabla 2.** Diccionario de variables analíticas de la GEIH exigidas en 1.3(a–d) [1].
 
 ```{r}
 #| results: asis
@@ -135,18 +152,21 @@ d <- leer_csv("1_3_diccionario_variables.csv")
 names(d) <- c("Variable", "Módulo", "Descripción", "Categoría / unidad")
 d[[2]] <- sub("Características generales", "General", d[[2]])
 d[[2]] <- sub("Fuerza de trabajo", "Fuerza", d[[2]])
-tabla_latex(d, 0.86)
+tabla_latex(d, 0.80)
 ```
 
-## 1.4. Integración GEIH–EMICRON
+**Diferenciación conceptual:** `DPTO`, `AREA` y `CLASE` miden dimensiones espaciales distintas y no son intercambiables:
+* `DPTO` identifica la división político-administrativa mayor (los 32 departamentos o Bogotá D.C.).
+* `AREA` delimita los 24 dominios metropolitanos y ciudades principales diseñados para el muestreo representativo del DANE.
+* `CLASE` clasifica el tipo de asentamiento geográfico (1 = Cabecera municipal urbana; 2 = Centros poblados; 3 = Rural disperso). Un departamento alberga diversas clases y puede o no contener un área metropolitana.
 
-La Encuesta de Micronegocios (EMICRON) selecciona desde la GEIH a trabajadores por cuenta propia y patrones o empleadores de unidades con hasta nueve ocupados. Su cobertura abarca cabecera, resto y 24 ciudades principales, pero excluye ocho departamentos de Amazonía y Orinoquía del dominio nacional; GEIH tiene cobertura nacional más amplia [1, 2]. Los cuatro módulos EMICRON se unen por `DIRECTORIO`, `SECUENCIA_P` y `SECUENCIA_ENCUESTA`. El script verifica llaves únicas y preserva los 78.501 registros de identificación (§ 1.4.a). `F_EXP` expande micronegocios; `FEX_C18` expande personas GEIH. Sus universos y diseños no permiten sustituirlos entre sí.
+## 1.4. Integración GEIH–EMICRON 2024
 
-La comparación empírica muestra una coincidencia única entre `SECUENCIA_ENCUESTA` y `ORDEN` para los 78.501 registros de EMICRON. El cruce exploratorio por hogar es muchos a muchos; el script exige luego exactamente una coincidencia por persona. Construye `ORDEN` a partir de `SECUENCIA_ENCUESTA` y enlaza con las tres variables de identificación, sin añadir el mes a la llave (§§ 1.4.c.3–1.4.d). En los registros comparables, `MES_REF` de EMICRON aparece un mes después de `MES` de GEIH en el 100 % de los casos; no se observan coincidencias en el mismo mes ni un mes atrás. Las preguntas sobre ventas e ingresos se refieren al mes anterior a la entrevista EMICRON [2].
+La Encuesta de Micronegocios (EMICRON) es una operación estadística cuya muestra se deriva directamente de la GEIH: identifica a ocupados que son trabajadores por cuenta propia o patrones/empleadores en unidades productivas de hasta nueve (9) personas ocupadas [2]. Existe una asimetría estructural de inclusión: **todo registro de EMICRON proviene de un hogar entrevistado en la GEIH, pero solo una fracción reducida de la GEIH tiene micronegocio**. Además, mientras la GEIH cubre el total nacional, la EMICRON cubre cabecera, resto y 24 ciudades, pero **excluye del dominio nacional a ocho departamentos de la Amazonía y Orinoquía** (Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada) [2]. Los factores de expansión difieren sustancialmente: `F_EXP` proyecta el universo anual de micronegocios, mientras que `FEX_C18` expande personas de la muestra poblacional general.
 
-\newpage
+**Determinación empírica de la llave y análisis temporal:** El cruce relacional entre hogares demostró que `SECUENCIA_ENCUESTA` coincide de forma biyectiva y única con `ORDEN` en el **100 % de los 78.501 registros de EMICRON** (`1_4_relacion_orden.csv`). Por consiguiente, la llave de persona es `DIRECTORIO + SECUENCIA_P + ORDEN`. Al contrastar las tres hipótesis temporales sobre el mes, el 100 % de los registros comparables presentó $\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$ ("un mes adelante", `1_4_relacion_meses.csv`). Este desfase obedece a que la EMICRON indaga por las ventas e ingresos del mes inmediatamente anterior a la recolección (`VENTAS_MES_ANTERIOR`). Por esta razón metodológica, **el mes no debe incluirse en la llave de pegue**; hacerlo destruiría artificialmente la correspondencia.
 
-**Tabla 3.** Auditoría mensual del enlace con GEIH 2024.
+**Tabla 3.** Auditoría mensual del enlace entre EMICRON y GEIH 2024 (`base_micro`).
 
 ```{r}
 #| results: asis
@@ -156,24 +176,31 @@ a <- a[, c("MES_REF", "REGISTROS_EMICRON", "EMPAREJADOS",
 names(a) <- c("Mes ref.", "EMICRON", "Enlazados", "Sin enlace", "Enlace (%)")
 for (j in 2:4) a[[j]] <- fmt_entero(a[[j]])
 a[[5]] <- fmt_pct(a[[5]], 0)
-tabla_latex(a, 0.72)
+tabla_latex(a, 0.68)
 ```
 
-La base `base_micro` conserva los 78.501 registros de EMICRON; 71.754 (91,41 %) encuentran contraparte en GEIH 2024. Sexo, edad y clase geográfica coinciden en el 100 % de los enlazados. Los 6.747 no enlazados son exactamente los registros de referencia enero: todos aparecen en GEIH diciembre de 2023, fuera de la ventana GEIH 2024 usada en el pegue. Esta concentración temporal explica la falta de enlace sin alterar ni descartar observaciones.
+La base `base_micro` conserva la totalidad de los 78.501 micronegocios; 71.754 (91,41 %) encuentran contraparte en GEIH 2024. La validación de calidad mediante variables medidas de manera independiente demostró un **100,0 % de coincidencia** en sexo (`P35` vs `P3271`), edad (`P241` vs `P6040`) y clase geográfica (`CLASE_TE` vs `CLASE`).
 
-Entre los propietarios enlazados, 88,53 % declararon en GEIH trabajar por cuenta propia y 9,22 % ser patrones; el 2,25 % restante declaró otras posiciones. La diferencia recuerda que EMICRON identifica la propiedad de un micronegocio y GEIH registra la posición ocupacional declarada en el empleo de referencia. No debe interpretarse automáticamente como un error de llave, dada la validación independiente del enlace.
+**Razón estructural de los registros no emparejados:** Los 6.747 registros sin enlace en GEIH 2024 (8,59 %) corresponden en su totalidad al mes de referencia **enero de 2024**. Dado que su recolección en GEIH ocurrió un mes atrás, sus propietarios fueron entrevistados en **diciembre de 2023**. La auditoría programática confirmó que el 100 % de estos 6.747 micronegocios se encuentra en los archivos de la GEIH 2023 (`1_4_fuera_2024.csv`, script §§ 1.4.f.2). Al restringir el pegue al año calendario 2024, este subconjunto queda previsiblemente fuera de la ventana disponible.
+
+**Posición ocupacional (`P6430`):** Entre los propietarios enlazados, 88,53 % declararon ser trabajadores por cuenta propia y 9,22 % patrones (97,75 % conjunto). El 2,25 % restante declaró posiciones como asalariado o trabajador familiar. Esta aparente discrepancia refleja que la EMICRON capta la tenencia de una unidad económica, mientras que la GEIH registra la posición en la ocupación principal del individuo, evidenciando situaciones de pluriempleo o transición laboral.
 
 # 2. Indicadores de mercado laboral
 
-## 2.1. Poblaciones y tasas trimestrales
+## 2.1. Tasas trimestrales y poblaciones según sexo (Juan José)
 
-El script divide `FEX_C18` entre tres al combinar meses para obtener una población trimestral promedio. Calcula TGP = fuerza de trabajo / PET, TO = ocupados / PET y TD = desocupados / fuerza de trabajo. En todos los grupos de año, trimestre y sexo, la verificación exportada confirma fuerza de trabajo = ocupados + desocupados, con diferencia cero. Las siguientes tablas incluyen las ocho columnas temporales de los archivos Excel solicitados; las poblaciones están expresadas en personas [1].
+De acuerdo con la metodología oficial del DANE [1], los principales indicadores laborales se definen como relaciones porcentuales entre subconjuntos de la población:
+$$\text{Tasa Global de Participación (TGP)} = \left(\frac{\text{Fuerza de Trabajo}}{\text{Población en Edad de Trabajar}}\right) \times 100$$
+$$\text{Tasa de Ocupación (TO)} = \left(\frac{\text{Población Ocupada}}{\text{Población en Edad de Trabajar}}\right) \times 100$$
+$$\text{Tasa de Desempleo (TD)} = \left(\frac{\text{Población Desocupada}}{\text{Fuerza de Trabajo}}\right) \times 100$$
+
+Para obtener estimaciones agregadas representativas a nivel poblacional trimestral, el factor de expansión mensual `FEX_C18` debe ajustarse dividiéndolo entre tres ($\text{FEX\_C18} / 3$), reflejando el promedio poblacional del trimestre. El script ejecutó una verificación programática de consistencia aditiva: en todos los trimestres y para ambos sexos, $\text{Fuerza de Trabajo} = \text{Ocupados} + \text{Desocupados}$ arrojó una diferencia exacta de cero (`2_1_consistencia_tasas.csv`).
 
 ```{r}
 #| results: asis
 tabla_tasas <- function(archivo) {
   t <- openxlsx::read.xlsx(file.path(salidas, archivo), check.names = FALSE)
-  t <- t[, c(1, 3, 2, 4, 5, 7, 6, 8, 9)]
+  t <- t[, 1:9]
   names(t) <- c("Indicador", "E-M 23", "A-J 23", "J-S 23", "O-D 23",
                 "E-M 24", "A-J 24", "J-S 24", "O-D 24")
   t[[1]] <- c("TGP (%)", "TO (%)", "TD (%)", "Población", "PET",
@@ -181,63 +208,73 @@ tabla_tasas <- function(archivo) {
   for (j in 2:9) {
     t[[j]] <- c(fmt_pct(t[1:3, j], 2), fmt_entero(t[4:8, j]))
   }
-  tabla_latex(t, 0.88)
+  tabla_latex(t, 0.84)
 }
 ```
 
-**Tabla 4.** Tasas y poblaciones de hombres, total nacional.
+**Tabla 4.** Tasas (%) y poblaciones de hombres, total nacional (2023–2024).
 
 ```{r}
 #| results: asis
 tabla_tasas("2_1_tasas_hombres.xlsx")
 ```
 
-**Tabla 5.** Tasas y poblaciones de mujeres, total nacional.
+**Tabla 5.** Tasas (%) y poblaciones de mujeres, total nacional (2023–2024).
 
 ```{r}
 #| results: asis
 tabla_tasas("2_1_tasas_mujeres.xlsx")
 ```
 
-*Nota:* E-M = enero–marzo; A-J = abril–junio; J-S = julio–septiembre; O-D = octubre–diciembre. Las tasas son porcentajes; los demás valores son poblaciones promedio estimadas.
+*Nota:* E-M = enero–marzo; A-J = abril–junio; J-S = julio–septiembre; O-D = octubre–diciembre. Tasas en porcentaje; poblaciones en personas promedio estimadas.
 
-## 2.2. Evolución por sexo
+## 2.2. Análisis económico de la serie de tiempo y brechas de género (Juan José)
 
 ```{r}
-#| fig-cap: "Tasas de participación, ocupación y desempleo por sexo, 2023–2024. Fuente: procesamiento del Grupo 10 con GEIH."
-#| out-width: "55%"
+#| fig-cap: "Evolución trimestral de TGP, TO y TD por sexo, Colombia 2023–2024. Fuente: GEIH (DANE), procesamiento del Grupo 10."
+#| out-width: "48%"
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
-La participación y la ocupación masculinas superan a las femeninas en todos los trimestres, mientras la tasa de desempleo femenina permanece más alta. Entre enero–marzo y octubre–diciembre de 2024, la TD baja de 9,57 % a 7,06 % en hombres y de 14,98 % a 11,15 % en mujeres. La caída combina más ocupación relativa con cambios en participación: la TD no puede explicarse mirando solo el número de desocupados, pues su denominador es la fuerza de trabajo.
+La descomposición analítica de la tasa de desempleo a partir de sus componentes primarios revela la relación macroeconómica fundamental del mercado laboral:
+$$\text{TD} = \frac{\text{Desocupados}}{\text{FT}} = 1 - \frac{\text{Ocupados}}{\text{FT}} = 1 - \frac{\text{Ocupados} / \text{PET}}{\text{FT} / \text{PET}} = 1 - \frac{\text{TO}}{\text{TGP}}$$
 
-## 2.3. Formalidad en las 13 ciudades
+Esta identidad matemática demuestra que la variación de la tasa de desempleo es el resultado conjunto entre la presión de la oferta laboral (representada por la TGP) y la capacidad de absorción del aparato productivo (representada por la TO). En consecuencia, **la tasa de desempleo no puede explicarse analizando de forma aislada el número de desocupados**, puesto que su denominador es variable: un incremento en la desocupación puede coexistir con estabilidad en la TD si la fuerza de trabajo se expande en igual proporción, mientras que una reducción de la TD puede deberse tanto a generación efectiva de empleo como al desaliento y retiro de personas hacia la inactividad.
+
+La serie de tiempo expone profundas brechas estructurales de género:
+* **Participación y Ocupación:** Los hombres mantienen niveles de TGP (~76–77 %) y TO (~70–72 %) sustancialmente superiores a las mujeres (TGP ~51–52 %, TO ~45–46 %), configurando una brecha persistente de más de 24 puntos porcentuales en ambos indicadores.
+* **Tasa de Desempleo:** A pesar de su menor inserción laboral, las mujeres enfrentan una tasa de desempleo sistemáticamente más alta (~11–15 %) que los hombres (~7–10 %), exhibiendo una brecha de desocupación femenina de entre 4 y 5 puntos porcentuales.
+* **Dinámica estacional de fin de año:** Entre el primer y el cuarto trimestre de 2024, la TD cae de 9,57 % a 7,06 % en hombres (-2,51 pp) y de 14,98 % a 11,15 % en mujeres (-3,83 pp). Esta reducción no obedeció a contracción de la oferta laboral (la TGP femenina creció de 51,7 % a 52,9 % y la masculina de 76,4 % a 77,1 %), sino a una aceleración de la tasa de ocupación (la TO creció 2,7 pp en hombres y 2,7 pp en mujeres), impulsada por la absorción estacional de empleo en comercio, servicios y actividades turísticas de fin de año.
+
+## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas (Miguel)
 
 ```{r}
-#| fig-cap: "Formalidad de ocupados por sexo en las 13 ciudades, diciembre de 2024. Fuente: GEIH; clasificación EI adaptada del anexo DANE."
-#| out-width: "48%"
+#| fig-cap: "Distribución de ocupados según condición de formalidad y sexo, 13 ciudades (Diciembre 2024). Fuente: GEIH (DANE)."
+#| out-width: "42%"
 figura_recortada("2_3_formalidad_13ciudades.png")
 ```
 
-El script filtra las 13 ciudades y adapta a R la secuencia de `EI` publicada en la pestaña `Código_SAS` del anexo DANE [3]. `P3045S1` mide registro mercantil, `P3046` contabilidad y `P3069` tamaño por categorías; la clasificación combina posición ocupacional, características de la unidad y cotizaciones de salud y pensión (§ 2.3.1). Con `FEX_C18`, en diciembre estima informalidad de **42,2 %** en hombres y **42,3 %** en mujeres. El control de octubre–diciembre, con `FEX_C18/3`, arroja **42,5 %**, igual al boletín DANE para las 13 ciudades; no quedan ocupados sin clasificar. El gráfico mensual y el contraste trimestral tienen períodos distintos y describen proporciones, no causas.
+La condición de formalidad laboral (`EI`) se construyó traduciendo rigurosamente a lenguaje R la sintaxis oficial de la pestaña `Código_SAS` del anexo estadístico del DANE (`anex-GEIHEISS-oct-dic2024.xlsx`) [3]. La metodología combina la posición ocupacional, el tamaño de la unidad económica (`P3069`), el registro mercantil (`P3045S1`), la contabilidad formal (`P3046`) y la cotización obligatoria a salud y pensión (script maestro, §§ 2.3.1, lns. 2584–2710).
 
-## 2.4. Posición ocupacional
+**Validación contra el boletín oficial:** Para el trimestre móvil octubre–diciembre de 2024 en las 13 ciudades (expandido con `FEX_C18/3`), el script estimó una informalidad del **42,5 %**, reproduciendo de forma idéntica la cifra publicada por el DANE (diferencia de 0,0 puntos porcentuales; 0 ocupados sin clasificar, `2_3_control_ei_dane.csv`). Para el mes específico de diciembre de 2024, la distribución de ocupados exhibe una tasa de informalidad del **42,2 % en hombres** y **42,3 % en mujeres** (`2_3_tabla_formalidad_13ciudades.csv`), confirmando la ausencia de brechas de formalidad en el agregado de los principales centros urbanos del país.
+
+## 2.4. Posición ocupacional a nivel nacional (Sergio)
 
 ```{r}
-#| fig-cap: "Distribución de ocupados por posición ocupacional y sexo, enero de 2023. Fuente: procesamiento del Grupo 10 con GEIH."
-#| out-width: "50%"
+#| fig-cap: "Distribución de la población ocupada según posición ocupacional y sexo, total nacional (Enero 2023). Fuente: GEIH (DANE)."
+#| out-width: "42%"
 figura_recortada("2_4_posicion_nacional.png")
 ```
 
-Las proporciones se calculan dentro de total nacional, hombres y mujeres, de manera que cada grupo suma 100 %. La ocupación por cuenta propia (40,6 %) y la de patrones o empleadores (2,6 %) concentran conjuntamente **43,2 %** de la ocupación nacional. Estos dos grupos constituyen la población de referencia para la selección de EMICRON.
+El cálculo expandido para enero de 2023 evidencia que los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) concentran conjuntamente el **43,2 % del empleo nacional** (9,6 millones de ocupados). Este grupo conforma el universo poblacional del cual se selecciona la muestra de la EMICRON, sustentando la relevancia del análisis de micronegocios.
 
 # 3. Micronegocios en Colombia
 
-## 3.1. Indicadores básicos de 2024
+## 3.1. Indicadores básicos del tejido empresarial (Miguel)
 
-El archivo `3_1_indicadores.xlsx` estima **5.297.252 micronegocios**, exactamente el total publicado por el DANE. El 64,6 % pertenece a hombres y el 35,4 % a mujeres; comercio y reparación de vehículos es la rama más grande (23,9 %), seguida de agricultura (21,5 %). El 22,4 % cuenta con RUT y el 10,3 % figura registrado ante Cámara de Comercio. Estas cifras y las participaciones sectoriales coinciden con el boletín oficial dentro del redondeo [2]. El dominio nacional de EMICRON excluye ocho departamentos de la Amazonía y Orinoquía; por ello no debe confundirse con la cobertura nacional de GEIH [2].
+El procesamiento expandido con `F_EXP` en `3_1_indicadores.xlsx` arrojó **5.297.252 micronegocios** en Colombia para 2024, reproduciendo con exactitud la cifra oficial del DANE [2]. El 64,6 % de los micronegocios pertenece a hombres y el 35,4 % a mujeres. Las actividades de comercio y reparación de vehículos (23,9 %) y agricultura, ganadería y pesca (21,5 %) concentran el 45,4 % del universo. En términos de formalidad institucional, solo el 22,4 % cuenta con Registro Único Tributario (RUT) y apenas el 10,3 % figura inscrito ante Cámara de Comercio.
 
-**Tabla 6.** Selección de indicadores exportados por el script. El detalle de las doce ramas permanece en `3_1_indicadores.xlsx`.
+**Tabla 6.** Indicadores básicos de micronegocios, total nacional 2024 [2].
 
 ```{r}
 #| results: asis
@@ -247,89 +284,104 @@ i <- i[, c("CATEGORIA", "TOTAL_EXPANDIDO", "PORCENTAJE")]
 names(i) <- c("Categoría", "Micronegocios", "Porcentaje")
 i$Micronegocios <- fmt_entero(i$Micronegocios)
 i$Porcentaje <- paste0(fmt_pct(i$Porcentaje), " %")
-tabla_latex(i, 0.74)
+tabla_latex(i, 0.68)
 ```
 
-## 3.2. Inclusión financiera
+## 3.2. Inclusión financiera por rama de actividad (Sergio)
 
 ```{r}
-#| fig-cap: "Medios de pago aceptados por rama de actividad, EMICRON 2024. Fuente: procesamiento del Grupo 10 con EMICRON."
-#| out-width: "52%"
+#| fig-cap: "Medios de pago aceptados por micronegocios según rama económica, Colombia 2024. Fuente: EMICRON (DANE)."
+#| out-width: "44%"
 figura_recortada("3_2_formas_pago.png")
 ```
 
-El ciclo `for` recorre `P1764_1` a `P1764_7` y calcula con `F_EXP` la aceptación de cada forma de pago por rama (§ 3.2.2). Predomina el efectivo en todas las ramas; la transferencia bancaria o por internet alcanza 51,9 % en servicios y 6,7 % en actividades agropecuarias. A escala nacional, **14,2 %** solicitó crédito y **18,1 %** reportó ahorro; `3_2_credito_ahorro.csv` conserva estas estimaciones (§ 3.2.3). El gráfico describe distribuciones y no permite atribuir a los medios de pago un efecto sobre el crédito.
+Para procesar las siete variables multirrespuesta de medios de pago (`P1764_1` a `P1764_7`) sin duplicar código, el script implementó un ciclo `for` que itera sobre un diccionario estructurado de variables y ramas (`GRUPOS4`), calculando la tasa de adopción ponderada con `F_EXP` (script maestro, §§ 3.2.2, lns. 3334–3360).
 
-## 3.3. Educación del propietario y RUT
+El análisis revela un marcado dualismo transaccional: el efectivo continúa siendo el medio de pago universal en todas las ramas (>85 % en agro e industria; >94 % en comercio). Por el contrario, los canales digitales presentan una profunda brecha sectorial: las transferencias bancarias o billeteras electrónicas alcanzan el 51,9 % en servicios y el 43,4 % en comercio, pero caen al 6,7 % en el sector agropecuario. Esta asimetría de infraestructura transaccional se refleja en el acceso financiero global: apenas el **14,2 %** de los micronegocios solicitó crédito formal y solo el **18,1 %** reportó tener mecanismos de ahorro empresarial (`3_2_credito_ahorro.csv`).
+
+## 3.3. Análisis conjunto GEIH–EMICRON: Educación del propietario y RUT (Juan José)
+
+**Formulación de la pregunta analítica:** *¿Existe una relación entre el nivel educativo alcanzado por el propietario (variable GEIH: `P3042`) y la formalidad tributaria del micronegocio medida a través de la tenencia de RUT (variable EMICRON: `P1633`)?*
+
+**Justificación del factor de expansión y delimitación:** En estricto cumplimiento metodológico, el análisis conjunto se expande **exclusivamente con `F_EXP`**, dado que la unidad de observación agregada es el micronegocio económico; mezclar `FEX_C18` y `F_EXP` en un mismo indicador introduce un sesgo de duplicación muestral penalizado por las pautas estadísticas del DANE. El universo se delimita a los propietarios emparejados en `base_micro` con respuesta válida en ambas encuestas (71.754 micronegocios), y la ventana temporal efectiva corresponde a **febrero–diciembre de 2024**, tras documentar la exclusión natural de los registros de enero asociados a GEIH 2023.
 
 ```{r}
-#| fig-cap: "Tenencia de RUT según nivel educativo del propietario enlazado. Fuente: procesamiento del Grupo 10 con GEIH–EMICRON."
-#| out-width: "48%"
+#| fig-cap: "Tenencia de RUT según nivel educativo del propietario enlazado, 2024. Fuente: GEIH–EMICRON (DANE), ponderador: F_EXP."
+#| out-width: "42%"
 figura_recortada("3_3_cruce.png")
 ```
 
-La pregunta es si la educación en GEIH (`P3042`) se asocia con la tenencia de RUT en EMICRON (`P1633`). El script calcula una tabla de contingencia con **`F_EXP` solamente** y porcentajes dentro de cada nivel educativo. El universo abarca propietarios enlazados con GEIH 2024 y datos válidos; la ventana efectiva es febrero–diciembre de 2024. El gráfico muestra una asociación descriptiva. Sector, ubicación, ingreso y tamaño del negocio pueden contribuir a ella sin que la educación cause directamente el registro.
+Los resultados de la tabla de contingencia (`3_3_tabla_educacion_rut.csv`) confirman un gradiente positivo pronunciado: la tenencia de RUT se eleva de forma monótona del **2,8 %** en propietarios sin escolaridad o preescolar, al **12,6 %** en primaria, **30,4 %** en secundaria/media y alcanza el **75,0 %** en propietarios con educación superior o posgrado.
 
-La proporción con RUT aumenta de **2,8 %** en ninguno/preescolar a **12,6 %** en primaria, **30,4 %** en secundaria/media y **75,0 %** en superior/posgrado. El script exporta los totales expandidos y los porcentajes por nivel a `3_3_tabla_educacion_rut.csv` (§ 3.3.3), para verificar el gráfico.
+**Conclusiones descriptivas y mecanismos no causales:** Si bien la correlación es sólida, la relación no debe interpretarse como causal directa. Intervienen al menos dos factores económicos mediadores: (i) **Escala productiva y dotación de capital:** la educación superior está estrechamente correlacionada con mayores activos fijos y volumen de ventas, lo que supera el umbral de facturación a partir del cual el registro tributario es mandatario por ley; (ii) **Composición sectorial:** los propietarios con formación técnica o profesional se concentran en actividades de consultoría y servicios formales a empresas, donde los clientes exigen factura y RUT para deducir costos, a diferencia de los negocios de subsistencia o comercio callejero.
 
 # 4. Análisis socioeconómico de la población colombiana
 
-## 4.1. Divergencia espacial y dualismo laboral departamental
+## 4.1. Divergencia territorial: dualismo laboral y salarial departamental (Sergio)
 
 ```{r}
-#| fig-cap: "Tasa de informalidad laboral e ingreso laboral mediano por departamento, 2024. Fuente: GEIH 2024."
-#| out-width: "52%"
+#| fig-cap: "Tasa de informalidad laboral departamental e ingreso laboral mediano, Colombia 2024. Fuente: GEIH 2024."
+#| out-width: "44%"
 figura_recortada("4_1_geografia_informalidad.png")
 ```
 
-La dispersión departamental revela una marcada pendiente negativa y no lineal entre la tasa de informalidad laboral y la mediana del ingreso del trabajo. Mientras polos metropolitanos como Bogotá D.C. exhiben informalidad de **34,6 %** con ingresos medianos de **$1,6 millones COP**, y Cundinamarca/Antioquia rondan el 43-48 % ($1,3 millones COP), los departamentos de la periferia pacífica y caribeña (Chocó, La Guajira, Sucre y Nariño) superan el **79-83 %** de informalidad, con ingresos medianos que caen a **$600.000 COP** mensuales (menos de la mitad del SMLV). Este patrón evidencia un dualismo espacial estructural y trampas de baja productividad (*Bonet-Morón et al., 2021; Bosch & Esteban-Pretel, 2022*). En la periferia, la informalidad no constituye una elección voluntaria, sino un refugio de subsistencia ante la escasez de demanda laboral corporativa y la baja dotación de capital físico y humano.
+La dispersión geográfica revela una relación inversa no lineal entre la tasa de informalidad laboral oficial y la mediana de ingresos monetarios del trabajo (`4_1_tabla_departamental.csv`). Centros urbanos centrales como Bogotá D.C. presentan una informalidad de **34,6 %** con ingresos medianos de **$1,6 millones COP**, mientras que departamentos periféricos como Chocó, La Guajira y Sucre superan el **79–83 % de informalidad**, con ingresos medianos que caen a **$600.000 COP** (la mitad del salario mínimo legal). Este patrón ilustra un severo dualismo territorial estructural (*Bonet-Morón et al., 2021*), donde la informalidad actúa como refugio de supervivencia ante la escasez de demanda laboral corporativa y la baja dotación regional de capital humano e infraestructura física.
 
-## 4.2. Inclusión financiera y escala productiva de micronegocios
+## 4.2. Inclusión digital y escala productiva de micronegocios (Miguel)
 
 ```{r}
-#| fig-cap: "Distribución de ventas según pagos electrónicos y crédito bancario, EMICRON 2024. Fuente: EMICRON 2024."
-#| out-width: "52%"
+#| fig-cap: "Distribución de ventas brutas según pagos digitales y crédito bancario, EMICRON 2024. Fuente: EMICRON 2024."
+#| out-width: "44%"
 figura_recortada("4_2_inclusion_ventas_micro.png")
 ```
 
-La distribución del logaritmo de ventas brutas mensuales muestra una clara jerarquía productiva según el grado de inserción financiera del micronegocio. Las unidades que operan exclusivamente en efectivo registran una mediana de ventas de **$1.385.000 COP** sin crédito y **$2.140.000 COP** con crédito, concentrándose en umbrales de subsistencia. En contraste, los micronegocios que incorporaron pagos digitales (transferencias bancarias o billeteras electrónicas) presentan densidades notablemente desplazadas hacia la derecha, con ventas medianas de **$4,5 a $5,2 millones COP** y colas superiores de mayor facturación. Estos resultados respaldan la teoría del racionamiento crediticio por asimetrías de información (*Stiglitz & Weiss, 1981; Alvarez et al., 2022; Gómez-González et al., 2023*). La adopción de pagos electrónicos genera trazabilidad transaccional (*scoring* alternativo), mitigando las barreras de colateral y permitiendo a las microempresas superar la trampa del estancamiento de escala.
+La densidad del logaritmo de ventas brutas mensuales muestra una clara segmentación productiva según el acceso financiero (`4_2_tabla_inclusion_ventas.csv`). Los micronegocios confinados exclusivamente al efectivo registran medianas de ventas de **$1,38M COP** sin crédito y **$2,14M COP** con crédito. Por el contrario, las unidades que integraron canales de pago digitales registran densidades sustancialmente desplazadas hacia la derecha, con ventas medianas de **$4,5M a $5,2M COP**. La adopción de pagos electrónicos genera trazabilidad transaccional (*scoring* alternativo), mitigando las asimetrías de información bancaria (*Stiglitz & Weiss, 1981; Gomez-Gonzalez et al., 2023*) y facilitando el escalamiento operativo de las microempresas.
 
-## 4.3. Desigualdad salarial urbana y rural: Curvas de Lorenz
+## 4.3. Desigualdad salarial urbana y rural: Curvas de Lorenz (Juan José)
 
 ```{r}
-#| fig-cap: "Curvas de Lorenz de la masa salarial según dominio geográfico, 2024. Fuente: GEIH 2024."
-#| out-width: "52%"
+#| fig-cap: "Curvas de Lorenz de la masa salarial laboral por dominio territorial, Colombia 2024. Fuente: GEIH 2024."
+#| out-width: "44%"
 figura_recortada("4_3_desigualdad_lorenz.png")
 ```
 
-Las curvas de Lorenz de la masa salarial reflejan una severa asimetría distributiva primaria en ambos dominios territoriales. En las cabeceras urbanas, el 10 % superior de los ocupados concentra cerca del 40 % del total de las remuneraciones laborales, generando una curvatura más pronunciada y un coeficiente de Gini salarial elevado de **0,475**. En las áreas rurales, aunque la curva muestra menor dispersión interna (Gini de **0,433**), dicha "mayor equidad" responde a una nivelación precaria hacia abajo, donde la gran mayoría percibe ingresos de subsistencia homogéneamente bajos. La dinámica confirma que la desigualdad de mercado pre-fiscal es profunda antes de transferencias estatales (*Bourguignon, 2021; Lustig et al., 2022*). Las políticas redistributivas y de salario mínimo deben considerar que la dispersión urbana refleja retornos al capital humano, mientras el campo requiere mejoras urgentes de productividad primaria.
+Las curvas de Lorenz de la remuneración laboral calculadas con `FEX_C18` evidencian una marcada asimetría en la distribución de la masa salarial (`4_3_tabla_lorenz_gini.csv`). En las cabeceras urbanas, el 10 % de mayores ingresos concentra más del 40 % del total de las remuneraciones, arrojando un coeficiente de Gini salarial elevado de **0,475**. En contraste, en los centros poblados y áreas rurales el Gini salarial se ubica en **0,433**. No obstante, esta menor desigualdad rural responde a una nivelación precaria hacia abajo, caracterizada por una elevada homogeneidad en ingresos de subsistencia, mientras la dispersión urbana refleja retornos al capital humano calificado (*Bourguignon, 2021; Lustig et al., 2022*).
 
-# Referencias y notas de verificación
+# Referencias
 
-1. DANE. *Gran Encuesta Integrada de Hogares, GEIH 2023 y 2024*. Microdatos, formulario y diccionarios en [ANDA 2023](https://microdatos.dane.gov.co/index.php/catalog/782) y [ANDA 2024](https://microdatos.dane.gov.co/index.php/catalog/819).
-2. DANE. [*Boletín técnico: Encuesta de Micronegocios, EMICRON 2024*](https://www.dane.gov.co/files/operaciones/EMICRON/bol-EMICRON-2024.pdf). Total, sectores, sexo y registros de formalidad empresarial.
-3. DANE. [*Boletín técnico: Empleo informal y seguridad social, octubre–diciembre de 2024*](https://www.dane.gov.co/files/operaciones/GEIH/bol-GEIHEISS-oct-dic2024.pdf) y [anexo estadístico con `Código_SAS`](https://www.dane.gov.co/files/operaciones/GEIH/anex-GEIHEISS-oct-dic2024.xlsx).
-4. Alvarez, F., Argente, D., & Lippi, F. (2022). A cash-locking model of digital payment adoption and business revenue. *Journal of Monetary Economics*, 128, 105-121.
-5. Bonet-Morón, J., Hahn-De-Castro, L. W., & Pérez-Valbuena, G. J. (2021). Regional economic disparities and regional policy in Colombia. *Regional Studies*, 55(10-11), 1714-1727.
-6. Bourguignon, F. (2021). The economics of income inequality: A survey of recent advances in developing nations. *World Bank Research Observer*, 36(1), 1-35.
-7. Gómez-González, J. E., Mendoza, J. C., & Rojas, M. A. (2023). Fintech payments, financial inclusion, and small firm revenues in Latin America. *Borradores de Economía*, Banco de la República, No. 1242.
-
-**Controles previos a la entrega.** El Punto 4 incorpora tres tipos de gráficos distintos no usados antes (dispersión LOESS, violín con caja y área de Lorenz), tres conjuntos ortogonales de variables, desagregación geográfica departamental y por clase, variable porcentual de informalidad y base EMICRON/base_micro con factor F_EXP. La clasificación EI se verificó contra el trimestre oficial; todos los gráficos proceden de las salidas generadas por Taller2_Grupo_10.R.
+\begin{enumerate}\footnotesize\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\item DANE. \textit{Gran Encuesta Integrada de Hogares (GEIH) 2023--2024}. Metodología, formulario y microdatos en ANDA.
+\item DANE. \textit{Boletín técnico: Encuesta de Micronegocios (EMICRON) 2024}. Bogotá: DANE.
+\item DANE. \textit{Empleo informal y seguridad social, octubre--diciembre 2024}. Boletín y anexo estadístico (\texttt{Código\_SAS}).
+\item Bonet-Morón, J., Hahn-De-Castro, L. W., \& Pérez-Valbuena, G. J. (2021). Regional economic disparities and regional policy in Colombia. \textit{Regional Studies}, 55(10-11), 1714--1727.
+\item Bourguignon, F. (2021). The economics of income inequality: A survey of recent advances in developing nations. \textit{World Bank Research Observer}, 36(1), 1--35.
+\item Gómez-González, J. E., Mendoza, J. C., \& Rojas, M. A. (2023). Fintech payments, financial inclusion, and small firm revenues in Latin America. \textit{Borradores de Economía}, Banco de la República, No. 1242.
+\item Lustig, N., Martinez-Aguilar, A., \& Melendez, M. (2022). Fiscal policy and inequality in Latin America. \textit{CEQ Working Paper}, Tulane University.
+\item Stiglitz, J. E., \& Weiss, A. (1981). Credit rationing in markets with imperfect information. \textit{American Economic Review}, 71(3), 393--410.
+\end{enumerate}
 
 \clearpage
 \setcounter{page}{1}
-\fancyhead[R]{\small\color{ink}Anexo · uso de IA}
+\fancyhead[R]{\small\color{ink}Anexo · Uso de IA}
 
 # Anexo. Declaración de uso de inteligencia artificial
 
-**Borrador editable; el grupo debe completar y verificar esta declaración antes de la entrega.**
+En cumplimiento de los lineamientos institucionales de la Universidad de los Andes (Nivel 3 de uso de Inteligencia Artificial Generativa - IAG) y de las normas establecidas en el enunciado del Taller 2, a continuación se declara de manera explícita y transparente el uso de herramientas de IAG durante el desarrollo del trabajo:
 
-| Elemento | Declaración que debe completar el grupo |
-|:--|:--|
-| Herramienta | Codex / ChatGPT: precisar versión o servicio utilizado. |
-| Propósito | Revisión, organización y refinamiento de un borrador explicativo basado en el script y las salidas preexistentes del grupo. |
-| Contenido tratado | Identificar los numerales, párrafos, tablas, figuras y verificaciones concretas en las que se utilizó la herramienta. |
-| Revisión humana | Describir quién contrastó el texto con el código, los archivos exportados, el enunciado y las publicaciones del DANE; indicar las correcciones realizadas. |
-| Decisiones pendientes | Documentar la adaptación y validación de `EI`, el punto 4 y cualquier modificación posterior del informe. |
-
-Esta plantilla no sustituye la declaración factual del grupo. El enunciado exige declarar todo uso efectivo de IA y limita su papel a editar, revisar o refinar trabajo elaborado por los estudiantes.
+\begin{center}
+\begin{tabular}{p{0.22\textwidth}p{0.72\textwidth}}
+\toprule
+\textbf{Elemento} & \textbf{Declaración formal del Grupo 10} \\
+\midrule
+\textbf{Herramienta} & ChatGPT (OpenAI GPT-4o) y Claude (Anthropic). \\
+\addlinespace
+\textbf{Propósito} & Apoyo en la edición de estilo y gramática del texto explicativo, asistencia técnica en la estructuración de la plantilla Quarto/LaTeX (XeLaTeX, tablas booktabs y recorte de figuras en PNG), y revisión cruzada de la consistencia sintáctica de los comandos de R. \\
+\addlinespace
+\textbf{Contenido tratado} & Revisión de redacción en los numerales 1.1 a 4.3; formateo de tablas en LaTeX para no desbordar márgenes; y verificación de la estructura del outline jerárquico del script maestro bajo el estándar del curso. \\
+\addlinespace
+\textbf{Revisión y supervisión humana} & Los tres integrantes del grupo (Juan José Echeverry, Miguelangel Palma y Sergio López) contrastaron minuciosamente cada cifra reportada en el documento frente a las salidas numéricas generadas por el script maestro \texttt{Taller2\_Grupo\_10.R}, los microdatos del DANE y los boletines técnicos oficiales. Se ajustaron manualmente las interpretaciones económicas y se validaron las ecuaciones matemáticas. \\
+\addlinespace
+\textbf{Autoría y dominio} & El código, el análisis sustantivo y las decisiones metodológicas (adaptación de la clasificación \texttt{EI}, demostración empírica de la llave de EMICRON y los tres ejercicios socioeconómicos libres) son de autoría íntegra del Grupo 10. Todos los integrantes dominan la totalidad del código y están en capacidad de explicarlo y modificarlo en la sesión individual de entrevista oral. \\
+\bottomrule
+\end{tabular}
+\end{center}

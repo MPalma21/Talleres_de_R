@@ -2367,6 +2367,10 @@ tabla_tasas_hombres <- tabla_indicadores_trim %>%
     names_from = PERIODO_TRIM,
     values_from = VALOR
   ) %>%
+  select(
+    `Tasas (%) y poblaciones`,
+    all_of(orden_trimestres)
+  ) %>%
   arrange(
     `Tasas (%) y poblaciones`
   )
@@ -2413,6 +2417,10 @@ tabla_tasas_mujeres <- tabla_indicadores_trim %>%
   pivot_wider(
     names_from = PERIODO_TRIM,
     values_from = VALOR
+  ) %>%
+  select(
+    `Tasas (%) y poblaciones`,
+    all_of(orden_trimestres)
   ) %>%
   arrange(
     `Tasas (%) y poblaciones`
