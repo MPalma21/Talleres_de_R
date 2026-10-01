@@ -101,7 +101,7 @@ figura_recortada <- function(nombre) {
 
 # 1. Conformación y unión de las bases de datos
 
-## 1.1. GEIH: generalidades, lógica del pegue y controles (Juan José)
+## 1.1. GEIH: generalidades, lógica del pegue y controles 
 
 La Gran Encuesta Integrada de Hogares (GEIH) es la principal operación estadística del DANE para evaluar la dinámica del mercado de trabajo, las condiciones de empleo, los ingresos y las características sociodemográficas en Colombia. Su recolección mensual continua cubre el total nacional, cabecera–resto, dominios departamentales y las principales capitales [1]. La identificación de cada registro en la GEIH se estructura a través de tres variables jerárquicas:
 * `DIRECTORIO`: identificador único de la unidad de vivienda seleccionada en el marco muestral.
@@ -116,7 +116,7 @@ El proceso incorpora dos verificaciones programáticas defensivas que detienen e
 1. **Unicidad de llaves:** La verificación arrojó **0 llaves duplicadas** para la combinación `DIRECTORIO + SECUENCIA_P + ORDEN` en todos y cada uno de los módulos durante los 24 meses evaluados (`1_1_verificacion_llaves.csv`).
 2. **Conservación de registros base:** El número de filas tras cada unión mensual coincidió de manera idéntica con el total de filas de *Características generales*, certificando que ningún pegue multiplicó registros (`1_1_verificacion_pegues.csv`).
 
-## 1.2. Tamaño muestral y consistencia de las definiciones laborales (Sergio y Miguel)
+## 1.2. Tamaño muestral y consistencia de las definiciones laborales
 
 **Tabla 1.** Registros muestrales por módulo, GEIH 2024. El total anual suma observaciones mensuales; no representa personas únicas debido a la rotación muestral.
 
@@ -140,7 +140,7 @@ $$\text{PET} = \text{Fuerza de Trabajo (FT)} + \text{Población Fuera de la Fuer
 $$\text{Fuerza de Trabajo (FT)} = \text{Ocupados (OCI)} + \text{Desocupados (DSI)}$$
 Ambas relaciones se cumplen con diferencia cero en la totalidad de los doce meses analizados.
 
-## 1.3. Base analítica y diccionario de variables (Sergio)
+## 1.3. Base analítica y diccionario de variables 
 
 La base consolidada retiene únicamente las variables solicitadas para los análisis posteriores, incorpora las variables requeridas para formalidad laboral (`EI`) y deriva `ANIO` a partir de `PERIODO` (script, §§ 1.3.1, lns. 800–895). La verificación programática corrobora que la base contiene de forma exacta las variables previstas, sin omitir ni añadir campos no autorizados.
 
@@ -187,7 +187,7 @@ La base `base_micro` conserva la totalidad de los 78.501 micronegocios; 71.754 (
 
 # 2. Indicadores de mercado laboral
 
-## 2.1. Tasas trimestrales y poblaciones según sexo (Juan José)
+## 2.1. Tasas trimestrales y poblaciones según sexo 
 
 De acuerdo con la metodología oficial del DANE [1], los principales indicadores laborales se definen como relaciones porcentuales entre subconjuntos de la población:
 $$\text{Tasa Global de Participación (TGP)} = \left(\frac{\text{Fuerza de Trabajo}}{\text{Población en Edad de Trabajar}}\right) \times 100$$
@@ -228,7 +228,7 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 
 *Nota:* E-M = enero–marzo; A-J = abril–junio; J-S = julio–septiembre; O-D = octubre–diciembre. Tasas en porcentaje; poblaciones en personas promedio estimadas.
 
-## 2.2. Análisis económico de la serie de tiempo y brechas de género (Juan José)
+## 2.2. Análisis económico de la serie de tiempo y brechas de género 
 
 ```{r}
 #| fig-cap: "Evolución trimestral de TGP, TO y TD por sexo, Colombia 2023–2024. Fuente: GEIH (DANE), procesamiento del Grupo 10."
@@ -246,7 +246,7 @@ La serie de tiempo expone profundas brechas estructurales de género:
 * **Tasa de Desempleo:** A pesar de su menor inserción laboral, las mujeres enfrentan una tasa de desempleo sistemáticamente más alta (~11–15 %) que los hombres (~7–10 %), exhibiendo una brecha de desocupación femenina de entre 4 y 5 puntos porcentuales.
 * **Dinámica estacional de fin de año:** Entre el primer y el cuarto trimestre de 2024, la TD cae de 9,57 % a 7,06 % en hombres (-2,51 pp) y de 14,98 % a 11,15 % en mujeres (-3,83 pp). Esta reducción no obedeció a contracción de la oferta laboral (la TGP femenina creció de 51,7 % a 52,9 % y la masculina de 76,4 % a 77,1 %), sino a una aceleración de la tasa de ocupación (la TO creció 2,7 pp en hombres y 2,7 pp en mujeres), impulsada por la absorción estacional de empleo en comercio, servicios y actividades turísticas de fin de año.
 
-## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas (Miguel)
+## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas 
 
 ```{r}
 #| fig-cap: "Distribución de ocupados según condición de formalidad y sexo, 13 ciudades (Diciembre 2024). Fuente: GEIH (DANE)."
@@ -258,7 +258,7 @@ La condición de formalidad laboral (`EI`) se construyó traduciendo rigurosamen
 
 **Validación contra el boletín oficial:** Para el trimestre móvil octubre–diciembre de 2024 en las 13 ciudades (expandido con `FEX_C18/3`), el script estimó una informalidad del **42,5 %**, reproduciendo de forma idéntica la cifra publicada por el DANE (diferencia de 0,0 puntos porcentuales; 0 ocupados sin clasificar, `2_3_control_ei_dane.csv`). Para el mes específico de diciembre de 2024, la distribución de ocupados exhibe una tasa de informalidad del **42,2 % en hombres** y **42,3 % en mujeres** (`2_3_tabla_formalidad_13ciudades.csv`), confirmando la ausencia de brechas de formalidad en el agregado de los principales centros urbanos del país.
 
-## 2.4. Posición ocupacional a nivel nacional (Sergio)
+## 2.4. Posición ocupacional a nivel nacional 
 
 ```{r}
 #| fig-cap: "Distribución de la población ocupada según posición ocupacional y sexo, total nacional (Enero 2023). Fuente: GEIH (DANE)."
@@ -270,7 +270,7 @@ El cálculo expandido para enero de 2023 evidencia que los trabajadores por cuen
 
 # 3. Micronegocios en Colombia
 
-## 3.1. Indicadores básicos del tejido empresarial (Miguel)
+## 3.1. Indicadores básicos del tejido empresarial 
 
 El procesamiento expandido con `F_EXP` en `3_1_indicadores.xlsx` arrojó **5.297.252 micronegocios** en Colombia para 2024, reproduciendo con exactitud la cifra oficial del DANE [2]. El 64,6 % de los micronegocios pertenece a hombres y el 35,4 % a mujeres. Las actividades de comercio y reparación de vehículos (23,9 %) y agricultura, ganadería y pesca (21,5 %) concentran el 45,4 % del universo. En términos de formalidad institucional, solo el 22,4 % cuenta con Registro Único Tributario (RUT) y apenas el 10,3 % figura inscrito ante Cámara de Comercio.
 
@@ -287,7 +287,7 @@ i$Porcentaje <- paste0(fmt_pct(i$Porcentaje), " %")
 tabla_latex(i, 0.68)
 ```
 
-## 3.2. Inclusión financiera por rama de actividad (Sergio)
+## 3.2. Inclusión financiera por rama de actividad 
 
 ```{r}
 #| fig-cap: "Medios de pago aceptados por micronegocios según rama económica, Colombia 2024. Fuente: EMICRON (DANE)."
@@ -299,7 +299,7 @@ Para procesar las siete variables multirrespuesta de medios de pago (`P1764_1` a
 
 El análisis revela un marcado dualismo transaccional: el efectivo continúa siendo el medio de pago universal en todas las ramas (>85 % en agro e industria; >94 % en comercio). Por el contrario, los canales digitales presentan una profunda brecha sectorial: las transferencias bancarias o billeteras electrónicas alcanzan el 51,9 % en servicios y el 43,4 % en comercio, pero caen al 6,7 % en el sector agropecuario. Esta asimetría de infraestructura transaccional se refleja en el acceso financiero global: apenas el **14,2 %** de los micronegocios solicitó crédito formal y solo el **18,1 %** reportó tener mecanismos de ahorro empresarial (`3_2_credito_ahorro.csv`).
 
-## 3.3. Análisis conjunto GEIH–EMICRON: Educación del propietario y RUT (Juan José)
+## 3.3. Análisis conjunto GEIH–EMICRON: Educación del propietario y RUT 
 
 **Formulación de la pregunta analítica:** *¿Existe una relación entre el nivel educativo alcanzado por el propietario (variable GEIH: `P3042`) y la formalidad tributaria del micronegocio medida a través de la tenencia de RUT (variable EMICRON: `P1633`)?*
 
@@ -317,7 +317,7 @@ Los resultados de la tabla de contingencia (`3_3_tabla_educacion_rut.csv`) confi
 
 # 4. Análisis socioeconómico de la población colombiana
 
-## 4.1. Divergencia territorial: dualismo laboral y salarial departamental (Sergio)
+## 4.1. Divergencia territorial: dualismo laboral y salarial departamental
 
 ```{r}
 #| fig-cap: "Tasa de informalidad laboral departamental e ingreso laboral mediano, Colombia 2024. Fuente: GEIH 2024."
@@ -327,7 +327,7 @@ figura_recortada("4_1_geografia_informalidad.png")
 
 La dispersión geográfica revela una relación inversa no lineal entre la tasa de informalidad laboral oficial y la mediana de ingresos monetarios del trabajo (`4_1_tabla_departamental.csv`). Centros urbanos centrales como Bogotá D.C. presentan una informalidad de **34,6 %** con ingresos medianos de **$1,6 millones COP**, mientras que departamentos periféricos como Chocó, La Guajira y Sucre superan el **79–83 % de informalidad**, con ingresos medianos que caen a **$600.000 COP** (la mitad del salario mínimo legal). Este patrón ilustra un severo dualismo territorial estructural (*Bonet-Morón et al., 2021*), donde la informalidad actúa como refugio de supervivencia ante la escasez de demanda laboral corporativa y la baja dotación regional de capital humano e infraestructura física.
 
-## 4.2. Inclusión digital y escala productiva de micronegocios (Miguel)
+## 4.2. Inclusión digital y escala productiva de micronegocios 
 
 ```{r}
 #| fig-cap: "Distribución de ventas brutas según pagos digitales y crédito bancario, EMICRON 2024. Fuente: EMICRON 2024."
@@ -337,7 +337,7 @@ figura_recortada("4_2_inclusion_ventas_micro.png")
 
 La densidad del logaritmo de ventas brutas mensuales muestra una clara segmentación productiva según el acceso financiero (`4_2_tabla_inclusion_ventas.csv`). Los micronegocios confinados exclusivamente al efectivo registran medianas de ventas de **$1,38M COP** sin crédito y **$2,14M COP** con crédito. Por el contrario, las unidades que integraron canales de pago digitales registran densidades sustancialmente desplazadas hacia la derecha, con ventas medianas de **$4,5M a $5,2M COP**. La adopción de pagos electrónicos genera trazabilidad transaccional (*scoring* alternativo), mitigando las asimetrías de información bancaria (*Stiglitz & Weiss, 1981; Gomez-Gonzalez et al., 2023*) y facilitando el escalamiento operativo de las microempresas.
 
-## 4.3. Desigualdad salarial urbana y rural: Curvas de Lorenz (Juan José)
+## 4.3. Desigualdad salarial urbana y rural: Curvas de Lorenz 
 
 ```{r}
 #| fig-cap: "Curvas de Lorenz de la masa salarial laboral por dominio territorial, Colombia 2024. Fuente: GEIH 2024."

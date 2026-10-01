@@ -48,6 +48,8 @@ conteos_modulos <- list()
 verificacion_llaves <- list()
 verificacion_pegues <- list()
 verificacion_eficiencia <- list()
+
+# Definimos un contador que permite iterar a lo largo de las carpetass de los dos anos
 contador <- 1
 
 ### 1.1.3) Loop para construir las bases mensuales ----
@@ -70,36 +72,57 @@ for (anio in anios) {
     
     #### 1.1.3.2) Guardar número de observaciones (para 1.2) ----
     conteos_modulos[[contador]] <- data.frame(
-      ANIO = anio, MES = mes,
-      GENERAL = nrow(general), FUERZA_MODULO = nrow(fuerza),
-      OCUPADOS = nrow(ocupados), NO_OCUPADOS = nrow(no_ocupados)
+      ANIO = anio, 
+      MES = mes,
+      GENERAL = nrow(general), 
+      FUERZA_MODULO = nrow(fuerza),
+      OCUPADOS = nrow(ocupados), 
+      NO_OCUPADOS = nrow(no_ocupados)
     )
     
     #### 1.1.3.3) Guardar columnas antes de select ----
-    col_gen_ant <- ncol(general); col_fuer_ant <- ncol(fuerza)
-    col_ocup_ant <- ncol(ocupados); col_no_ocup_ant <- ncol(no_ocupados)
+    col_gen_ant <- ncol(general)
+    col_fuer_ant <- ncol(fuerza)
+    col_ocup_ant <- ncol(ocupados)
+    col_no_ocup_ant <- ncol(no_ocupados)
     
-    #### 1.1.3.4) Seleccionar variables necesarias (eficiencia de memoria) ----
-    general <- general %>% select(
+    #### 1.1.3.4) Seleccionar variables necesarias  (Reducir el uso de memoria)----
+    general <- general %>% 
+      select(
       DIRECTORIO, SECUENCIA_P, ORDEN, PERIODO, MES,
       P3271, P3042, P6090, P6040, P6160, DPTO, AREA, CLASE, FEX_C18, PT,
       P6100, P6110
     )
-    fuerza <- fuerza %>% select(DIRECTORIO, SECUENCIA_P, ORDEN, PET, FT, FFT, P6240)
-    ocupados <- ocupados %>% select(
+    
+    fuerza <- fuerza %>% 
+      select(
+        DIRECTORIO, SECUENCIA_P, ORDEN, PET, FT, FFT, P6240
+        )
+    
+    ocupados <- ocupados %>% 
+      select(
       DIRECTORIO, SECUENCIA_P, ORDEN, OCI, RAMA2D_R4, P6430, INGLABO,
       P3045S1, P3046, P3069, P6765, P3065, P3066, OFICIO_C8,
       P3067, P3067S1, P3067S2, P6775, P3068, P6450, P6920, P6930, P6940
-    )
-    no_ocupados <- no_ocupados %>% select(DIRECTORIO, SECUENCIA_P, ORDEN, DSI)
+      )
+    
+    no_ocupados <- no_ocupados %>% 
+      select(
+        DIRECTORIO, SECUENCIA_P, ORDEN, DSI
+        )
     
     #### 1.1.3.5) Evidencia de eficiencia ----
     verificacion_eficiencia[[contador]] <- data.frame(
-      ANIO = anio, MES = mes,
-      GENERAL_ANTES = col_gen_ant, GENERAL_DESPUES = ncol(general),
-      FUERZA_ANTES = col_fuer_ant, FUERZA_DESPUES = ncol(fuerza),
-      OCUPADOS_ANTES = col_ocup_ant, OCUPADOS_DESPUES = ncol(ocupados),
-      NO_OCUPADOS_ANTES = col_no_ocup_ant, NO_OCUPADOS_DESPUES = ncol(no_ocupados)
+      ANIO = anio, 
+      MES = mes,
+      GENERAL_ANTES = col_gen_ant, 
+      GENERAL_DESPUES = ncol(general),
+      FUERZA_ANTES = col_fuer_ant, 
+      FUERZA_DESPUES = ncol(fuerza),
+      OCUPADOS_ANTES = col_ocup_ant, 
+      OCUPADOS_DESPUES = ncol(ocupados),
+      NO_OCUPADOS_ANTES = col_no_ocup_ant, 
+      NO_OCUPADOS_DESPUES = ncol(no_ocupados)
     )
     
     #### 1.1.3.6) Homogeneizar las llaves ----
@@ -119,19 +142,37 @@ for (anio in anios) {
       DUP_GENERAL = dup_gen, DUP_FUERZA = dup_fuer,
       DUP_OCUPADOS = dup_ocup, DUP_NO_OCUPADOS = dup_no_ocup
     )
-    if (dup_gen > 0 || dup_fuer > 0 || dup_ocup > 0 || dup_no_ocup > 0) {
+    
+    # Parar si hay duplicados 
+    if (dup_gen > 0 | dup_fuer > 0 | dup_ocup > 0 | dup_no_ocup > 0) {
       stop(paste("Se encontraron llaves duplicadas en", anio, mes))
     }
     
     #### 1.1.3.8) Pegue de los módulos y 1.1.3.9) Verificación de filas ----
+    
+    # Contar nuemro de filas de general (Antes del join)
     n_gen <- nrow(general)
-    base_mes <- general %>% left_join(fuerza, by = llave_geih)
+    
+    # Hacemos el joint por izquerda con fuerza
+    base_mes <- general %>% 
+      left_join(fuerza, by = llave_geih)
+    
+    # Contar nuemero de filas  despues del join 
     filas_fuerza <- nrow(base_mes)
     
-    base_mes <- base_mes %>% left_join(ocupados, by = llave_geih)
+    # Hacemos joint por izquerda del anterior cruce con ocupados
+    base_mes <- base_mes %>% 
+      left_join(ocupados, by = llave_geih)
+    
+    
+    # Contar nuemero de filas  despues del join 
     filas_ocupados <- nrow(base_mes)
     
-    base_mes <- base_mes %>% left_join(no_ocupados, by = llave_geih)
+    # Hacemo joint por izquierda con no ocupados
+    base_mes <- base_mes %>% 
+      left_join(no_ocupados, by = llave_geih)
+    
+    # Contar nuemero de filas  despues del join 
     filas_no_ocupados <- nrow(base_mes)
     
     verificacion_pegues[[contador]] <- data.frame(
@@ -140,18 +181,31 @@ for (anio in anios) {
       DESPUES_OCUPADOS = filas_ocupados,
       DESPUES_NO_OCUPADOS = filas_no_ocupados
     )
-    if (filas_fuerza != n_gen || filas_ocupados != n_gen || filas_no_ocupados != n_gen) {
+    
+    if (filas_fuerza != n_gen | filas_ocupados != n_gen | filas_no_ocupados != n_gen) {
       stop(paste("El pegue modificó el número de filas en", anio, mes))
     }
     
     #### 1.1.3.10) Crear ANIO y 1.1.3.11) Guardar base mensual ----
-    base_mes <- base_mes %>% mutate(ANIO = as.numeric(substr(as.character(PERIODO), 1, 4)))
+    
+    # Extraemos el anio del periodo
+    base_mes <- base_mes %>% 
+      mutate(
+        ANIO = as.numeric(substr(as.character(PERIODO), 1, 4))
+        )
+    
+    # Guardar en una lista las iteraciones i
     bases_mensuales_anio[[i]] <- base_mes
+    
+    # Mensaje gomelo
     cat("Procesado:", anio, "-", mes, "\n")
+    
+    # Guardar el numero de iteraciones
     contador <- contador + 1
   }
   
   ### 1.1.4) Construir las bases anuales ----
+  # Unimos las dos listas
   bases_anuales[[anio]] <- bind_rows(bases_mensuales_anio)
 }
 
@@ -248,7 +302,7 @@ variables_esperadas <- c(
 verificacion_variables_presentes <- all(variables_esperadas %in% names(GEIH))
 verificacion_variables_adicionales <- all(names(GEIH) %in% variables_esperadas)
 
-if (!verificacion_variables_presentes || !verificacion_variables_adicionales) {
+if (!verificacion_variables_presentes | !verificacion_variables_adicionales) {
   stop("La base analítica no contiene exactamente las variables esperadas.")
 }
 
@@ -330,10 +384,10 @@ emicron_ventas <- read.csv(file.path(ruta_emicron, "Módulo de ventas o ingresos
 #### 1.4.a.3) Preparar la llave de EMICRON ----
 llave_emicron <- c("DIRECTORIO", "SECUENCIA_P", "SECUENCIA_ENCUESTA")
 
-emicron_identificacion  <- emicron_identificacion  %>% mutate(across(all_of(llave_emicron), as.character))
+emicron_identificacion <- emicron_identificacion  %>% mutate(across(all_of(llave_emicron), as.character))
 emicron_caracteristicas <- emicron_caracteristicas %>% mutate(across(all_of(llave_emicron), as.character))
-emicron_inclusion       <- emicron_inclusion       %>% mutate(across(all_of(llave_emicron), as.character))
-emicron_ventas          <- emicron_ventas          %>% mutate(across(all_of(llave_emicron), as.character))
+emicron_inclusion <- emicron_inclusion %>% mutate(across(all_of(llave_emicron), as.character))
+emicron_ventas <- emicron_ventas %>% mutate(across(all_of(llave_emicron), as.character))
 
 #### 1.4.a.4) Verificar la llave ----
 tabla_na_llaves_emicron <- data.frame(
@@ -409,9 +463,10 @@ resumen_relacion_orden <- tabla_orden_persona %>%
 write.csv(resumen_relacion_orden, file.path(ruta_outputs, "1_4_relacion_orden.csv"), row.names = FALSE)
 
 #### 1.4.c.4) Construcción de la llave de persona ----
-if (resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0 || resumen_relacion_orden$SIN_COINCIDENCIA > 0) {
+if (resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0 | resumen_relacion_orden$SIN_COINCIDENCIA > 0) {
   stop("SECUENCIA_ENCUESTA no presenta coincidencia unívoca con ORDEN.")
 }
+
 emicron_persona <- emicron %>% mutate(ORDEN = SECUENCIA_ENCUESTA)
 
 #### 1.4.c.5) Comparación entre MES_REF y MES y 1.4.c.6) Relaciones temporales ----
