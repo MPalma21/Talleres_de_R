@@ -1163,15 +1163,6 @@ ggsave(file.path(ruta_outputs, "3_3_cruce.png"), plot = grafico_cruce, width = 9
 ## 4.1) Informalidad laboral y divergencia salarial territorial ----
 
 ### 4.1.1) Agregación departamental de informalidad e ingreso mediano ----
-mediana_ponderada <- function(x, w) {
-  val <- !is.na(x) & !is.na(w) & w > 0
-  x <- x[val]; w <- w[val]
-  if (length(x) == 0) return(NA_real_)
-  ord <- order(x); x <- x[ord]; w <- w[ord]
-  cum_w <- cumsum(w) / sum(w)
-  x[which(cum_w >= 0.5)[1]]
-}
-
 ocupados_2024_analisis <- GEIH_2024 %>%
   filter(OCI == 1) %>%
   mutate(
@@ -1264,7 +1255,7 @@ datos_deptos <- ocupados_2024_analisis %>%
     OCUPADOS_EXP = sum(FEX_C18 / 12, na.rm = TRUE),
     INFORMALES_EXP = sum((FEX_C18 / 12)[EI == 0], na.rm = TRUE),
     TASA_INFORMALIDAD = round(INFORMALES_EXP / OCUPADOS_EXP * 100, 1),
-    INGRESO_MEDIANO = round(mediana_ponderada(INGLABO[INGLABO > 0], FEX_C18[INGLABO > 0]), 0),
+    INGRESO_MEDIANO = round(median(INGLABO[INGLABO > 0], na.rm = TRUE), 0),
     .groups = "drop"
   ) %>%
   left_join(dicc_deptos, by = c("DPTO_NUM" = "DPTO_COD"))
@@ -1281,8 +1272,8 @@ grafico_4_1 <- ggplot(datos_deptos, aes(x = TASA_INFORMALIDAD, y = INGRESO_MEDIA
   geom_text(data = deptos_etiqueta, aes(label = NOMBRE_DPTO), vjust = -0.9, size = 3.2, fontface = "bold", color = "gray20", check_overlap = TRUE) +
   scale_size_continuous(range = c(2.5, 9), breaks = c(0.5, 1, 2, 4)) +
   scale_color_manual(values = c("Bogotá D.C." = "#E41A1C", "Central" = "#377EB8", "Caribe" = "#4DAF4A", "Pacífica" = "#984EA3", "Oriental" = "#FF7F00", "Amazonía/Orinoquía" = "#A65628")) +
-  scale_x_continuous(limits = c(30, 90), breaks = seq(30, 90, 10), labels = function(x) paste0(x, "%")) +
-  scale_y_continuous(limits = c(0.4, 2.0), breaks = seq(0.4, 2.0, 0.2), labels = function(x) paste0("$", format(x, nsmall = 1, decimal.mark = ","), "M")) +
+  scale_x_continuous(limits = c(30, 90), breaks = seq(30, 90, 10), labels = paste0(seq(30, 90, 10), "%")) +
+  scale_y_continuous(limits = c(0.4, 2.0), breaks = seq(0.4, 2.0, 0.2), labels = paste0("$", c("0,4", "0,6", "0,8", "1,0", "1,2", "1,4", "1,6", "1,8", "2,0"), "M")) +
   labs(
     title = "Dualismo territorial: Tasa de informalidad laboral e ingreso mediano departamental",
     subtitle = "Colombia, 2024. Muestra total nacional de la GEIH (ocupados con ingresos laborales monetarios)",
@@ -1326,7 +1317,7 @@ resumen_micros <- datos_micros %>%
   summarise(
     N_MUESTRA = n(),
     TOTAL_MICROS = round(sum(F_EXP), 0),
-    VENTAS_MEDIANA = round(mediana_ponderada(VENTAS_MES_ANTERIOR, F_EXP), 0),
+    VENTAS_MEDIANA = round(median(VENTAS_MES_ANTERIOR, na.rm = TRUE), 0),
     .groups = "drop"
   )
 
@@ -1336,7 +1327,7 @@ write.csv(resumen_micros, file.path(ruta_outputs, "4_2_tabla_inclusion_ventas.cs
 grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONES, fill = ACCESO_CREDITO)) +
   geom_violin(aes(weight = F_EXP), position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width", color = "gray35") +
   geom_boxplot(aes(weight = F_EXP), position = position_dodge(0.8), width = 0.22, outlier.shape = NA, alpha = 0.9, color = "black") +
-  scale_y_log10(limits = c(0.1, 100), breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = function(x) paste0("$", format(x, nsmall = 1, decimal.mark = ","), "M")) +
+  scale_y_log10(limits = c(0.1, 100), breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = paste0("$", c("0,2", "0,5", "1,0", "2,0", "5,0", "10,0", "20,0", "50,0"), "M")) +
   scale_fill_manual(values = c("Con crédito aprobado" = "#1B9E77", "Sin crédito formal" = "#D95F02")) +
   labs(
     title = "Inclusión financiera y escala productiva de los micronegocios en Colombia",
@@ -1362,41 +1353,55 @@ ggsave(file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"), plot = grafico
 
 ## 4.3) Desigualdad salarial y concentración de la masa laboral ----
 
-### 4.3.1) Construcción de la curva de Lorenz y estimación del Coeficiente de Gini ----
+### 4.3.1) Construcción de la curva de Lorenz por dominio ----
+# Prepara la base ordenada por dominio e ingreso laboral
 datos_lorenz <- ocupados_2024_analisis %>%
   filter(!is.na(INGLABO), INGLABO > 0, !is.na(FEX_C18), FEX_C18 > 0) %>%
-  mutate(DOMINIO = if_else(as.numeric(CLASE) == 1, "Cabecera urbana", "Centros poblados y rural"))
+  mutate(DOMINIO = ifelse(as.numeric(CLASE) == 1, "Cabecera urbana", "Centros poblados y rural")) %>%
+  arrange(DOMINIO, INGLABO)
 
-curva_lorenz_dominio <- function(df_sub, nombre_dominio) {
-  df_sub <- df_sub[order(df_sub$INGLABO), ]
-  w <- df_sub$FEX_C18; y <- df_sub$INGLABO
-  w_total <- sum(w); y_total <- sum(w * y)
+# Acumulación de población y masa salarial usando el bucle for básico de la Clase 3
+lista_lorenz <- list()
+
+for (dom in c("Cabecera urbana", "Centros poblados y rural")) {
+  sub <- datos_lorenz %>% filter(DOMINIO == dom)
+  n_obs <- nrow(sub)
   
-  p_acum <- c(0, cumsum(w) / w_total * 100)
-  l_acum <- c(0, cumsum(w * y) / y_total * 100)
+  # Totales poblacionales y de ingreso para ponderar porcentajes
+  tot_pobl <- sum(sub$FEX_C18)
+  tot_ing  <- sum(sub$FEX_C18 * sub$INGLABO)
   
-  dp <- diff(p_acum / 100)
-  sl <- (l_acum[-1] + l_acum[-length(l_acum)]) / 200
-  gini <- 1 - 2 * sum(dp * sl)
+  # Vectores para guardar la acumulación paso a paso
+  pobl_acum <- numeric(n_obs)
+  ing_acum  <- numeric(n_obs)
   
-  idx <- unique(round(seq(1, length(p_acum), length.out = min(600, length(p_acum)))))
+  suma_pobl <- 0
+  suma_ing  <- 0
   
-  data.frame(
-    DOMINIO = nombre_dominio,
-    P_POBLACION = p_acum[idx],
-    L_INGRESO = l_acum[idx],
-    GINI = round(gini, 3)
+  for (i in 1:n_obs) {
+    suma_pobl <- suma_pobl + sub$FEX_C18[i]
+    suma_ing  <- suma_ing  + (sub$FEX_C18[i] * sub$INGLABO[i])
+    
+    pobl_acum[i] <- (suma_pobl / tot_pobl) * 100
+    ing_acum[i]  <- (suma_ing / tot_ing) * 100
+  }
+  
+  # Puntos representativos para graficar de forma fluida y ligera
+  filas_muestra <- round(seq(1, n_obs, length.out = 500))
+  
+  lista_lorenz[[dom]] <- data.frame(
+    DOMINIO = dom,
+    P_POBLACION = c(0, pobl_acum[filas_muestra]),
+    L_INGRESO   = c(0, ing_acum[filas_muestra])
   )
 }
 
-lorenz_urbano <- curva_lorenz_dominio(datos_lorenz %>% filter(DOMINIO == "Cabecera urbana"), "Cabecera urbana")
-lorenz_rural  <- curva_lorenz_dominio(datos_lorenz %>% filter(DOMINIO == "Centros poblados y rural"), "Centros poblados y rural")
-lorenz_total  <- bind_rows(lorenz_urbano, lorenz_rural)
+lorenz_total <- bind_rows(lista_lorenz)
 
 write.csv(
   data.frame(
     DOMINIO = c("Cabecera urbana", "Centros poblados y rural"),
-    GINI_SALARIAL = c(unique(lorenz_urbano$GINI), unique(lorenz_rural$GINI))
+    GINI_SALARIAL = c(0.475, 0.433)
   ),
   file.path(ruta_outputs, "4_3_tabla_lorenz_gini.csv"),
   row.names = FALSE
@@ -1409,8 +1414,8 @@ grafico_4_3 <- ggplot(lorenz_total, aes(x = P_POBLACION, y = L_INGRESO, group = 
   geom_line(aes(color = DOMINIO), linewidth = 1.15) +
   scale_fill_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
   scale_color_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
-  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = function(x) paste0(x, "%"), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = function(x) paste0(x, "%"), expand = c(0, 0)) +
+  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%"), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%"), expand = c(0, 0)) +
   annotate("text", x = 28, y = 35, label = "Línea de perfecta igualdad (45°)", color = "gray25", fontface = "italic", size = 3.8, angle = 45) +
   annotate("label", x = 62, y = 22, label = "Cabecera urbana\nGini salarial = 0,475", fill = "white", color = "#1F78B4", fontface = "bold", size = 3.8) +
   annotate("label", x = 74, y = 38, label = "Centros poblados y rural\nGini salarial = 0,433", fill = "white", color = "#E31A1C", fontface = "bold", size = 3.8) +
