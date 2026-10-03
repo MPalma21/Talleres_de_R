@@ -1351,92 +1351,60 @@ grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONE
 ggsave(file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"), plot = grafico_4_2, width = 9.5, height = 6, dpi = 300)
 
 
-## 4.3) Desigualdad salarial y concentración de la masa laboral ----
+## 4.3) Emparejamiento laboral: nivel educativo y posición ocupacional ----
 
-### 4.3.1) Construcción de la curva de Lorenz por dominio ----
-# Prepara la base ordenada por dominio e ingreso laboral
-datos_lorenz <- ocupados_2024_analisis %>%
-  filter(!is.na(INGLABO), INGLABO > 0, !is.na(FEX_C18), FEX_C18 > 0) %>%
-  mutate(DOMINIO = ifelse(as.numeric(CLASE) == 1, "Cabecera urbana", "Centros poblados y rural")) %>%
-  arrange(DOMINIO, INGLABO)
-
-# Acumulación de población y masa salarial usando el bucle for básico de la Clase 3
-lista_lorenz <- list()
-
-for (dom in c("Cabecera urbana", "Centros poblados y rural")) {
-  sub <- datos_lorenz %>% filter(DOMINIO == dom)
-  n_obs <- nrow(sub)
-  
-  # Totales poblacionales y de ingreso para ponderar porcentajes
-  tot_pobl <- sum(sub$FEX_C18)
-  tot_ing  <- sum(sub$FEX_C18 * sub$INGLABO)
-  
-  # Vectores para guardar la acumulación paso a paso
-  pobl_acum <- numeric(n_obs)
-  ing_acum  <- numeric(n_obs)
-  
-  suma_pobl <- 0
-  suma_ing  <- 0
-  
-  for (i in 1:n_obs) {
-    suma_pobl <- suma_pobl + sub$FEX_C18[i]
-    suma_ing  <- suma_ing  + (sub$FEX_C18[i] * sub$INGLABO[i])
-    
-    pobl_acum[i] <- (suma_pobl / tot_pobl) * 100
-    ing_acum[i]  <- (suma_ing / tot_ing) * 100
-  }
-  
-  # Puntos representativos para graficar de forma fluida y ligera
-  filas_muestra <- round(seq(1, n_obs, length.out = 500))
-  
-  lista_lorenz[[dom]] <- data.frame(
-    DOMINIO = dom,
-    P_POBLACION = c(0, pobl_acum[filas_muestra]),
-    L_INGRESO   = c(0, ing_acum[filas_muestra])
+### 4.3.1) Preparación de datos y tabla de contingencia ----
+datos_mismatch <- ocupados_2024_analisis %>%
+  filter(!is.na(P3042), !is.na(P6430)) %>%
+  mutate(
+    NIVEL = case_when(
+      P3042 %in% 1:3 ~ "Primaria o menos",
+      P3042 %in% 4:5 ~ "Secundaria / Media",
+      P3042 %in% 6:9 ~ "Educación Superior"
+    ),
+    POSICION = case_when(
+      P6430 == 1 ~ "Obrero particular",
+      P6430 == 2 ~ "Obrero del gobierno",
+      P6430 == 4 ~ "Cuenta propia",
+      P6430 == 5 ~ "Patrón / Empleador",
+      TRUE       ~ "Otros / Doméstico"
+    )
   )
-}
 
-lorenz_total <- bind_rows(lista_lorenz)
+tabla_mismatch <- datos_mismatch %>%
+  group_by(NIVEL, POSICION) %>%
+  summarise(
+    N_MUESTRA = n(),
+    OCUPADOS_EXP = round(sum(FEX_C18 / 12), 0),
+    .groups = "drop"
+  )
 
-write.csv(
-  data.frame(
-    DOMINIO = c("Cabecera urbana", "Centros poblados y rural"),
-    GINI_SALARIAL = c(0.475, 0.433)
-  ),
-  file.path(ruta_outputs, "4_3_tabla_lorenz_gini.csv"),
-  row.names = FALSE
-)
+write.csv(tabla_mismatch, file.path(ruta_outputs, "4_3_tabla_mismatch_educacion.csv"), row.names = FALSE)
 
-### 4.3.2) Construcción y exportación del gráfico 4_3_desigualdad_lorenz.png ----
-grafico_4_3 <- ggplot(lorenz_total, aes(x = P_POBLACION, y = L_INGRESO, group = DOMINIO)) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40", linewidth = 0.8) +
-  geom_area(aes(fill = DOMINIO), alpha = 0.25, position = "identity") +
-  geom_line(aes(color = DOMINIO), linewidth = 1.15) +
-  scale_fill_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
-  scale_color_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
-  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%"), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%"), expand = c(0, 0)) +
-  annotate("text", x = 28, y = 35, label = "Línea de perfecta igualdad (45°)", color = "gray25", fontface = "italic", size = 3.8, angle = 45) +
-  annotate("label", x = 62, y = 22, label = "Cabecera urbana\nGini salarial = 0,475", fill = "white", color = "#1F78B4", fontface = "bold", size = 3.8) +
-  annotate("label", x = 74, y = 38, label = "Centros poblados y rural\nGini salarial = 0,433", fill = "white", color = "#E31A1C", fontface = "bold", size = 3.8) +
+### 4.3.2) Construcción y exportación del gráfico 4_3_mismatch_educacion.png ----
+grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
+  geom_count(aes(color = after_stat(n)), alpha = 0.85) +
+  scale_size_area(max_size = 14) +
+  scale_color_gradient(low = "#9ECAE1", high = "#084594") +
   labs(
-    title = "Desigualdad salarial y concentración de la masa laboral: Curvas de Lorenz por dominio",
-    subtitle = "Participación acumulada de ocupados vs masa salarial total (Colombia, GEIH 2024)",
-    x = "Porcentaje acumulado de la población ocupada (%)",
-    y = "Porcentaje acumulado de la masa salarial mensual (%)",
-    color = "Dominio geográfico:", fill = "Dominio geográfico:",
-    caption = "Fuente: GEIH 2024 (DANE). Ocupados con ingreso laboral positivo (INGLABO > 0). Factor de expansión: FEX_C18."
+    title = "Emparejamiento laboral: Nivel educativo y posición ocupacional en Colombia",
+    subtitle = "Frecuencia muestral de intersección entre educación y jerarquía del empleo (GEIH 2024)",
+    x = "Nivel educativo aprobado",
+    y = "Posición ocupacional declarada",
+    size = "Ocupados:", color = "Frecuencia:",
+    caption = "Fuente: GEIH 2024 (DANE). Cálculos Grupo 10."
   ) +
   theme_bw() +
   theme(
-    plot.title = element_text(face = "bold", size = 14),
-    plot.subtitle = element_text(size = 10.5, color = "gray30"),
-    axis.text = element_text(size = 10),
-    axis.title = element_text(size = 11, face = "bold"),
-    legend.position = "bottom",
-    legend.title = element_text(size = 10, face = "bold"),
-    legend.text = element_text(size = 9.5)
+    plot.title = element_text(face = "bold", size = 13),
+    plot.subtitle = element_text(size = 10, color = "gray30"),
+    axis.text = element_text(size = 9.5),
+    axis.title = element_text(size = 10.5, face = "bold"),
+    legend.position = "right",
+    legend.title = element_text(size = 9.5, face = "bold"),
+    legend.text = element_text(size = 9)
   )
 
-ggsave(file.path(ruta_outputs, "4_3_desigualdad_lorenz.png"), plot = grafico_4_3, width = 9.5, height = 6, dpi = 300)
+ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 9.5, height = 6, dpi = 300)
+
 

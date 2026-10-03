@@ -337,15 +337,15 @@ figura_recortada("4_2_inclusion_ventas_micro.png")
 
 La densidad del logaritmo de ventas brutas mensuales muestra una clara segmentación productiva según el acceso financiero (`4_2_tabla_inclusion_ventas.csv`). Los micronegocios confinados exclusivamente al efectivo registran medianas de ventas de **$1,38M COP** sin crédito y **$2,14M COP** con crédito. Por el contrario, las unidades que integraron canales de pago digitales registran densidades sustancialmente desplazadas hacia la derecha, con ventas medianas de **$4,5M a $5,2M COP**. La adopción de pagos electrónicos genera trazabilidad transaccional (*scoring* alternativo), mitigando las asimetrías de información bancaria (*Stiglitz & Weiss, 1981; Gomez-Gonzalez et al., 2023*) y facilitando el escalamiento operativo de las microempresas.
 
-## 4.3. Desigualdad salarial urbana y rural: Curvas de Lorenz 
+## 4.3. Emparejamiento laboral: nivel educativo y posición ocupacional
 
 ```{r}
-#| fig-cap: "Curvas de Lorenz de la masa salarial laboral por dominio territorial, Colombia 2024. Fuente: GEIH 2024."
+#| fig-cap: "Frecuencia de intersección entre nivel educativo y posición ocupacional, Colombia 2024. Fuente: GEIH 2024."
 #| out-width: "44%"
-figura_recortada("4_3_desigualdad_lorenz.png")
+figura_recortada("4_3_mismatch_educacion.png")
 ```
 
-Las curvas de Lorenz de la remuneración laboral calculadas con `FEX_C18` evidencian una marcada asimetría en la distribución de la masa salarial (`4_3_tabla_lorenz_gini.csv`). En las cabeceras urbanas, el 10 % de mayores ingresos concentra más del 40 % del total de las remuneraciones, arrojando un coeficiente de Gini salarial elevado de **0,475**. En contraste, en los centros poblados y áreas rurales el Gini salarial se ubica en **0,433**. No obstante, esta menor desigualdad rural responde a una nivelación precaria hacia abajo, caracterizada por una elevada homogeneidad en ingresos de subsistencia, mientras la dispersión urbana refleja retornos al capital humano calificado (*Bourguignon, 2021; Lustig et al., 2022*).
+El cruce de frecuencias discretas mediante `geom_count` revela una marcada asimetría en la absorción del capital humano en la estructura productiva (`4_3_tabla_mismatch_educacion.csv`). Si bien los obreros particulares concentran la mayor masa de ocupados con educación secundaria y superior, destaca que el trabajo por cuenta propia absorbe a más de 3 millones de personas con primaria y secundaria, e incluye cerca de 1 millón de trabajadores con formación superior. Este patrón ilustra el fenómeno del desajuste educativo o subempleo por competencias (*Hartog, 2000*), donde la insuficiente demanda de empleo formal calificado empuja a trabajadores educados hacia el autoempleo y micronegocios no profesionales como estrategia de refugio económico.
 
 # Referencias
 
@@ -354,8 +354,8 @@ Las curvas de Lorenz de la remuneración laboral calculadas con `FEX_C18` eviden
 \item DANE. \textit{Boletín técnico: Encuesta de Micronegocios (EMICRON) 2024}. Bogotá: DANE.
 \item DANE. \textit{Empleo informal y seguridad social, octubre--diciembre 2024}. Boletín y anexo estadístico (\texttt{Código\_SAS}).
 \item Bonet-Morón, J., Hahn-De-Castro, L. W., \& Pérez-Valbuena, G. J. (2021). Regional economic disparities and regional policy in Colombia. \textit{Regional Studies}, 55(10-11), 1714--1727.
-\item Bourguignon, F. (2021). The economics of income inequality: A survey of recent advances in developing nations. \textit{World Bank Research Observer}, 36(1), 1--35.
 \item Gómez-González, J. E., Mendoza, J. C., \& Rojas, M. A. (2023). Fintech payments, financial inclusion, and small firm revenues in Latin America. \textit{Borradores de Economía}, Banco de la República, No. 1242.
+\item Hartog, J. (2000). Over-education and earnings: where are we, where should we go? \textit{Empirical Economics}, 25(1), 1--23.
 \item Lustig, N., Martinez-Aguilar, A., \& Melendez, M. (2022). Fiscal policy and inequality in Latin America. \textit{CEQ Working Paper}, Tulane University.
 \item Stiglitz, J. E., \& Weiss, A. (1981). Credit rationing in markets with imperfect information. \textit{American Economic Review}, 71(3), 393--410.
 \end{enumerate}
