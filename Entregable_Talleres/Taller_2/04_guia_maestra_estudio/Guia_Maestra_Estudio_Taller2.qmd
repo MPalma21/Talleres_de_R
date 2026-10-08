@@ -1,0 +1,885 @@
+---
+title: "Guía Maestra de Estudio: Mercado Laboral, Microdatos y Micronegocios en Colombia"
+subtitle: "Tratado Teórico, Estadístico y Metodológico Aplicado al Taller 2 (GEIH y EMICRON 2023-2024)"
+author:
+  - name: "Equipo Académico Interdisciplinario de Economía Aplicada"
+    affiliation: "Maestría en Economía Aplicada (MECA) · Universidad de los Andes"
+date: "Octubre 2026"
+lang: es
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    smooth-scroll: true
+    embed-resources: true
+    code-fold: false
+  typst:
+    papersize: us-letter
+    margin:
+      x: 2cm
+      y: 2cm
+    toc: true
+    toc-depth: 3
+    toc-title: "Tabla de Contenido Temático"
+    mainfont: "Liberation Sans"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# Prólogo y Filosofía de Aprendizaje {.unnumbered}
+
+La investigación aplicada en economías emergentes exige una rigurosa interacción entre la teoría económica, la inferencia estadística sobre muestras complejas y la comprensión íntima de las fuentes de información empírica. En el caso de Colombia, el mercado laboral no opera como un mercado walrasiano perfectamente integrado y homogéneo; por el contrario, está marcado por profundas fracturas institucionales, segmentaciones demográficas, disparidades territoriales y una masiva presencia de autoempleo informal de subsistencia.
+
+Esta **Guía Maestra de Estudio** ha sido concebida como un texto de referencia autónomo y exhaustivo para estudiantes de posgrado en Economía Aplicada. Su propósito no es ofrecer una guía de instrucciones de programación ni un recetario de comandos, sino construir la arquitectura conceptual completa que permite comprender qué se investiga, por qué tiene sentido económico hacerlo, qué restricciones imponen los microdatos del Departamento Administrativo Nacional de Estadística (DANE) y cómo deben interpretarse, validarse y defenderse los hallazgos empíricos.
+
+A lo largo de este volumen, cada fenómeno se aborda mediante una secuencia intelectual rigurosa:
+
+$$\text{Problema Económico} \longrightarrow \text{Fundamento Teórico} \longrightarrow \text{Estructura Muestral} \longrightarrow \text{Estrategia Empírica} \longrightarrow \text{Resultado} \longrightarrow \text{Límites y Conexiones}$$
+
+El lector encontrará a lo largo del texto advertencias metodológicas, demostraciones analíticas formales, un examen exhaustivo de los resultados reproducibles del Taller 2, un banco de preguntas clasificadas por niveles taxonómicos de evaluación de posgrado y un solucionario razonado con argumentación técnica.
+
+---
+
+# PARTE I: Fundamentos de Investigación Económica con Microdatos {#sec-parte-1}
+
+## 1.1. Preguntas Rectoras de la Economía Laboral y el Desarrollo
+
+El análisis empírico del Taller 2 responde a una serie de interrogantes estructurales de la economía colombiana:
+
+1. **La capacidad de absorción del aparato productivo:** ¿En qué medida el crecimiento económico se traduce en la creación de puestos de trabajo de calidad frente al crecimiento natural de la población en edad productiva?
+2. **Las barreras de acceso y la división sexual del trabajo:** ¿Cuáles son los determinantes de las persistentes brechas de participación, ocupación y desempleo entre hombres y mujeres, y qué papel desempeñan las responsabilidades de cuidado intrahogar?
+3. **La naturaleza del autoempleo:** ¿Constituyen los más de 5 millones de micronegocios en Colombia un motor schumpeteriano de innovación y acumulación de capital, o representan prioritariamente una red de refugio informal ante el racionamiento de puestos de trabajo asalariados modernos?
+4. **Las fricciones institucionales y financieras:** ¿Por qué la inmensa mayoría de los micronegocios no cuenta con Registro Único Tributario (RUT) ni matrícula mercantil, y cómo interactúan la opacidad contable y el uso exclusivo del efectivo con el racionamiento de crédito bancario?
+5. **El dualismo territorial:** ¿Hasta qué punto la informalidad y los bajos ingresos salariales responden a la geografía económica y a las trampas de baja productividad centro-periferia?
+
+## 1.2. Datos Observacionales vs. Datos Experimentales
+
+A diferencia de las ciencias naturales o de la economía experimental, el análisis del mercado de trabajo a nivel nacional se fundamenta en **datos observacionales**:
+
+* **Ausencia de asignación aleatoria:** El Estado no asigna aleatoriamente a los individuos su nivel educativo, su condición de formalidad, su género ni la propiedad de un micronegocio. Todas estas variables son el resultado de decisiones de optimización individual sujetas a restricciones presupuestarias, dotaciones iniciales de capital humano y barreras del entorno.
+* **El desafío de la endogeneidad:** La presencia de variables no observables (habilidad innata, motivación, aversión al riesgo, redes familiares) introduce sesgos de selección y problemas de variables omitidas. Por ejemplo, al observar que los propietarios con educación superior tienen tasas de formalidad tributaria significativamente más altas, no es posible atribuir mecánicamente este resultado a un efecto causal puro de la escolaridad sin considerar que estos individuos también disponen de mayor patrimonio inicial y atienden a segmentos de mercado corporativos.
+* **El papel del análisis descriptivo riguroso:** Reconocer la naturaleza observacional de los microdatos no invalida el análisis empírico. La econometría descriptiva rigurosa permite caracterizar la distribución conjunta de variables, cuantificar la magnitud de las brechas, evaluar equilibrios contables y contrastar si los patrones empíricos observados son compatibles o refutan las hipótesis de los modelos teóricos de economía laboral.
+
+## 1.3. Jerarquía y Unidades Estadísticas de Análisis
+
+Una fuente recurrente de error metodológico consiste en confundir las distintas unidades de observación que coexisten en las investigaciones estadísticas del DANE:
+
+```
+[Vivienda Física] ─── Estructura cartográfica censal independiente
+       │
+       ▼
+[Hogar Particular] ── Unidad socioeconómica: comparte techo y presupuesto de alimentos
+       │
+       ▼
+[Persona / Individuo] ── Oferente de trabajo, perceptor de ingresos y consumidor
+       │
+       ▼ (Si es Cuenta Propia o Patrón con <= 9 trabajadores)
+[Micronegocio] ────── Unidad económica productiva: cuasiempresa con ventas y costos
+```
+
+* **Vivienda:** Espacio físico estructuralmente separado e independiente (casa, apartamento, cuarto).
+* **Hogar:** Unidad social conformada por una persona o grupo de personas que cohabitan en una vivienda y comparten el presupuesto de alimentación. En una sola vivienda física pueden habitar dos o más hogares independientes.
+* **Persona:** El individuo como unidad biológica y agente económico. En la Gran Encuesta Integrada de Hogares (GEIH), la persona es la unidad básica para medir el capital humano, la fuerza laboral y el bienestar.
+* **Micronegocio (Unidad Económica):** En la Encuesta de Micronegocios (EMICRON), la unidad de análisis ya no es el bienestar individual ni familiar, sino la **unidad de producción**. El micronegocio posee una función de costos, activos fijos, volumen de ventas y requerimientos transaccionales. Un individuo puede poseer múltiples actividades productivas, o varios miembros del hogar pueden gestionar colectivamente una única unidad económica.
+
+---
+
+# PARTE II: Arquitectura de los Datos: GEIH y EMICRON {#sec-parte-2}
+
+## 2.1. La Gran Encuesta Integrada de Hogares (GEIH)
+
+La GEIH es la principal operación estadística continua de hogares en Colombia, diseñada para proporcionar información periódica y representativa sobre la dinámica ocupacional y los ingresos de la población del país.
+
+* **Objetivo principal:** Cuantificar el tamaño, estructura y evolución de la fuerza de trabajo nacional; estimar tasas de participación, ocupación y desempleo; y capturar los determinantes sociodemográficos de los ingresos laborales y no laborales.
+* **Población de referencia:** La totalidad de la población civil no institucional residente en el territorio nacional. Se excluyen los miembros activos de las fuerzas armadas acuartelados y las personas que residen de forma permanente en instituciones (cárceles, conventos, asilos, orfanatos).
+* **Cobertura geográfica:** Desagregación a nivel nacional, cabeceras municipales, centros poblados y rural disperso, 23 capitales de departamento y sus áreas metropolitanas, y representatividad departamental anual.
+
+### 2.1.1. Estructura Modular y Filtros Secuenciales del Cuestionario
+
+La GEIH se estructura en módulos especializados para optimizar la recolección y aplicar filtros estrictos:
+
+```
+[Características Generales, Seguridad Social en Salud y Educación]
+(Censo muestral universal de personas en el hogar: todas las edades)
+                             │
+                             ▼ Filtro demográfico: Edad >= 15 años
+                 [Fuerza de Trabajo (PET)]
+                /                         \
+               ▼                           ▼
+      [Módulo de Ocupados]        [Módulo de No Ocupados]
+   (Trabajaron >= 1 hora en la    (Desocupados con búsqueda activa
+     semana de referencia)           e Inactivos del mercado)
+```
+
+1. **Módulo Base (Características Generales):** Contiene a todos los residentes habituales del hogar sin límite de edad. Es el denominador maestro demográfico.
+2. **Módulo de Fuerza de Trabajo:** Se aplica a la **Población en Edad de Trabajar (PET)**, definida en Colombia a partir de los 15 años de edad cumplidos.
+3. **Módulo de Ocupados:** Se habilita exclusivamente para quienes declaran haber trabajado al menos una hora remunerada en la semana de referencia, tuvieron trabajo no remunerado en un negocio familiar, o tenían trabajo pero estuvieron temporalmente ausentes.
+4. **Módulo de No Ocupados:** Clasifica a las personas de la PET sin empleo entre **Desocupados** (quienes realizaron gestiones activas de búsqueda en el último mes y están disponibles de inmediato) y **Población Fuera de la Fuerza de Trabajo** (estudiantes, personas dedicadas al cuidado no remunerado, pensionados, rentistas o personas con discapacidad permanente).
+
+## 2.2. La Encuesta de Micronegocios (EMICRON)
+
+EMICRON es una investigación estadística especializada desarrollada por el DANE para cerrar el vacío de información sobre la economía de pequeña escala y el autoempleo.
+
+* **Población objetivo:** Unidades económicas de los sectores agropecuario, industrial, comercial y de servicios que ocupan hasta un máximo de nueve (9) personas (incluyendo al propietario).
+* **Mecanismo de muestreo:** La muestra de EMICRON no se selecciona de un directorio empresarial tradicional de cámaras de comercio, sino que se extrae como una **submuestra transversal condicionada de los hogares de la GEIH**.
+* **Condición de entrada:** Solo ingresan a EMICRON las personas que en la entrevista de la GEIH fueron clasificadas como **trabajadores por cuenta propia** o **patrones/empleadores** de establecimientos de hasta 9 trabajadores.
+* **Módulos analizados:** Identificación, Características del micronegocio, Inclusión financiera y Ventas/Ingresos.
+
+## 2.3. Identificadores y Llave Compuesta Jerárquica
+
+Para individualizar unívocamente a cada persona dentro de los microdatos del DANE sin riesgo de duplicación ni confusión entre miembros, es indispensable construir una **llave compuesta jerárquica**:
+
+$$\text{Llave de Persona}_{\text{GEIH}} = \{\text{DIRECTORIO},\; \text{SECUENCIA\_P},\; \text{ORDEN}\}$$
+
+$$\text{Llave de Persona}_{\text{EMICRON}} = \{\text{DIRECTORIO},\; \text{SECUENCIA\_P},\; \text{SECUENCIA\_ENCUESTA}\}$$
+
+* **`DIRECTORIO`:** Identificador numérico de la vivienda o edificación muestreada. No individualiza a una persona ni a un hogar, pues una vivienda puede contener múltiples unidades habitacionales.
+* **`SECUENCIA_P`:** Consecutivo que identifica al hogar específico dentro de la vivienda ($1, 2, \dots$). Separa a familias que comparten techo pero conservan presupuestos de comida independientes.
+* **`ORDEN` / `SECUENCIA_ENCUESTA`:** Número consecutivo asignado a cada individuo dentro de su hogar ($1$ para el jefe de hogar, $2$ para la pareja, etc.).
+
+> **Demostración de Unicidad:**  
+> Ninguna de las variables aisladas es un identificador. `ORDEN = 1` existe en todos los hogares del país; la combinación `DIRECTORIO + ORDEN` fallaría en viviendas con cohabitación múltiple, pues el jefe del hogar 1 y el jefe del hogar 2 tendrían el mismo número de orden dentro de la misma vivienda física. Solo la tupla tridimensional garantiza unicidad matemática estricta.
+
+### Consecuencias Estadísticas de Fallas en la Unicidad
+
+Si en un proceso de integración relacional la llave no es estrictamente única en ambas fuentes:
+1. Se desencadena una relación de cardinalidad uno-a-muchos ($1:M$) o muchos-a-muchos ($M:M$).
+2. La operación genera un **producto cartesiano muestral**, duplicando o triplicando artificialmente las filas de la base integrada.
+3. Se inflan los factores de expansión poblacionales, distorsionando severamente las identidades contables aditivas del mercado laboral y sesgando los estimadores puntuales de ingreso y empleo.
+
+## 2.4. Integración Relacional y Desfase Temporal: GEIH vs. EMICRON
+
+El cruce de microdatos entre la GEIH y la EMICRON revela un desafío metodológico fundamental: **compartir identificadores de persona no garantiza coincidencia en la referencia temporal del calendario**.
+
+### 2.4.1. Naturaleza Asimétrica de la Inclusión
+
+$$\text{Muestra}_{\text{EMICRON}} \subset \text{Muestra}_{\text{GEIH (Cuenta Propia y Patrones)}} \subset \text{Muestra}_{\text{GEIH Total}}$$
+
+Esta asimetría exige que al fusionar ambas fuentes para enriquecer a la unidad económica con los atributos de su dueño, se debe realizar un pegue relacional que **preserve exactamente el universo de EMICRON** sin alterar su número de observaciones ni multiplicar sus registros.
+
+### 2.4.2. El Desplazamiento Temporal: Recolección vs. Referencia Contable
+
+$$\text{Mes de Referencia EMICRON} = \text{Mes de Encuesta GEIH} + 1$$
+
+```
+Mes t: [Encuesta GEIH al Hogar] ───> Se identifica al cuenta propia o patrón
+                                       │
+                                       ▼ Semanas después (Mes t+1)
+Mes t+1: [Encuesta EMICRON]     ───> Indaga ventas del mes anterior (Mes t)
+                                     El DANE etiqueta este registro con el MES DE REFERENCIA.
+```
+
+1. **Mes de Encuesta (GEIH):** Momento del calendario en que el encuestador visita el hogar y levanta los datos sociodemográficos y laborales de la semana pasada.
+2. **Mes de Referencia (EMICRON):** Periodo económico contable sobre el cual el propietario reporta sus ventas brutas, costos y desempeño financiero.
+3. **Implicación en la Auditoría:** Cuando se analiza la EMICRON de 2024, los micronegocios cuyo mes de referencia es **enero de 2024** no pueden encontrar contraparte en la GEIH de 2024: sus entrevistas de recolección en el hogar ocurrieron necesariamente en **diciembre de 2023**. Efectivamente, la auditoría empírica demuestra que el 99,4 % de los registros no emparejados de enero de 2024 se encuentran registrados en los microdatos de la GEIH de 2023.
+
+## 2.5. Factores de Expansión e Inferencia Probabilística
+
+En encuestas por muestreo complejo, las frecuencias muestrales directas no representan la realidad económica de la nación.
+
+### 2.5.1. El Estimador de Horvitz-Thompson
+
+En un diseño muestral probabilístico estratificado y multietápico, la probabilidad de inclusión de la unidad $i$ en la muestra es $\pi_i \in (0, 1]$. El factor de expansión básico es el inverso de esta probabilidad:
+
+$$w_i = \frac{1}{\pi_i} \times \text{Ajuste por No Respuesta}_i \times \text{Factor de Calibración Post-estratificada}_i$$
+
+El estimador insesgado de Horvitz-Thompson para el total poblacional $Y$ de una variable económica $y$ viene dado por:
+
+$$\widehat{Y}_{\text{HT}} = \sum_{i \in s} w_i \, y_i$$
+
+Y el estimador de la media poblacional $\overline{Y}$ es el cociente ponderado:
+
+$$\widehat{\overline{Y}} = \frac{\sum_{i \in s} w_i \, y_i}{\sum_{i \in s} w_i}$$
+
+### 2.5.2. Ponderador de Individuos vs. Ponderador de Unidades Económicas
+
+Existe una diferencia analítica irreconciliable entre los dos factores utilizados en el Taller 2:
+
+| Criterio | Ponderador GEIH (`FEX_C18`) | Ponderador EMICRON (`F_EXP`) |
+| :--- | :--- | :--- |
+| **Unidad representada** | Individuos / Personas civiles | Unidades económicas / Micronegocios |
+| **Población objetivo** | Población civil residente en Colombia | Universo nacional de microempresas ($\le 9$ ocupados) |
+| **Periodicidad** | Mensual promedio | Anual consolidada |
+| **Suma nacional** | $\approx 50$ millones de personas | $\approx 5,3$ millones de micronegocios |
+
+> **Principio de Especificación Muestral:** Utilizar el factor de expansión de personas (`FEX_C18`) para proyectar variables de micronegocios (como ventas brutas o crédito) implicaría imputar un micronegocio a cada habitante representado por el titular, generando una sobreestimación artificial masiva de la economía microempresarial.
+
+### 2.5.3. Regla de Agregación Temporal Trimestral y Anual
+
+El ponderador mensual de la GEIH representa a la población promedio de ese mes calendario. Si se suman tres meses para conformar un trimestre móvil o calendario:
+
+$$\text{Población Promedio Trimestral} = \sum_{i \in \text{Trimestre}} \frac{w_i}{3}$$
+
+De forma análoga, para obtener la población promedio anual de ocupados a partir de los 12 meses de la GEIH:
+
+$$\text{Población Promedio Anual} = \sum_{i \in \text{Año}} \frac{w_i}{12}$$
+
+Si un analista sumara directamente los factores sin promediar entre el número de periodos, triplicaría o multiplicaría por 12 la masa de habitantes de Colombia, arrojando estimaciones absurdas de 150 o 600 millones de personas.
+
+---
+
+# PARTE III: Fundamentos de Economía Laboral {#sec-parte-3}
+
+## 3.1. Poblaciones y Particiones del Mercado de Trabajo
+
+Siguiendo las directrices internacionales de la Organización Internacional del Trabajo (OIT) adoptadas por el DANE, la población nacional se estructura en categorías contables exhaustivas y mutuamente excluyentes:
+
+$$\text{Población Total (PT)} = \text{Menores de 15 años} + \text{Población en Edad de Trabajar (PET)}$$
+
+$$\text{PET} = \text{Fuerza de Trabajo (FT)} + \text{Población Fuera de la Fuerza de Trabajo (FFT)}$$
+
+$$\text{FT} = \text{Ocupados (OCI)} + \text{Desocupados (DSI)}$$
+
+## 3.2. Indicadores Macroeconómicos Centrales
+
+### 3.2.1. Tasa Global de Participación (TGP)
+
+Mide la presión relativa de la oferta de trabajo disponible respecto a la base demográfica en edad productiva:
+
+$$\text{TGP} = \frac{\text{FT}}{\text{PET}} \times 100 = \frac{\text{OCI} + \text{DSI}}{\text{PET}} \times 100$$
+
+* **Numerador:** Fuerza de trabajo activa (personas trabajando o buscando activamente empleo).
+* **Denominador:** Población en edad de trabajar (15 años o más).
+* **Interpretación:** Refleja la propensión de los ciudadanos en edad productiva a participar en el mercado laboral mercantil. En Colombia promedia entre el 64 % y el 65 % a nivel nacional.
+
+### 3.2.2. Tasa de Ocupación (TO)
+
+Cuantifica la capacidad efectiva de absorción de mano de obra por parte del aparato económico:
+
+$$\text{TO} = \frac{\text{OCI}}{\text{PET}} \times 100$$
+
+* **Numerador:** Población efectivamente ocupada durante la semana de referencia.
+* **Denominador:** Población en edad de trabajar (PET).
+* **Interpretación:** Indica qué porcentaje del potencial demográfico productivo está siendo utilizado en actividades generadoras de bienes y servicios. Oscila entre el 57 % y el 59 % nacional.
+
+### 3.2.3. Tasa de Desempleo (TD)
+
+Mide el desbalance o exceso de oferta laboral en relación con la fuerza de trabajo activamente movilizada:
+
+$$\text{TD} = \frac{\text{DSI}}{\text{FT}} \times 100 = \frac{\text{DSI}}{\text{OCI} + \text{DSI}} \times 100$$
+
+* **Numerador:** Personas desocupadas que realizaron acciones concretas de búsqueda laboral y están disponibles de inmediato.
+* **Denominador:** Fuerza de trabajo activa (FT). **Nunca la población total ni la PET.**
+* **Interpretación:** Refleja la fracción de participantes activos que no logran colocarse en una vacante productiva.
+
+## 3.3. La Identidad Estructural del Desempleo
+
+Existe una relación matemática exacta que conecta simultáneamente a los tres agregados macroeconómicos:
+
+$$\text{TD} = \frac{\text{DSI}}{\text{FT}} = \frac{\text{FT} - \text{OCI}}{\text{FT}} = 1 - \frac{\text{OCI}}{\text{FT}}$$
+
+Dividiendo el numerador y denominador de la fracción interna entre la población en edad de trabajar ($\text{PET}$):
+
+$$\text{TD} = 1 - \frac{\frac{\text{OCI}}{\text{PET}}}{\frac{\text{FT}}{\text{PET}}} = 1 - \frac{\text{TO}}{\text{TGP}}$$
+
+### 3.3.1. Implicaciones Analíticas Fundamentales
+
+1. **La tasa de desempleo es un cociente dinámico:** No depende exclusivamente de la destrucción o creación de puestos de trabajo ($\text{OCI}$), sino de la velocidad relativa a la que se expande o contrae la oferta de trabajo ($\text{FT}$).
+2. **La paradoja del desaliento laboral:** La tasa de desempleo puede experimentar una caída puramente aritmética sin que se genere un solo puesto de trabajo en la economía. Si un grupo de desempleados pierde la expectativa de hallar colocación y suspende la búsqueda activa, transita hacia la inactividad ($\text{FFT}$). Esta salida reduce la $\text{TGP}$ mientras la $\text{TO}$ permanece invariable; consecuentemente, la razón $\frac{\text{TO}}{\text{TGP}}$ aumenta, provocando una contracción matemática de la tasa de desempleo.
+3. **El efecto de atracción laboral:** Durante periodos de fuerte reactivación económica, la entrada masiva de personas que antes estaban inactivas hacia la búsqueda de empleo (incremento acelerado de la $\text{TGP}$) puede elevar transitoriamente la tasa de desempleo, aun cuando la ocupación ($\text{TO}$) esté creciendo vigorosamente.
+
+## 3.4. Brechas Laborales por Sexo
+
+El análisis desagregado expone desigualdades estructurales sistemáticas entre hombres y mujeres:
+
+* **Brecha de Participación:** Los hombres registran tasas de participación estables entre 76 % y 77 %, mientras que las mujeres oscilan entre 51 % y 53 %, consolidando una brecha estructural superior a **24 puntos porcentuales**.
+* **Brecha de Ocupación:** Cerca del 70 % de los hombres en edad productiva cuenta con empleo, frente a solo el 44 %–47 % de las mujeres (brecha de $\approx 25$ puntos porcentuales).
+* **Sobretasa de Desempleo Femenino:** Las mujeres activas sufren tasas de desempleo sistemáticamente mayores (11 % a 15 %) que los hombres (7 % a 10 %), configurando una penalización relativa de 4 a 5 puntos porcentuales.
+
+### Fundamentos Teóricos de las Brechas de Género
+
+1. **Economía del Cuidado y Asignación Intrahogar:** Siguiendo los modelos de asignación de tiempo de Becker (1965), la división sexual del trabajo impone sobre las mujeres una carga desproporcionada de trabajo doméstico y de cuidado no remunerado, elevando su salario de reserva y restringiendo su disponibilidad horaria.
+2. **Segregación Ocupacional Horizontal y Vertical:** Las mujeres se concentran en ramas de menor remuneración relativa (servicios personales, educación, comercio minorista) y enfrentan barreras invisibles para acceder a puestos de dirección (*techo de cristal*).
+3. **Advertencia de Inferencia Causal:** Constatar descriptivamente una brecha de tasas no demuestra por sí mismo discriminación de mercado. Para aislar discriminación pura se requieren metodologías de descomposición salarial (como Oaxaca-Blinder) que controlen por diferencias en dotaciones observables de educación, experiencia potencial y segregación sectorial.
+
+## 3.5. Estacionalidad y Variaciones Temporales
+
+Toda serie macroeconómica agregada del empleo se descompone en cuatro fuerzas:
+
+$$Y_t = f(\text{Tendencia}_t,\; \text{Ciclo}_t,\; \text{Estacionalidad}_t,\; \text{Choque Irregular}_t)$$
+
+En Colombia, el cuarto trimestre (octubre-diciembre) registra sistemáticamente la menor tasa de desempleo del año, mientras que el primer trimestre (enero-marzo) presenta su pico anual más elevado. Este movimiento intraanual responde a la **demanda estacional de fin de año**: el comercio minorista, el transporte y los servicios turísticos contratan personal temporal para atender las festividades de Navidad y fin de año.  
+**Implicación metodológica:** Comparar el cuarto trimestre de un año contra el tercer trimestre previo refleja estacionalidad transitoria y no una mejora estructural de la economía. La evaluación rigurosa exige efectuar **comparaciones interanuales entre trimestres homólogos** (ej. T4 de 2024 contra T4 de 2023).
+
+## 3.6. Formalidad e Informalidad Laboral: Medición Multidimensional DANE
+
+En Colombia, la informalidad no se define mediante una única variable binaria de tenencia de contrato. El DANE aplica una batería multidimensional en las 13 principales áreas metropolitanas que articula criterios productivos y de seguridad social:
+
+```
+[Población Ocupada (OCI)]
+             │
+             ├─ Asalariados ─── Cotización efectiva y simultánea a Salud y Pensión
+             │                  en calidad de COTIZANTE DIRECTO (Ley 100 de 1993)
+             │
+             ├─ Cuenta Propia / Patrones ─── Tamaño del establecimiento (<= 5 personas)
+             │                               + Registro en Cámara de Comercio
+             │                               + Contabilidad formal organizada
+             │
+             └─ Trabajadores Familiares sin Remuneración ─── INFORMALES por definición
+```
+
+Bajo esta metodología oficial, en el trimestre octubre-diciembre de 2024, la tasa de informalidad en las 13 principales ciudades se ubicó en el **42,5 %**, presentando una distribución simétrica entre hombres (42,2 %) y mujeres (42,3 %) en el entorno urbano metropolitano.
+
+---
+
+# PARTE IV: Economía de los Micronegocios {#sec-parte-4}
+
+## 4.1. El Tejido Microempresarial en Colombia
+
+Los resultados expandidos de la EMICRON 2024 cuantifican el universo de micronegocios en **5.297.252 unidades productivas**. Sus características estructurales definen el aparato productivo del país:
+
+* **Masculinización de la titularidad:** El 64,6 % de los micronegocios es gestionado por hombres, frente al 35,4 % encabezado por mujeres.
+* **Concentración sectorial en bajas barreras de entrada:** El 45,4 % de los micronegocios se concentra exclusivamente en dos actividades: comercio al por menor y reparación de vehículos (23,9 %) y actividades agropecuarias primarias (21,5 %).
+* **Predominio del autoempleo puro:** El 92,5 % de los titulares de micronegocios se desempeña como trabajador por cuenta propia sin empleados asalariados continuos; solo el 7,5 % actúa como patrón o empleador.
+
+## 4.2. Motivaciones de Entrada: Subsistencia vs. Acumulación
+
+La literatura de elección ocupacional (*Roy, 1951; Lucas, 1978*) clasifica la decisión de operar una unidad económica en dos regímenes:
+
+1. **Autoempleo de subsistencia (refugio involuntario):** Agentes con bajo capital humano inicial que, ante el desempleo y la escasez de vacantes asalariadas formales, crean unidades de supervivencia caracterizadas por rendimientos decrecientes y nula capacidad de ahorro.
+2. **Emprendimiento schumpeteriano (oportunidad):** Agentes con habilidades gerenciales y dotación de capital que identifican nichos rentables de mercado y fundan unidades con vocación de acumulación, contratación y escalamiento.
+
+En Colombia, el peso masivo del comercio minorista popular y el trabajo por cuenta propia demuestra que el universo microempresarial responde predominantemente al régimen de autoempleo de refugio.
+
+## 4.3. El Continuo de la Formalización Institucional
+
+La formalización empresarial no es un estado dicotómico, sino un proceso escalonado de vinculación con las instituciones del Estado:
+
+$$\text{Operación Informal Oculta} \xrightarrow{\text{Fase 1}} \text{Tenencia de RUT (DIAN)} \xrightarrow{\text{Fase 2}} \text{Matrícula Mercantil (Cámara)} \xrightarrow{\text{Fase 3}} \text{Contabilidad y Seguridad Social}$$
+
+En 2024, la radiografía institucional de los más de 5,29 millones de micronegocios evidencia que:
+* Solo el **22,4 %** posee Registro Único Tributario (RUT).
+* Apenas el **10,3 %** cuenta con matrícula mercantil ante la Cámara de Comercio.
+* Prácticamente el **90 %** opera en la absoluta informalidad institucional.
+
+Siguiendo el marco de costos de transacción (*De Soto, 1989; La Porta & Shleifer, 2014*), el titular del micronegocio evalúa si los beneficios marginales de formalizarse (acceso a crédito bancario comercial, contratos con empresas medianas, protección legal) superan los costos fijos de entrada (trámites, tarifas camerales) y los costos variables recurrentes (impuestos directos e indirectos, aportes parafiscales). Para un micronegocio de subsistencia con márgenes reducidos, la permanencia en la informalidad constituye una decisión de optimización económica ante costos institucionales prohibitivos.
+
+## 4.4. Microeconomía de la Inclusión Financiera
+
+### 4.4.1. Prácticas Transaccionales: El Dominio del Efectivo
+
+El análisis de medios de pago en EMICRON 2024 revela un fuerte dualismo:
+* **El efectivo es ubicuo:** Supera el 85 % de adopción en manufactura y agro, y el 94 % en el comercio tradicional.
+* **La fractura digital por sectores:** En las ramas de servicios (50 %) y comercio (43 %), las transferencias electrónicas y billeteras móviles (Nequi, Daviplata, PSE) tienen una penetración significativa. En contraste, en el sector agropecuario rural la adopción de medios digitales apenas alcanza el 6,7 %.
+
+### 4.4.2. Racionamiento de Crédito: El Modelo de Stiglitz y Weiss (1981)
+
+En 2024, solo el **14,2 %** de los micronegocios del país solicitó un crédito en el sistema financiero formal. Este fenómeno no responde únicamente a falta de demanda, sino a un equilibrio de **racionamiento de crédito bajo información asimétrica**:
+
+```
+[Operación Exclusiva en Efectivo]
+                │
+                ▼
+[Opacidad Financiera y Ausencia de Balances Auditables]
+                │
+                ▼
+[Asimetría de Información Banco vs. Micronegocio]
+                │
+                ▼
+[Riesgo de Selección Adversa y Riesgo Moral ante alzas de tasa]
+                │
+                ▼
+[Equilibrio de Racionamiento Bancario y Autoexclusión]
+```
+
+1. **Selección adversa:** El banco no puede distinguir ex ante la viabilidad de los micronegocios. Si eleva la tasa de interés para compensar el riesgo, expulsa a los prestatarios prudentes (cuyos proyectos de bajo riesgo no soportan altas tasas) y retiene a los proyectos especulativos y riesgosos.
+2. **Riesgo moral:** Tasas de interés exorbitantes incentivan al prestatario a adoptar decisiones operativas arriesgadas para intentar cubrir el servicio de la deuda.
+3. **El banco maximiza su retorno esperado restringiendo la cantidad de crédito:** En lugar de vaciar el mercado subiendo el precio del crédito, los bancos fijan techos y exigen colaterales tangibles (propiedades, activos) que los micronegocios no poseen.
+4. **La huella transaccional como mecanismo de señalización:** La adopción de billeteras digitales genera una traza electrónica continua de ventas diarias. Esta información auditable sustituye parcialmente las garantías hipotecarias tradicionales, permitiendo la creación de modelos alternativos de evaluación crediticia (*scoring* algorítmico) que mitigan las asimetrías de información.
+
+## 4.5. Escala Productiva y Causalidad Inversa
+
+La distribución empírica de ventas brutas mensuales muestra que los micronegocios confinados exclusivamente al efectivo registran medianas de facturación de **\$1,38M COP** (sin crédito) y **\$2,14M COP** (con crédito), mientras que aquellos con pagos digitales alcanzan medianas entre **\$4,5M y \$5,2M COP**.
+
+> **Advertencia de Identificación Econométrica:**  
+> Afirmar que *"la adopción de pagos electrónicos triplica las ventas del negocio"* ignora el problema de **causalidad inversa y simultaneidad**:
+>
+> $$\text{Pagos Digitales} \underset{\beta_2}{\overset{\beta_1}{\rightleftarrows}} \text{Escala de Ventas}$$
+>
+> Si bien ofrecer billeteras digitales reduce fricciones de pago para los clientes ($\beta_1$), los micronegocios que ya cuentan con mayor inventario, mejor ubicación y clientela consolidada tienen mayor incentivo y capacidad para integrar plataformas tecnológicas ($\beta_2$). Sin una estrategia de identificación causal cuasi-experimental (ej. variables instrumentales), la evidencia debe reportarse como una correlación entre escala productiva y sofisticación transaccional.
+
+---
+
+# PARTE V: Distribución, Desigualdad y Geografía Económica {#sec-parte-5}
+
+## 5.1. Geografía Económica y Dualismo Centro-Periferia
+
+Al contrastar la tasa de informalidad departamental con la mediana de ingresos laborales monetarios para los 24 departamentos de la GEIH 2024, emerge una relación inversa no lineal pronunciada:
+
+* **Centro dinámico:** Bogotá D.C. presenta una informalidad laboral del **34,6 %** y una mediana salarial de **\$1,6M COP**.
+* **Periferias críticas:** Departamentos como Chocó, La Guajira, Sucre y Córdoba presentan tasas de informalidad que oscilan entre **79 % y 83 %**, con ingresos medianos que descienden a **\$600.000 COP** (menos de la mitad del salario mínimo legal).
+
+Este resultado valida los modelos de **Geografía Económica y Dualismo Estructural** (*Krugman, 1991; Bonet-Morón et al., 2021*):
+1. Las economías de aglomeración, la conectividad vial y la densificación de mercados en los grandes centros urbanos atraen inversión corporativa formal, creando una masa crítica de empleo asalariado calificado y productivo.
+2. En las periferias aisladas, los elevados costos de transporte, la débil dotación de infraestructura pública y la precaria presencia estatal inhiben la formación de tejido empresarial formal. En estas zonas, la informalidad no responde a una elusión oportunista de tributos, sino al único mecanismo disponible de supervivencia económica familiar.
+
+## 5.2. Curvas de Lorenz y Coeficiente de Gini
+
+La concentración del ingreso laboral se analiza formalmente mediante la **Curva de Lorenz** ($L(p)$), que relaciona la fracción acumulada de la población ocupada ordenada por ingresos ($p \in [0, 1]$) con la fracción acumulada del ingreso salarial total capturada por ese colectivo ($L(p) \in [0, 1]$).
+
+$$G = \frac{\text{Área entre la recta de 45° y la Curva de Lorenz}}{\text{Área total bajo la recta de 45°}} = 1 - 2 \int_0^1 L(p) \, dp$$
+
+El Coeficiente de Gini oscila teóricamente entre 0 (perfecta igualdad absoluta) y 1 (concentración extrema, donde un solo individuo acapara todo el ingreso).
+
+## 5.3. La Paradoja de la Desigualdad Rural: Nivelación hacia Abajo
+
+Al estimar el Coeficiente de Gini salarial sobre los microdatos de la GEIH 2024 según dominio territorial:
+* **Cabecera urbana:** Coeficiente de Gini salarial = **0,475**.
+* **Centros poblados y rural disperso:** Coeficiente de Gini salarial = **0,433**.
+
+> **Concepto de Evaluación Crítica:** Un Coeficiente de Gini más bajo no denota un mayor bienestar social.
+
+La menor concentración del ingreso en el sector rural colombiano obedece a una **nivelación precaria hacia abajo**: los trabajadores del campo exhiben ingresos sumamente homogéneos porque la inmensa mayoría sobrevive con jornales agrícolas comprimidos en torno a la línea de subsistencia. Por el contrario, en las cabeceras urbanas la mayor dispersión y el Gini más elevado son el resultado natural de una estructura productiva diversificada con fuertes retornos al capital humano, donde conviven salarios bajos no calificados con remuneraciones altas en sectores corporativos y de servicios avanzados.
+
+---
+
+# PARTE VI: Interpretación Integrada de los Resultados del Taller 2 {#sec-parte-6}
+
+En esta sección se examinan todos y cada uno de los puntos y literales del Taller 2 bajo el esquema analítico de los **9 elementos metodológicos**:
+
+---
+
+## Numeral 1.1: Pegue Mensual de la GEIH (2023 y 2024)
+
+1. **Pregunta original:** Construir la base integrada de la GEIH para los 24 meses de 2023 y 2024 a partir de los cuatro módulos mensuales, verificando la unicidad de llaves y auditando que la unión relacional no multiplique observaciones.
+2. **Fundamento económico:** Analizar el mercado laboral a lo largo de un ciclo bienal exige integrar la información modular de personas en un panel repetido de corte transversal que preserve la representatividad poblacional de cada mes.
+3. **Población y variables:** Base universal de personas de la GEIH. Variables de cruce: `DIRECTORIO`, `SECUENCIA_P`, `ORDEN`. Módulos: Características Generales, Fuerza de Trabajo, Ocupados y No Ocupados.
+4. **Metodología estadística:** Selección defensiva de variables previa a la unión para optimizar el uso de memoria; verificación de unicidad estricta (`anyDuplicated == 0`); uniones por la izquierda (`left_join`) ancladas en el módulo base de Características Generales; comprobación de que el número de filas resultante es idéntico al del módulo base.
+5. **Resultado documentado:** 24 periodos mensuales integrados exitosamente sin duplicados en la llave de personas. El número de filas se preservó de manera exacta en cada iteración mensual.
+6. **Interpretación sustantiva:** La jerarquía habitacional del DANE funciona como un marco cerrado de identificación. Al utilizar la tupla completa, no existen pérdidas ni duplicaciones de registros en el censo muestral.
+7. **Limitaciones:** La GEIH es un corte transversal repetido continuo (con esquema rotativo de viviendas), por lo que no permite hacer seguimiento longitudinal a los mismos individuos a lo largo del tiempo.
+8. **Explicaciones alternativas:** Variaciones en los tamaños mensuales de muestra obedecen a las cargas de trabajo operativas y rotaciones cartográficas del DANE, no a cambios demográficos abruptos de la población colombiana.
+9. **Conexión con otros puntos:** Proporciona la base maestra sobre la cual se calculan los agregados laborales de los puntos 2 y 4.
+
+---
+
+## Numeral 1.2: Descripción de Módulos y Consistencia Laboral
+
+1. **Pregunta original:** Documentar el tamaño de los módulos de la GEIH para 2024 y comprobar la consistencia de las identidades contables aditivas del mercado laboral.
+2. **Fundamento económico:** La teoría macroeconómica del empleo se apoya en particiones exhaustivas y mutuamente excluyentes de la sociedad. Si los filtros del cuestionario presentan inconsistencias lógicas, los agregados de empleo carecen de validez.
+3. **Población y variables:** Muestra completa de la GEIH 2024. Variables: `PET`, `FT`, `FFT`, `OCI`, `DSI`.
+4. **Metodología estadística:** Agregaciones mensuales verificando las condiciones:
+   $$\text{General} \ge \text{Fuerza de Trabajo} \ge \text{Ocupados} + \text{No Ocupados}$$
+   $$\text{PET} = \text{FT} + \text{FFT} \quad \text{y} \quad \text{FT} = \text{OCI} + \text{DSI}$$
+5. **Resultado documentado:** 100 % de cumplimiento de las identidades lógicas en los 12 meses de 2024. La suma de ocupados y no ocupados iguala exactamente a la fuerza de trabajo en todas las observaciones de la PET.
+6. **Interpretación sustantiva:** Los cuestionarios del DANE aplican filtros exhaustivos consistentes con las directrices de la OIT.
+7. **Limitaciones:** La consistencia contable de las variables no descarta potenciales errores de medición por autoreporte en los montos de ingresos o en las horas trabajadas.
+8. **Explicaciones alternativas:** Que el módulo General sea más grande que el de Fuerza de Trabajo no refleja pérdida de datos, sino la presencia de la población infantil menor de 15 años.
+9. **Conexión con otros puntos:** Garantiza que los denominadores utilizados en el Punto 2 para calcular TGP, TO y TD sean matemáticamente consistentes.
+
+---
+
+## Numeral 1.3: Diccionario de Variables y Esquemas de Codificación
+
+1. **Pregunta original:** Construir el diccionario sistemático de variables sociodemográficas y laborales, incorporando las etiquetas oficiales de sexo y posición ocupacional.
+2. **Fundamento económico:** La correcta categorización de las variables cualitativas evita ambigüedades en la interpretación de brechas institucionales y de género.
+3. **Población y variables:** Códigos oficiales del DANE: sexo (`P3271`), posición ocupacional (`P6430`), educación (`P3042`), salud (`P6090`, `P6100`, `P6110`), pensión (`P6920`), ingresos (`INGLABO`), ramas (`RAMA2D_R4`), ponderadores (`FEX_C18`).
+4. **Metodología estadística:** Catalogación de definiciones, dominios de validez y tablas maestras de etiquetas conforme al manual metodológico de la GEIH.
+5. **Resultado documentado:** Matriz unificada de variables y códigos categóricos documentada y exportada formalmente.
+6. **Interpretación sustantiva:** La posición ocupacional separa claramente a los asalariados bajo subordinación patronal de los trabajadores independientes dueños de sus medios de producción.
+7. **Limitaciones:** Algunas categorías de posición ocupacional (como trabajadores familiares no remunerados) combinan actividades agrícolas con labores comerciales urbanas.
+8. **Explicaciones alternativas:** La posición ocupacional no mide por sí sola la formalidad; un trabajador asalariado puede estar vinculado en condiciones de absoluta informalidad.
+9. **Conexión con otros puntos:** Fundamenta la delimitación del subconjunto de cuenta propia y patrones para el análisis de micronegocios.
+
+---
+
+## Numeral 1.4: Incorporación y Emparejamiento de EMICRON con GEIH
+
+1. **Pregunta original:** Construir la base de EMICRON 2024 a partir de sus cuatro módulos, documentar la relación estructural con la GEIH, resolver la llave individual y el periodo de referencia, ejecutar la unión relacional y auditar la calidad del pegue.
+2. **Fundamento económico:** Conectar los atributos sociodemográficos y de capital humano de los propietarios con los resultados financieros y productivos de sus microempresas.
+3. **Población y variables:** EMICRON 2024 y GEIH 2024. Llave: `DIRECTORIO`, `SECUENCIA_P`, `SECUENCIA_ENCUESTA` vs. `ORDEN`. Variables de auditoría: `P35` vs. `P3271` (sexo), `P241` vs. `P6040` (edad), `MES_REF` vs. `MES`.
+4. **Metodología estadística:** Demostración de coincidencia unívoca entre `SECUENCIA_ENCUESTA` y `ORDEN` (100 % de coincidencia en hogares multipropietario); identificación del desfase temporal ($MES_{REF} = MES_{GEIH} + 1$); pegue por la izquierda sobre EMICRON; auditoría de no emparejados contra GEIH 2023.
+5. **Resultado documentado:** 
+   * Tasa global de emparejamiento con GEIH 2024: **86,8 %**.
+   * Validación de calidad: **100 % de coincidencia exacta** en sexo, edad y dominio geográfico entre los registros cruzados.
+   * Auditoría de frontera: Los no emparejados corresponden en su totalidad al mes de referencia enero de 2024; al contrastarlos contra la GEIH de 2023, el **99,4 %** encuentra su registro exacto en diciembre de 2023.
+   * Distribución de posición ocupacional: el **92,5 %** de los micronegocios pertenece a trabajadores por cuenta propia y el **7,5 %** a patrones.
+6. **Interpretación sustantiva:** La correspondencia demuestra que EMICRON es una submuestra estricta de la GEIH con un retraso operativo de un mes en el reporte contable de las transacciones.
+7. **Limitaciones:** Los micronegocios de enero de 2024 quedan excluidos del análisis conjunto de corte transversal cuando solo se dispone del año calendario 2024 de la GEIH.
+8. **Explicaciones alternativas:** La falta de emparejamiento en enero no constituye un error de captura ni pérdida muestral, sino la consecuencia lógica de la regla de recolección del DANE.
+9. **Conexión con otros puntos:** Habilita el cruce conjunto de educación del propietario y tenencia de RUT en el Punto 3.3.
+
+---
+
+## Numeral 2.1: Tasas de Mercado Laboral por Sexo y Trimestres (2023–2024)
+
+1. **Pregunta original:** Construir factores trimestrales ($w_i/3$) y estimar las tasas de participación (TGP), ocupación (TO) y desempleo (TD) desagregadas por sexo para los ocho trimestres de 2023 y 2024.
+2. **Fundamento económico:** Evaluar la evolución macroeconómica de corto plazo y cuantificar las brechas estructurales de género a lo largo del ciclo económico.
+3. **Población y variables:** GEIH consolidada 2023-2024. Ponderador: `FEX_C18 / 3`. Variables: `PET`, `FT`, `OCI`, `DSI`, `P3271`.
+4. **Metodología estadística:** Agrupación en ventanas de tres meses calendario; agregación ponderada de totales absolutos; cómputo de ratios de tasas macroeconómicas.
+5. **Resultado documentado:**
+   * Hombres: TGP estable entre 76,4 % y 77,1 %; TO entre 69,1 % y 71,5 %; TD descendiendo de 9,57 % (T1) a 7,06 % (T4 de 2024).
+   * Mujeres: TGP entre 51,2 % y 53,1 %; TO entre 44,1 % y 47,1 %; TD descendiendo de 14,98 % (T1) a 11,15 % (T4 de 2024).
+6. **Interpretación sustantiva:** Evidencia la magnitud de las brechas de género en Colombia: una brecha de participación de más de 24 puntos porcentuales y una sobretasa de desempleo femenino de entre 4 y 5 puntos porcentuales.
+7. **Limitaciones:** Las tasas agregadas nacionales ocultan marcadas heterogeneidades territoriales entre las grandes áreas metropolitanas y las regiones rurales.
+8. **Explicaciones alternativas:** La caída del desempleo entre el primer y cuarto trimestre refleja un choque estacional de fin de año y no necesariamente una aceleración del crecimiento potencial del PIB.
+9. **Conexión con otros puntos:** Sirve de insumo para la visualización de series de tiempo del numeral 2.2.
+
+---
+
+## Numeral 2.2: Gráfico de Series de Tiempo de Indicadores Laborales
+
+1. **Pregunta original:** Elaborar una visualización en paneles facetados (`facet_wrap`) que exhiba la trayectoria temporal de las tres tasas laborales según sexo durante 2023 y 2024.
+2. **Fundamento económico:** La representación visual simultánea permite contrastar visualmente la estabilidad de las brechas de participación frente a las fluctuaciones del desempleo.
+3. **Población y variables:** Estimaciones trimestrales del numeral 2.1 estructuradas en formato largo (`pivot_longer`).
+4. **Metodología estadística:** Gráfico de líneas y puntos con escalas libres en el eje vertical por faceta; codificación visual diferenciada por sexo (color, forma y tipo de línea).
+5. **Resultado documentado:** Gráfico exportado (`2_2_tasas_sexo.png`). Muestra trayectorias paralelas entre hombres y mujeres, confirmando la rigidez temporal de las brechas estructurales.
+6. **Interpretación sustantiva:** La brecha de género es un rasgo persistente que no se cierra espontáneamente a lo largo de las oscilaciones de corto plazo del ciclo económico.
+7. **Limitaciones:** El gráfico representa promedios nacionales sin descomponer por grupos de edad o presencia de menores en el hogar.
+8. **Explicaciones alternativas:** Las fluctuaciones de la tasa de desempleo presentan una amplitud ligeramente mayor en las mujeres, lo que sugiere una mayor sensibilidad a choques de demanda en el empleo femenino informal.
+9. **Conexión con otros puntos:** Se vincula conceptualmente con la discusión de economía del cuidado desarrollada en la Parte III.
+
+---
+
+## Numeral 2.3: Informalidad Laboral en 13 Ciudades (Diciembre 2024)
+
+1. **Pregunta original:** Construir la variable oficial de informalidad laboral multidimensional del DANE para las 13 principales áreas metropolitanas, verificarla frente al boletín técnico del DANE (Oct-Dic 2024) y graficar la distribución por sexo en diciembre de 2024.
+2. **Fundamento económico:** Medir la calidad del empleo en los principales centros urbanos a través de la cobertura de la seguridad social y el tamaño de los establecimientos.
+3. **Población y variables:** Ocupados de la GEIH en las 13 ciudades metropolitanas (`AREA` específica). Variables: `P6430`, tamaño de firma (`P3045S1`), salud (`P6100`, `P6110`), pensión (`P6920`), registro en Cámara y contabilidad.
+4. **Metodología estadística:** Algoritmo oficial multidimensional DANE codificando la variable `EI` (1 = Formal, 0 = Informal); ponderación con `FEX_C18 / 3` para el trimestre y con `FEX_C18` para el mes de diciembre; verificación contra el 42,5 % oficial; gráfico de torta facetado por sexo.
+5. **Resultado documentado:**
+   * Tasa de informalidad calculada en el trimestre: **42,5 %** (coincidencia exacta con el boletín del DANE).
+   * Diciembre de 2024: Informalidad de **42,2 % en hombres** y **42,3 % en mujeres**.
+6. **Interpretación sustantiva:** En los grandes centros urbanos del país, la informalidad laboral no exhibe brechas de género apreciables; ambos sexos sufren niveles similares de desprotección en seguridad social.
+7. **Limitaciones:** El resultado es exclusivo de las 13 principales áreas metropolitanas; a nivel nacional y en zonas rurales la informalidad supera ampliamente el 55 % y 80 % respectivamente.
+8. **Explicaciones alternativas:** La paridad de la tasa de informalidad entre sexos en las ciudades puede coexistir con diferencias severas en la calidad interna de los empleos informales (ingresos por hora y estabilidad).
+9. **Conexión con otros puntos:** Prepara el terreno para el análisis territorial del numeral 4.1.
+
+---
+
+## Numeral 2.4: Distribución por Posición Ocupacional (Enero 2023)
+
+1. **Pregunta original:** Estimar la distribución porcentual de los ocupados según posición ocupacional para el total nacional, hombres y mujeres en enero de 2023, verificando el peso conjunto de trabajadores por cuenta propia y patrones.
+2. **Fundamento económico:** Examinar la estructura de clases del empleo y dimensionar la prevalencia del autoempleo frente al trabajo asalariado corporativo.
+3. **Población y variables:** Ocupados nacionales de la GEIH en enero de 2023. Variables: `P6430`, `P3271`, `FEX_C18`.
+4. **Metodología estadística:** Agregación expandida con factor mensual; cálculo de proporciones relativas; gráfico de barras horizontales agrupadas con etiquetas de datos.
+5. **Resultado documentado:**
+   * Obrero particular: **46,2 %** (48,0 % en hombres, 43,6 % en mujeres).
+   * Trabajador por cuenta propia: **40,6 %** (42,0 % en hombres, 38,7 % en mujeres).
+   * Patrón o empleador: **2,6 %** (3,3 % en hombres, 1,5 % en mujeres).
+   * Peso conjunto cuenta propia + patrones: **43,2 %** del empleo nacional.
+6. **Interpretación sustantiva:** Casi la mitad de la fuerza laboral ocupada en Colombia no tiene una relación salarial convencional, sino que genera ingresos a través del autoempleo independiente.
+7. **Limitaciones:** La posición ocupacional se mide sobre el trabajo principal, omitiendo actividades secundarias de autoempleo en asalariados.
+8. **Explicaciones alternativas:** La baja proporción de patrones (2,6 %) refleja las severas barreras de capital y escala que impiden a los trabajadores por cuenta propia expandir sus operaciones y contratar mano de obra permanente.
+9. **Conexión con otros puntos:** Justifica la pertinencia estructural de estudiar la EMICRON, cuya muestra proviene precisamente de este 43,2 % de la población ocupada.
+
+---
+
+## Numeral 3.1: Indicadores Estructurales de Micronegocios (EMICRON 2024)
+
+1. **Pregunta original:** Estimar el total nacional de micronegocios, su distribución por rama de actividad (`GRUPOS12`), sexo del propietario (`P35`), tenencia de RUT (`P1633`) y registro mercantil (`P1055`), contrastando los resultados con el boletín oficial del DANE.
+2. **Fundamento económico:** Caracterizar el tamaño y la institucionalidad del tejido microempresarial del país.
+3. **Población y variables:** EMICRON 2024 completa. Ponderador anual: `F_EXP`. Variables: `GRUPOS12`, `P35`, `P1633`, `P1055`.
+4. **Metodología estadística:** Agregaciones expandidas de frecuencia y proporción relativa sobre unidades económicas; verificación de coincidencias oficiales.
+5. **Resultado documentado:**
+   * Total micronegocios: **5.297.252** (coincidencia exacta con el DANE).
+   * Distribución por sexo: **64,6 % hombres** y **35,4 % mujeres**.
+   * Comercio y reparación de vehículos: **23,9 %**; Agropecuario: **21,5 %**; Manufactura: **10,4 %**; Servicios de comida: **8,7 %**.
+   * Formalidad tributaria (RUT): **22,4 % sí cuenta con RUT** (77,6 % sin RUT).
+   * Registro mercantil (Cámara): **10,3 % matriculado** (89,7 % no matriculado).
+6. **Interpretación sustantiva:** El aparato microempresarial en Colombia es masivo, masculinizado, altamente concentrado en actividades de baja complejidad y opera casi en su totalidad al margen del Estado formal.
+7. **Limitaciones:** Los datos capturan unidades de hasta 9 personas; no capturan empresas medianas ni grandes corporaciones.
+8. **Explicaciones alternativas:** La baja tenencia de matrícula mercantil (10,3 %) frente al RUT (22,4 %) sugiere que los costos de registro y renovación anual en Cámaras de Comercio representan una barrera económica más gravosa que la inscripción gratuita en el registro tributario de la DIAN.
+9. **Conexión con otros puntos:** Proporciona la línea base para evaluar la inclusión financiera y la escala de ventas en los numerales 3.2 y 4.2.
+
+---
+
+## Numeral 3.2: Inclusión Financiera en Micronegocios por Rama
+
+1. **Pregunta original:** Estimar el porcentaje de adopción de cada medio de pago (`P1764_1` a `P1764_7`) dentro de las cuatro grandes ramas (`GRUPOS4`), y calcular los indicadores nacionales de crédito (`P1765`) y ahorro (`P3014`).
+2. **Fundamento económico:** Analizar el uso de tecnologías financieras y contrastar el acceso a financiamiento productivo en la economía microempresarial.
+3. **Población y variables:** EMICRON 2024 en los cuatro grandes sectores (`GRUPOS4`: Agropecuario, Industria, Comercio, Servicios). Variables multirrespuesta de pagos (`P1764`), crédito formal (`P1765`), ahorro (`P3014`), ponderador `F_EXP`.
+4. **Metodología estadística:** Bucle de agregación ponderada calculando la penetración de cada canal sobre el total de micronegocios de la rama; gráfico de barras agrupadas horizontales.
+5. **Resultado documentado:**
+   * Efectivo: omnipresente (> 85 % en agro e industria; > 94 % en comercio).
+   * Transferencias electrónicas / billeteras digitales: Servicios (**50,1 %**), Comercio (**43,2 %**), Industria (**33,8 %**), Agropecuario (**6,7 %**).
+   * Solicitud de crédito formal nacional: **14,2 %**.
+   * Práctica de ahorro regular: **19,4 %**.
+6. **Interpretación sustantiva:** Existe una brecha digital sectorial profunda. La penetración de billeteras electrónicas es una realidad en servicios y comercio urbano, pero es casi nula en el campo tradicional. El acceso a crédito bancario formal está severamente racionado.
+7. **Limitaciones:** La variable de formas de pago mide aceptación habitual, no el volumen porcentual del flujo monetario transado en cada canal.
+8. **Explicaciones alternativas:** La baja solicitud de crédito (14,2 %) puede reflejar tanto el racionamiento de la oferta bancaria como la autoexclusión de los propietarios por temor a los trámites, a las tasas de interés o a la pérdida de activos.
+9. **Conexión con otros puntos:** Conecta directamente con la modelación de ventas según canal de pago en el numeral 4.2.
+
+---
+
+## Numeral 3.3: Cruce Conjunto GEIH-EMICRON: Educación y RUT
+
+1. **Pregunta original:** Investigar la relación entre el nivel educativo del propietario (`P3042`, GEIH) y la tenencia de RUT del micronegocio (`P1633`, EMICRON), utilizando exclusivamente los registros emparejados y el ponderador de empresas.
+2. **Fundamento económico:** Evaluar cómo el capital humano del empresario condiciona la formalización institucional de su unidad productiva.
+3. **Población y variables:** Base integrada GEIH-EMICRON 2024 (muestra emparejada de febrero a diciembre). Ponderador: `F_EXP`. Variables: `P3042` reclasificada en 4 niveles educativos y `P1633` (RUT).
+4. **Metodología estadística:** Tabla de contingencia expandida con porcentajes fila normalizados; gráfico de barras apiladas al 100 %.
+5. **Resultado documentado:**
+   * Ninguno / Preescolar: **2,8 % con RUT** (97,2 % sin RUT).
+   * Básica primaria: **12,6 % con RUT** (87,4 % sin RUT).
+   * Secundaria y media: **30,4 % con RUT** (69,6 % sin RUT).
+   * Educación superior y posgrado: **75,0 % con RUT** (25,0 % sin RUT).
+6. **Interpretación sustantiva:** Se evidencia un fuerte gradiente monótono ascendente: a mayor escolaridad del propietario, se incrementa drásticamente la probabilidad de que el negocio esté formalizado ante la DIAN.
+7. **Limitaciones:** Relación de corte transversal observacional; no controla por el sector de actividad, el capital inicial ni la antigüedad del negocio.
+8. **Explicaciones alternativas:** La correlación está mediada por la escala del negocio y la composición de la clientela: los profesionales universitarios fundan consultorías o empresas que venden a firmas corporativas que exigen factura electrónica con RUT para deducir impuestos.
+9. **Conexión con otros puntos:** Ilustra el problema metodológico de variables omitidas analizado en la Parte VII.
+
+---
+
+## Numeral 4.1: Geografía Económica: Informalidad e Ingreso Mediano
+
+1. **Pregunta original:** Contrastar a nivel departamental la tasa de informalidad laboral con la mediana del ingreso laboral monetario en 2024, representando la escala de ocupados y las regiones geográficas.
+2. **Fundamento económico:** Analizar el equilibrio espacial y contrastar las hipótesis de geografía económica y dualismo centro-periferia.
+3. **Población y variables:** Ocupados de la GEIH 2024 con ingresos positivos (`INGLABO > 0`) en 24 departamentos. Variables: informalidad (`EI`), `DPTO`, región geográfica, `FEX_C18 / 12`.
+4. **Metodología estadística:** Agregación anual con factor medio ($w_i/12$); cálculo de la mediana ponderada de ingresos y la tasa departamental de informalidad; diagrama de dispersión con suavizado no lineal LOESS, tamaño de punto proporcional a la población ocupada y codificación cromática por región.
+5. **Resultado documentado:**
+   * Curva LOESS monótona decreciente y convexa.
+   * Bogotá D.C.: informalidad de 34,6 % e ingreso mediano de \$1,6M COP.
+   * Departamentos periféricos (Chocó, La Guajira, Sucre, Córdoba): informalidad entre 79 % y 83 %, ingreso mediano comprimido en \$600.000 COP.
+6. **Interpretación sustantiva:** Colombia presenta un mercado laboral geográficamente fracturado. Las regiones periféricas carecen de demanda laboral formal y su población sobrevive en ocupaciones informales precarias que no alcanzan a retribuir el salario mínimo legal.
+7. **Limitaciones:** Datos agregados departamentales susceptibles de la falacia ecológica; no controlan por el costo de vida relativo de cada región.
+8. **Explicaciones alternativas:** Las disparidades salariales nominales pueden estar parcialmente amortiguadas si los precios relativos de los alimentos y la vivienda son sustancialmente más bajos en las periferias.
+9. **Conexión con otros puntos:** Se complementa con el análisis de la Curva de Lorenz y el Coeficiente de Gini de la Parte V.
+
+---
+
+## Numeral 4.2: Inclusión Financiera Digital y Escala de Ventas
+
+1. **Pregunta original:** Evaluar la distribución de las ventas brutas mensuales de los micronegocios según la adopción de pagos electrónicos (efectivo vs. transferencias/billeteras) y el acceso a crédito formal en 2024.
+2. **Fundamento económico:** Explorar si las tecnologías financieras y el crédito formal están asociados con una mayor escala de facturación empresarial.
+3. **Población y variables:** Micronegocios de EMICRON 2024 con ventas operacionales positivas (`VENTAS_MES_ANTERIOR > 0`). Ponderador: `F_EXP`. Variables: `P1764_1`, `P1764_2`, `P1765`, `VENTAS_MES_ANTERIOR`.
+4. **Metodología estadística:** Gráficos combinados de violín y diagramas de caja ponderados (`geom_violin` + `geom_boxplot`) sobre una escala logarítmica de ventas brutas; cálculo de medianas de facturación por celda.
+5. **Resultado documentado:**
+   * Solo efectivo sin crédito: mediana de ventas de **\$1,38M COP**.
+   * Solo efectivo con crédito: mediana de ventas de **\$2,14M COP**.
+   * Pagos digitales sin crédito: mediana de ventas de **\$4,50M COP**.
+   * Pagos digitales con crédito aprobado: mediana de ventas de **\$5,20M COP**.
+6. **Interpretación sustantiva:** Los micronegocios integrados a canales de pago digitales operan a una escala de facturación más de tres veces superior a la de aquellos confinados al efectivo. El crédito bancario aporta un escalamiento adicional positivo.
+7. **Limitaciones:** No es posible inferir causalidad estricta debido a la presencia de causalidad inversa y heterogeneidad gerencial no observada.
+8. **Explicaciones alternativas:** La correlación observada puede obedecer a que los establecimientos con mayor volumen de clientes se ven forzados a abrir cuentas en billeteras digitales para no perder ventas, invirtiendo la dirección de la causalidad.
+9. **Conexión con otros puntos:** Ilustra las predicciones microeconómicas del modelo de Stiglitz-Weiss desarrolladas en la Parte IV.
+
+---
+
+## Numeral 4.3: Emparejamiento Laboral: Educación y Posición Ocupacional
+
+1. **Pregunta original:** Investigar el emparejamiento ocupacional entre el nivel educativo alcanzado (`P3042`) y la jerarquía de la posición ocupacional (`P6430`) en la población ocupada de 2024.
+2. **Fundamento económico:** Contrastar la teoría del capital humano con la segmentación ocupacional y dimensionar el desajuste de cualificaciones (*skills mismatch*).
+3. **Población y variables:** Ocupados de la GEIH 2024 (`OCI == 1`). Variables: nivel educativo agrupado (Primaria o menos, Secundaria/Media, Educación Superior) y posición ocupacional (`P6430`), ponderados con `FEX_C18 / 12`.
+4. **Metodología estadística:** Tabla de contingencia expandida; gráfico de conteo y dispersión categórica (`geom_count`) donde el área de los círculos es proporcional a la masa de ocupados y el degradado de color representa la frecuencia muestral.
+5. **Resultado documentado:** Fuerte concentración de trabajadores con educación primaria o menos en el trabajo por cuenta propia y actividades de jornaleros. Los ocupados con educación superior se concentran en puestos de obreros particulares y de gobierno, pero registran una participación no despreciable en el autoempleo por cuenta propia.
+6. **Interpretación sustantiva:** La educación superior opera como el principal filtro de acceso al empleo asalariado protegido. Sin embargo, la presencia de profesionales en el autoempleo refleja tanto emprendimiento calificado como problemas de absorción y subempleo profesional.
+7. **Limitaciones:** La variable de posición ocupacional no detalla la calidad del cargo, las horas laborales ni la correspondencia entre la carrera universitaria cursada y las tareas ejecutadas.
+8. **Explicaciones alternativas:** El autoempleo en profesionales con educación superior puede representar una elección voluntaria motivada por flexibilidad laboral y mayores ingresos en consultoría, o una respuesta obligada ante la escasez de vacantes asalariadas formales.
+9. **Conexión con otros puntos:** Cierra el hilo conductor del taller, reconectando el capital humano del individuo con la calidad del empleo y la estructura del aparato productivo.
+
+---
+
+# PARTE VII: Pensamiento Crítico y Fundamentos Metodológicos Avanzados {#sec-parte-7}
+
+Un profesional de posgrado en Economía Aplicada debe ser capaz de evaluar críticamente los alcances y límites de los resultados empíricos:
+
+## 7.1. Asociación vs. Causalidad en Datos Observacionales
+
+Toda correlación o gradiente observado en los ejercicios del taller (como el mayor nivel de ventas en micronegocios con pagos digitales o la mayor formalidad en dueños educados) constituye **evidencia descriptiva de asociación estadística**. Establecer que la variable $X$ *causa* la variable $Y$ exigiría:
+1. Precedencia temporal verificada.
+2. Eliminación de todas las posibles variables omitidas que afecten simultáneamente a $X$ y a $Y$.
+3. Exogeneidad estricta en la asignación de $X$.
+En microdatos transversales de encuestas de hogares, estas condiciones casi nunca se satisfacen de forma espontánea.
+
+## 7.2. Sesgo de Selección y Truncamiento Muestral
+
+* **Selección en EMICRON:** Los micronegocios observados no representan una muestra aleatoria de todas las firmas de la economía colombiana; representan únicamente a las unidades que han sobrevivido y que fueron fundadas por personas clasificadas previamente como cuenta propia o patrones en la GEIH. Si las microempresas menos viables quiebran rápidamente, la muestra contiene un **sesgo de supervivencia**.
+* **Truncamiento del ingreso:** En la GEIH, el análisis de ingresos laborales se restringe a los ocupados que reportan remuneración positiva (`INGLABO > 0`), omitiendo a los desocupados e inactivos cuyo ingreso laboral de mercado es cero pero tienen un salario de reserva positivo (problema clásico de corrección de Heckman).
+
+## 7.3. Variables Omitidas y Heterogeneidad No Observable
+
+Al analizar la relación entre adopción tecnológica y ventas brutas, o entre escolaridad y tenencia de RUT, factores inobservables como la **habilidad gerencial innata**, la **visión comercial**, el **patrimonio familiar no declarado** o la **densidad de redes de contactos** operan como variables confusoras. Un individuo con alta motivación y destreza comercial adoptará billeteras digitales, solicitará crédito y registrará altas ventas simultáneamente, sin que la tecnología sea necesariamente la causa primaria de su éxito.
+
+## 7.4. Causalidad Inversa y Simultaneidad
+
+La escala de facturación de un micronegocio y su adopción de pagos electrónicos se determinan de forma conjunta y simultánea en el equilibrio económico. El canal directo (ofrecer transferencias permite vender más a clientes bancarizados) convive con el canal inverso (los negocios con alto volumen transaccional tienen mayor flujo de caja y demanda para instalar medios digitales). Tratar a los pagos digitales como una variable exógena en un modelo de regresión lineal sin instrumentos válidos sesgaría severamente los coeficientes estimados.
+
+## 7.5. La Falacia Ecológica en el Análisis Espacial
+
+En el análisis departamental del numeral 4.1, se constata una correlación negativa a nivel macro-territorial entre la tasa de informalidad del departamento y su ingreso mediano. Incurrir en la **falacia ecológica** consistiría en inferir que un trabajador individual informal en Chocó percibe automáticamente menos ingresos que un trabajador formal en esa misma región simplemente a partir del promedio del departamento. Las relaciones agregadas entre unidades espaciales no pueden extrapolarse linealmente a la conducta microeconómica individual sin incurrir en falacias de agregación.
+
+---
+
+# PARTE VIII: Preparación para Sustentación Oral (Banco de Preguntas de Maestría) {#sec-parte-8}
+
+Este banco de preguntas ha sido diseñado para la preparación de exámenes de candidatura y sustentaciones orales de posgrado, clasificado en cinco niveles de complejidad cognitiva:
+
+## Nivel 1: Comprensión Teórica y Muestral
+
+### Pregunta 1
+**Enunciado:** ¿Por qué es metodológicamente incorrecto sumar los factores de expansión `FEX_C18` de la GEIH a lo largo de los 12 meses de un año para estimar la población ocupada anual de Colombia?  
+**Respuesta Razonada:** Porque el factor de expansión `FEX_C18` es un ponderador mensual calibrado para representar la población del país en un único mes calendario. Sumar las doce muestras mensuales sin promediar equivale a multiplicar por 12 la masa de habitantes del país (arrojando más de 260 millones de trabajadores). La estimación correcta de la población promedio anual de ocupados exige promediar los factores dividiendo la sumatoria entre 12:
+$$\widehat{\text{Ocupados}}_{\text{Anual}} = \sum_{i \in \text{Año}} \frac{w_i}{12} \, \text{OCI}_i$$
+
+### Pregunta 2
+**Enunciado:** Explique por qué el módulo de Ocupados de la GEIH no puede, bajo ninguna circunstancia metodológica, contener un mayor número de observaciones que el módulo de Características Generales en un mismo mes.  
+**Respuesta Razonada:** El módulo de Características Generales es el censo muestral universal de la encuesta y abarca a todos los individuos del hogar sin límite de edad. El módulo de Ocupados es el resultado de la aplicación secuencial de dos filtros condicionales estrictos: tener 15 años o más ($\text{PET}$) y haber trabajado al menos una hora remunerada en la semana de referencia. Por la teoría de conjuntos, el conjunto de ocupados es un subconjunto propio del universo total ($\text{OCI} \subseteq \text{PET} \subset \text{Población Total}$).
+
+---
+
+## Nivel 2: Aplicación y Procedimiento Metodológico
+
+### Pregunta 3
+**Enunciado:** Si un analista realiza una unión relacional (`left_join`) entre la base de EMICRON y la GEIH utilizando únicamente la variable `DIRECTORIO` como llave de cruce, ¿qué ocurre con la base de datos resultante y cómo afecta esto a las conclusiones económicas?  
+**Respuesta Razonada:** Dado que `DIRECTORIO` identifica únicamente la vivienda física y en una vivienda pueden residir múltiples hogares y decenas de personas, la unión generará una relación muchos-a-muchos ($M:M$). La base resultante sufrirá una multiplicación explosiva de filas por producto cartesiano, duplicando y clonando micronegocios y personas. Al ponderar estos registros duplicados, se sobreestimará groseramente el PIB empresarial de los micronegocios y se invalidará cualquier inferencia económica.
+
+### Pregunta 4
+**Enunciado:** Al evaluar la calidad del emparejamiento entre la GEIH y la EMICRON de 2024, se encuentra que aproximadamente el 13,2 % de los registros de EMICRON no cruza con la GEIH de ese mismo año. ¿Demuestra esto un error en el marco muestral del DANE?  
+**Respuesta Razonada:** No. Este fenómeno obedece al **desfase temporal entre el mes de recolección en el hogar y el mes de referencia contable** de EMICRON ($MES_{REF} = MES_{GEIH} + 1$). Los micronegocios cuyo mes de referencia es enero de 2024 fueron entrevistados en sus hogares en diciembre de 2023. Al auditar este subconjunto contra la GEIH de 2023, el 99,4 % empareja perfectamente. No constituye una falla muestral, sino la frontera temporal natural del año calendario.
+
+---
+
+## Nivel 3: Análisis y Conexiones Económicas
+
+### Pregunta 5
+**Enunciado:** A partir de la identidad estructural del mercado laboral:
+$$\text{TD} = 1 - \frac{\text{TO}}{\text{TGP}}$$
+Demuestre analíticamente cómo es posible que la tasa de desempleo disminuya en un trimestre determinado a pesar de que el número absoluto de personas ocupadas haya caído.  
+**Respuesta Razonada:** La tasa de desempleo depende del cociente $\frac{\text{TO}}{\text{TGP}}$. Si el número de ocupados disminuye, la tasa de ocupación ($\text{TO}$) cae. Sin embargo, si simultáneamente un número masivo de personas desocupadas se desmotiva ante la falta de vacantes y abandona la búsqueda activa transitando hacia la inactividad (efecto desaliento laboral), la fuerza de trabajo se contrae con mayor rapidez, provocando que la tasa global de participación ($\text{TGP}$) caiga a una tasa porcentual mayor que la caída de la $\text{TO}$. En consecuencia, el ratio $\frac{\text{TO}}{\text{TGP}}$ aumenta, lo que fuerza una disminución aritmética en la tasa de desempleo ($\text{TD}$) en medio de una destrucción neta de empleo.
+
+### Pregunta 6
+**Enunciado:** Los microdatos muestran que los hombres tienen una TGP 24 puntos superior a las mujeres, y al mismo tiempo las mujeres activas enfrentan una tasa de desempleo 4 puntos porcentuales más alta que los hombres. ¿Qué revela esta doble discrepancia sobre las fricciones del mercado laboral?  
+**Respuesta Razonada:** Revela una **doble penalización estructural sobre el trabajo femenino**:
+1. Una barrera de entrada ex ante: la desigual distribución de las labores de cuidado y el trabajo doméstico no remunerado reduce sustancialmente la probabilidad de que las mujeres ingresen a la fuerza de trabajo activa (baja TGP).
+2. Una fricción de absorción ex post: aquellas mujeres que logran superar las barreras intrahogar y se movilizan activamente a buscar empleo enfrentan una probabilidad significativamente menor de ser absorbidas por una vacante productiva frente a los hombres en igualdad de condiciones, lo que resulta en una sobretasa sistemática de desempleo abierto.
+
+---
+
+## Nivel 4: Evaluación Crítica y Límites
+
+### Pregunta 7
+**Enunciado:** Un funcionario público argumenta que, dado que el Coeficiente de Gini salarial en las áreas rurales de Colombia es menor que en las cabeceras urbanas (0,433 vs. 0,475), el Estado debería priorizar el modelo distributivo rural por ser "más equitativo y deseable". Refute técnicamente esta afirmación.  
+**Respuesta Razonada:** El argumento confunde menor desigualdad relativa con mayor bienestar socioeconómico. En las zonas rurales de Colombia, el Coeficiente de Gini es más bajo debido a una **"nivelación precaria hacia abajo"**: los ingresos de los trabajadores del campo son homogéneos porque la inmensa mayoría sobrevive con remuneraciones de subsistencia e informalidad extrema por debajo del salario mínimo. En las ciudades, el Gini es más alto porque existe una estructura económica diversificada donde operan retornos significativos al capital humano calificado. Promover la distribución rural como modelo deseable equivaldría a preferir una sociedad homogéneamente empobrecida frente a una sociedad urbana en proceso de diversificación y desarrollo productivo.
+
+### Pregunta 8
+**Enunciado:** Si los micronegocios que aceptan billeteras digitales tienen una facturación mediana tres veces superior a los que solo usan efectivo, ¿puede un gobierno garantizar la triplicación del ingreso de las tiendas de barrio mediante un programa que regale teléfonos inteligentes con aplicaciones de pago digital?  
+**Respuesta Razonada:** No. La propuesta asume que la correlación observada entre pagos digitales y ventas es una relación causal directa y unidireccional. Esta inferencia ignora los problemas de **causalidad inversa** (los negocios que ya tienen alta rotación de inventarios y clientes bancarizados son los que adoptan estas plataformas) y **variables omitidas** (habilidad gerencial, ubicación geográfica estratégica en zonas de ingresos medios y altos, dotación de capital de trabajo). Regalar teléfonos a micronegocios de subsistencia aislados en zonas marginales no alterará la demanda deprimida de sus clientes (quienes solo disponen de efectivo) ni incrementará mágicamente su productividad física.
+
+---
+
+## Nivel 5: Defensa Académica de Posgrado
+
+### Pregunta 9
+**Enunciado:** ¿Por qué el modelo de racionamiento de crédito de Stiglitz y Weiss (1981) predice que la banca formal preferirá rechazar solicitudes de crédito a micronegocios informales en lugar de resolver el problema cobrándoles una tasa de interés suficientemente alta que compense el riesgo de impago?  
+**Respuesta Razonada:** Porque en presencia de información asimétrica y opacidad contable, la tasa de interés desempeña un papel de **selección y fijación de incentivos**, y no solo de precio de equilibrio de mercado:
+1. **Selección adversa:** Si el banco incrementa la tasa de interés para cubrir el riesgo de los micronegocios sin colateral, los prestatarios prudentes con proyectos de rentabilidad moderada pero segura desisten de endeudarse, quedando en el mercado exclusivamente solicitantes con proyectos especulativos de altísimo riesgo que solo pueden pagar la deuda si ocurre un escenario sumamente favorable.
+2. **Riesgo moral:** Tasas elevadas alteran la conducta de los deudores, incentivándolos a elegir estrategias de inversión imprudentes para intentar compensar la pesada carga financiera.
+Dado que la probabilidad de impago crece con la tasa de interés, la curva de rendimiento esperado del banco alcanza un máximo y luego decrece. Por tanto, el banco maximiza sus beneficios restringiendo el volumen de crédito mediante racionamiento cuantitativo antes que elevando el precio del dinero.
+
+### Pregunta 10
+**Enunciado:** Al evaluar las reformas tributarias en Colombia, diversos analistas sostienen que la informalidad del 90 % en los micronegocios se erradicaría rebajando el costo de expedición del RUT. Con base en los hallazgos del Taller 2 y la teoría institucional de De Soto, evalúe la solidez de esta prescripción de política.  
+**Respuesta Razonada:** La propuesta es teórica y empíricamente insostenible. La inscripción en el Registro Único Tributario (RUT) ante la DIAN ya es un trámite completamente gratuito en Colombia; sin embargo, casi el 78 % de los micronegocios no cuenta con él. La reticencia a formalizarse no obedece al costo del formulario, sino a los **costos fijos y variables recurrentes de operar en la formalidad**:
+* Obligación de emitir factura electrónica.
+* Auditoría fiscal y riesgo de sanciones tributarias.
+* Pago de impuestos locales (Industria y Comercio - ICA) e impuestos nacionales.
+* Costos parafiscales y cotizaciones obligatorias a la seguridad social en caso de contratar trabajadores.
+Para un micronegocio de subsistencia con ventas medianas de \$1,38M COP al mes, los costos recurrentes de la formalidad absorben prácticamente la totalidad de su excedente operativo, mientras que los beneficios marginales (acceso a contratos con el Estado o a créditos corporativos) son inaccesibles debido a su precaria escala. La informalidad es una respuesta racional de supervivencia económica frente a una estructura tributaria diseñada para corporaciones medianas y grandes.
+
+---
+
+# PARTE IX: Síntesis y Consolidación del Conocimiento {#sec-parte-9}
+
+## 9.1. Mapa Conceptual Integrador del Sistema Económico
+
+```
+                 [Dotación de Capital Humano (P3042, P6040, Sexo)]
+                                         │
+                    ┌────────────────────┴────────────────────┐
+                    ▼                                         ▼
+         [Mercado Asalariado Formal]               [Autoempleo de Refugio / Necesidad]
+        (Obrero particular/gobierno)              (Cuenta Propia y Patrones: 43,2 %)
+                    │                                         │
+                    ▼                                         ▼
+         [Protección Social Plena]                 [Universo EMICRON (5,3M de unidades)]
+        (Cotización a Salud y Pensión)                        │
+                                            ┌─────────────────┴─────────────────┐
+                                            ▼                                   ▼
+                                 [Informalidad Institucional]          [Fractura Tecnológica]
+                                (90 % sin Cámara, 78 % sin RUT)       (Efectivo > 90 % vs Billeteras)
+                                            │                                   │
+                                            └─────────────────┬─────────────────┘
+                                                              │
+                                                              ▼
+                                              [Opacidad y Racionamiento Bancario]
+                                              (Modelo de Stiglitz & Weiss: 14 % crédito)
+                                                              │
+                                                              ▼
+                                              [Escala Restringida y Bajos Ingresos]
+                                              (Mediana de ventas: $1,38M en efectivo)
+                                                              │
+                                                              ▼
+                                              [Dualismo Espacial y Trampa Regional]
+                                              (Gini de 0,43 en el campo por nivelación precaria;
+                                               Informalidad del 83 % e ingresos de $600k en periferia)
+```
+
+## 9.2. Formulario Económico y Estadístico Unificado
+
+| Indicador o Parámetro | Expresión Matemática Formal | Denominador Analítico | Interpretación Sustantiva |
+| :--- | :--- | :--- | :--- |
+| **Estimador de Total Horvitz-Thompson** | $\widehat{Y} = \sum_{i \in s} w_i \, y_i$ | Marco muestral continuo | Proyección insesgada del agregado nacional expandiendo por la probabilidad inversa de inclusión. |
+| **Población Trimestral Media** | $\widehat{N}_{\text{tri}} = \sum_{i \in \text{tri}} \frac{w_i}{3}$ | Suma de tres meses | Normalización del factor mensual de la GEIH para evitar triplicar la población de Colombia. |
+| **Tasa Global de Participación (TGP)** | $\text{TGP} = \frac{\text{FT}}{\text{PET}} \times 100$ | Población en Edad de Trabajar ($\text{PET} \ge 15$) | Presión de la oferta de trabajo activa sobre la capacidad demográfica del país. |
+| **Tasa de Ocupación (TO)** | $\text{TO} = \frac{\text{OCI}}{\text{PET}} \times 100$ | Población en Edad de Trabajar ($\text{PET} \ge 15$) | Porcentaje del potencial demográfico absorbido productivamente por el aparato económico. |
+| **Tasa de Desempleo (TD)** | $\text{TD} = \frac{\text{DSI}}{\text{FT}} \times 100$ | Fuerza de Trabajo activa ($\text{FT} = \text{OCI} + \text{DSI}$) | Exceso relativo de oferta laboral en búsqueda activa de colocación. |
+| **Identidad Estructural del Desempleo** | $\text{TD} = 1 - \frac{\text{TO}}{\text{TGP}}$ | Razón de tasas sobre la $\text{PET}$ | Descomposición que demuestra que la TD puede caer por desaliento laboral si la TGP se contrae. |
+| **Coeficiente de Gini Salarial** | $G = 1 - 2 \int_0^1 L(p) \, dp$ | Área bajo la recta de equidad (0,5) | Medida de concentración del ingreso salarial entre 0 (equidad absoluta) y 1 (concentración total). |
+
+## 9.3. Matriz de Errores Conceptuales Frecuentes
+
+| Concepto Correcto | Concepto Confundido Frecuentemente | Consecuencia Teórica o Metodológica del Error |
+| :--- | :--- | :--- |
+| **Población representada** | **Fila de la muestra** | Creer que los conteos muestrales directos miden la magnitud de la economía sin expandir con $w_i$. |
+| **Unidad económica (EMICRON)** | **Individuo (GEIH)** | Expandir ventas de negocios con factores de personas (`FEX_C18`), imputando una empresa a cada habitante. |
+| **Fuerza de Trabajo (FT)** | **Población en Edad de Trabajar (PET)** | Calcular el desempleo dividiendo entre toda la población en edad productiva en lugar de los participantes activos. |
+| **Desaliento laboral** | **Creación neta de empleo** | Celebrar la disminución del desempleo cuando en realidad obedece a la deserción de desempleados hacia la inactividad. |
+| **Estacionalidad de fin de año** | **Mejora estructural de la economía** | Interpretar la caída del desempleo en diciembre como el éxito de reformas estructurales de largo plazo. |
+| **Desfase de mes de referencia** | **Error de emparejamiento** | Calificar como pérdida de datos el hecho de que enero de EMICRON cruce con diciembre del año anterior en la GEIH. |
+| **Nivelación precaria hacia abajo** | **Mayor bienestar rural** | Deducir que un menor Gini salarial en el campo refleja mejores condiciones de vida que en la ciudad. |
+| **Correlación de adopción digital** | **Efecto causal sobre ventas** | Concluir erróneamente que regalar dispositivos digitales triplica automáticamente las ventas de subsistencia. |
+
+## 9.4. Preguntas de Autoevaluación Rápida
+
+1. **¿Qué identifica la tupla (`DIRECTORIO`, `SECUENCIA_P`) en la GEIH?**  
+   *Respuesta:* Identifica de forma unívoca al **hogar particular**, pero no permite distinguir entre los diferentes individuos que lo componen.
+2. **¿Por qué la tasa de ocupación femenina es 25 puntos menor que la masculina en Colombia?**  
+   *Respuesta:* Por la desigual división sexual del trabajo intrahogar y las responsabilidades de cuidado no remunerado, que elevan el salario de reserva de las mujeres y restringen su oferta laboral mercantil.
+3. **¿Cuál es el ponderador adecuado para estimar el total de micronegocios en Colombia?**  
+   *Respuesta:* El factor de expansión anual de EMICRON (`F_EXP`), el cual expande a las unidades económicas y no a las personas civiles.
+4. **¿Por qué en las 13 principales ciudades metropolitanas la tasa de informalidad no exhibe brechas entre hombres y mujeres?**  
+   *Respuesta:* Porque la informalidad en las metrópolis está determinada por la estructura de absorción de los sectores de comercio y servicios urbanos, donde tanto hombres como mujeres enfrentan tasas de cobertura de seguridad social similares ($\approx 42,5$ %).
+
+## 9.5. Síntesis Argumentativa Final
+
+El Taller 2 constituye un diagnóstico empírico articulado sobre el subdesarrollo, el mercado de trabajo y el tejido productivo en Colombia:
+
+1. **La economía colombiana no genera suficiente empleo formal moderno:** Casi la mitad de los ocupados (43,2 %) se refugia en el autoempleo independiente y en microempresas unipersonales.
+2. **Los micronegocios operan como una red de seguridad familiar:** El 92,5 % son cuenta propia dedicados al comercio básico y actividades primarias, con escaso capital y dependientes del flujo diario de efectivo.
+3. **Existe una desconexión institucional casi total:** El 90 % de los micronegocios no cuenta con matrícula mercantil y el 78 % carece de RUT, no por ignorancia burocrática, sino porque los costos fijos de formalizarse superan con creces los beneficios marginales de operar dentro de la legalidad formal.
+4. **La inclusión financiera digital avanza, pero el financiamiento formal sigue bloqueado:** Las billeteras móviles han transformado el comercio urbano, pero la opacidad contable y la ausencia de colateral tangible mantienen racionado el crédito bancario bajo las dinámicas de Stiglitz y Weiss.
+5. **El mercado laboral está territorialmente fracturado:** Colombia exhibe un centro urbano diversificado que convive con periferias regionales donde la informalidad supera el 80 % y los ingresos laborales no alcanzan la mitad del salario mínimo legal, reflejando trampas espaciales de pobreza y baja productividad.
+
+Comprender esta articulación es el verdadero propósito de la economía aplicada: convertir millones de registros en microdatos del DANE en una narrativa rigurosa sobre las restricciones estructurales y las posibilidades de desarrollo de una nación.
+
+---
+
+# Referencias Bibliográficas {.unnumbered}
+
+* **Becker, G. S. (1964).** *Human Capital: A Theoretical and Empirical Analysis, with Special Reference to Education*. National Bureau of Economic Research.
+* **Becker, G. S. (1965).** A Theory of the Allocation of Time. *The Economic Journal*, 75(299), 493–517.
+* **Bonet-Morón, J., Ricciulli-Marín, D., Pérez-Valbuena, G. J., Galvis-Aponte, L. A., Haddad, E. A., Araújo, I. F., & Perobelli, F. S. (2021).** Impacto económico regional del Covid-19 en Colombia: un enfoque insumo-producto. *Revista de Economía del Rosario*, 24(2), 1–36.
+* **De Soto, H. (1989).** *The Other Path: The Economic Answer to Terrorism*. Basic Books.
+* **Departamento Administrativo Nacional de Estadística - DANE (2024).** *Gran Encuesta Integrada de Hogares (GEIH): Metodología General*. Dirección de Metodología y Producción Estadística, Bogotá D.C.
+* **Departamento Administrativo Nacional de Estadística - DANE (2024).** *Encuesta de Micronegocios (EMICRON): Ficha Técnica y Boletín Técnico 2024*. Bogotá D.C.
+* **Krugman, P. (1991).** Increasing Returns and Economic Geography. *Journal of Political Economy*, 99(3), 483–499.
+* **La Porta, R., & Shleifer, A. (2014).** Informality and Development. *Journal of Economic Perspectives*, 28(3), 109–126.
+* **Lucas, R. E. (1978).** On the Size Distribution of Business Firms. *The Bell Journal of Economics*, 9(2), 508–523.
+* **Mincer, J. (1974).** *Schooling, Experience, and Earnings*. National Bureau of Economic Research.
+* **Organización Internacional del Trabajo - OIT (2013).** *Resolución sobre las estadísticas del trabajo, el empleo y la subutilización de la fuerza de trabajo*. 19.ª Conferencia Internacional de Estadísticos del Trabajo, Ginebra.
+* **Roy, A. D. (1951).** Some Thoughts on the Distribution of Earnings. *Oxford Economic Papers*, 3(2), 135–146.
+* **Stiglitz, J. E., & Weiss, A. (1981).** Credit Rationing in Markets with Imperfect Information. *The American Economic Review*, 71(3), 393–410.

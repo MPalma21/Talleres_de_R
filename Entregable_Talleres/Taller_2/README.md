@@ -16,10 +16,12 @@ Entregable_Talleres/Taller_2/
 ├── 02_cuaderno_pedagogico/            # Cuaderno Quarto interactivo alineado con la Guía Pedagógica
 │   ├── Taller2_Cuaderno_Pedagogico.qmd
 │   └── Taller2_Cuaderno_Pedagogico.html
-└── 03_material_apoyo/                 # Insumos de estudio y preparación de entrevista
-    ├── Guia_Estudio_Academica_Taller2.qmd (.pdf)
-    ├── Propuestas_Graficas_Punto4.qmd (.pdf)
-    └── graficas_catalogo/
+├── 03_material_apoyo/                 # Insumos de estudio y preparación de entrevista
+│   ├── Guia_Estudio_Academica_Taller2.qmd (.pdf)
+│   ├── Propuestas_Graficas_Punto4.qmd (.pdf)
+│   └── graficas_catalogo/
+└── 04_guia_maestra_estudio/            # Guía Maestra de Estudio integral e interdisciplinaria
+    └── Guia_Maestra_Estudio_Taller2.qmd
 ```
 
 *Nota sobre la carpeta de salidas:* Todas las tablas (`.xlsx`, `.csv`) y gráficos (`.png`) generados por el script y los cuadernos se almacenan de manera unificada en la carpeta `outputs/` ubicada en la raíz del repositorio.

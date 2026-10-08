@@ -126,10 +126,10 @@ for (anio in anios) {
     )
     
     #### 1.1.3.6) Homogeneizar las llaves ----
-    general     <- general     %>% mutate(across(all_of(llave_geih), as.character))
-    fuerza      <- fuerza      %>% mutate(across(all_of(llave_geih), as.character))
-    ocupados    <- ocupados    %>% mutate(across(all_of(llave_geih), as.character))
-    no_ocupados <- no_ocupados %>% mutate(across(all_of(llave_geih), as.character))
+    general     <- general     %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), ORDEN = as.character(ORDEN))
+    fuerza      <- fuerza      %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), ORDEN = as.character(ORDEN))
+    ocupados    <- ocupados    %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), ORDEN = as.character(ORDEN))
+    no_ocupados <- no_ocupados %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), ORDEN = as.character(ORDEN))
     
     #### 1.1.3.7) Verificar duplicados en la llave ----
     dup_gen     <- sum(duplicated(general[, llave_geih]))
@@ -220,6 +220,7 @@ GEIH <- bind_rows(GEIH_2023, GEIH_2024)
 tabla_llaves <- bind_rows(verificacion_llaves)
 tabla_pegues <- bind_rows(verificacion_pegues)
 tabla_eficiencia <- bind_rows(verificacion_eficiencia)
+
 
 print(head(tabla_llaves))
 print(head(tabla_pegues))
@@ -384,10 +385,10 @@ emicron_ventas <- read.csv(file.path(ruta_emicron, "Módulo de ventas o ingresos
 #### 1.4.a.3) Preparar la llave de EMICRON ----
 llave_emicron <- c("DIRECTORIO", "SECUENCIA_P", "SECUENCIA_ENCUESTA")
 
-emicron_identificacion <- emicron_identificacion  %>% mutate(across(all_of(llave_emicron), as.character))
-emicron_caracteristicas <- emicron_caracteristicas %>% mutate(across(all_of(llave_emicron), as.character))
-emicron_inclusion <- emicron_inclusion %>% mutate(across(all_of(llave_emicron), as.character))
-emicron_ventas <- emicron_ventas %>% mutate(across(all_of(llave_emicron), as.character))
+emicron_identificacion  <- emicron_identificacion  %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA))
+emicron_caracteristicas <- emicron_caracteristicas %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA))
+emicron_inclusion       <- emicron_inclusion       %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA))
+emicron_ventas          <- emicron_ventas          %>% mutate(DIRECTORIO = as.character(DIRECTORIO), SECUENCIA_P = as.character(SECUENCIA_P), SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA))
 
 #### 1.4.a.4) Verificar la llave ----
 tabla_na_llaves_emicron <- data.frame(
@@ -744,66 +745,65 @@ ggsave(file.path(ruta_outputs, "2_2_tasas_sexo.png"), plot = grafico_tasas, widt
 ## 2.3) Población ocupada según formalidad ----
 
 ### 2.3.1) Construcción de la variable de formalidad (EI) ----
+# Clasificación de formalidad laboral según la metodología oficial del DANE
 areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
 
-GEIH_13ciudades_tri <- GEIH %>%
-  filter(ANIO == 2024, MES %in% 10:12, OCI == 1, as.numeric(AREA) %in% areas_13ciudades) %>%
+ocupados_2024 <- GEIH_2024 %>%
+  filter(OCI == 1) %>%
   mutate(
     OFICIO_C8_2D = if_else(!is.na(OFICIO_C8), substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2), NA_character_),
     ANIOS = ANIO - 1,
+    
     FORMAL = case_when(
-      P6430 == 3 ~ NA_real_,
-      P6430 == 6 ~ 0,
       RAMA2D_R4 %in% c(84, 99) ~ 1,
-      P6430 == 8 ~ 0,
-      P6430 == 2 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 == 1 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 1 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 2 ~ 0,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 >= 4 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 <= 3 ~ 0,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
+      
+      # Fuera de vivienda (P6765 != 7)
+      P6765 != 7 & P3065 == 1 ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
       P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
       P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
       P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
       P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
+      
+      # En vivienda (P6765 == 7)
+      P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
       P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
       P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
       P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
       P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
+      
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
       P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
       P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
       P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
       P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
       TRUE ~ NA_real_
     ),
+    
     SALUD = case_when(
       P6430 %in% c(1, 3, 7) & P6100 %in% c(1, 2) & P6110 %in% c(1, 2, 4) ~ 1,
-      P6430 %in% c(1, 3, 7) & P6100 == 9 & P6450 == 2 ~ 1,
-      P6430 %in% c(1, 3, 7) & P6110 == 9 & P6450 == 2 ~ 1,
+      P6430 %in% c(1, 3, 7) & (P6100 == 9 | P6110 == 9) & P6450 == 2 ~ 1,
       P6430 %in% c(1, 3, 7) ~ 0,
       TRUE ~ NA_real_
     ),
     PENSION = case_when(
       P6430 %in% c(1, 3, 7) & P6920 == 3 ~ 1,
-      P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% c(1, 2, 3) & P6940 %in% c(1, 3) ~ 1,
+      P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% 1:3 & P6940 %in% c(1, 3) ~ 1,
       P6430 %in% c(1, 3, 7) ~ 0,
       TRUE ~ NA_real_
     ),
+    
     EI = case_when(
       P6430 == 2 ~ 1,
       P6430 %in% c(6, 8) ~ 0,
@@ -813,6 +813,9 @@ GEIH_13ciudades_tri <- GEIH %>%
       TRUE ~ NA_real_
     )
   )
+
+GEIH_13ciudades_tri <- ocupados_2024 %>%
+  filter(MES %in% 10:12, as.numeric(AREA) %in% areas_13ciudades)
 
 GEIH_13ciudades_dic <- GEIH_13ciudades_tri %>% filter(MES == 12)
 
@@ -1163,73 +1166,8 @@ ggsave(file.path(ruta_outputs, "3_3_cruce.png"), plot = grafico_cruce, width = 9
 ## 4.1) Informalidad laboral y divergencia salarial territorial ----
 
 ### 4.1.1) Agregación departamental de informalidad e ingreso mediano ----
-ocupados_2024_analisis <- GEIH_2024 %>%
-  filter(OCI == 1) %>%
-  mutate(
-    OFICIO_C8_2D = if_else(!is.na(OFICIO_C8), substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2), NA_character_),
-    ANIOS = ANIO - 1,
-    FORMAL = case_when(
-      P6430 == 3 ~ NA_real_,
-      P6430 == 6 ~ 0,
-      RAMA2D_R4 %in% c(84, 99) ~ 1,
-      P6430 == 8 ~ 0,
-      P6430 == 2 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 == 1 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 1 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 2 ~ 0,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 >= 4 ~ 1,
-      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 <= 3 ~ 0,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
-      P6430 %in% c(4, 5) & P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      TRUE ~ NA_real_
-    ),
-    SALUD = case_when(
-      P6430 %in% c(1, 3, 7) & P6100 %in% c(1, 2) & P6110 %in% c(1, 2, 4) ~ 1,
-      P6430 %in% c(1, 3, 7) & P6100 == 9 & P6450 == 2 ~ 1,
-      P6430 %in% c(1, 3, 7) & P6110 == 9 & P6450 == 2 ~ 1,
-      P6430 %in% c(1, 3, 7) ~ 0,
-      TRUE ~ NA_real_
-    ),
-    PENSION = case_when(
-      P6430 %in% c(1, 3, 7) & P6920 == 3 ~ 1,
-      P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% c(1, 2, 3) & P6940 %in% c(1, 3) ~ 1,
-      P6430 %in% c(1, 3, 7) ~ 0,
-      TRUE ~ NA_real_
-    ),
-    EI = case_when(
-      P6430 == 2 ~ 1,
-      P6430 %in% c(6, 8) ~ 0,
-      P6430 %in% c(4, 5) ~ FORMAL,
-      P6430 %in% c(1, 3, 7) & SALUD == 1 & PENSION == 1 ~ 1,
-      P6430 %in% c(1, 3, 7) ~ 0,
-      TRUE ~ NA_real_
-    )
-  )
+# Reutilizamos la base ocupados_2024 con la variable de formalidad (EI) ya clasificada en el numeral 2.3.1
+ocupados_2024_analisis <- ocupados_2024
 
 dicc_deptos <- data.frame(
   DPTO_COD = c(5, 8, 11, 13, 15, 17, 18, 19, 20, 23, 25, 27, 41, 44, 47, 50, 52, 54, 63, 66, 68, 70, 73, 76),
@@ -1404,7 +1342,7 @@ grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
     legend.title = element_text(size = 9.5, face = "bold"),
     legend.text = element_text(size = 9)
   )
-
+grafico_4_3
 ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 9.5, height = 6, dpi = 300)
 
 
