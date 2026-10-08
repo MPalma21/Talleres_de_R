@@ -1,4 +1,30 @@
-# Reglas de escritura y revisión - Taller 2
+# Estructura del Directorio y Reglas de Revisión - Taller 2
+
+## 0. Estructura Modular de la Entrega
+
+El directorio `Entregable_Talleres/Taller_2/` está organizado de forma modular para garantizar claridad evaluativa, reproducibilidad y orden pedagógico:
+
+```text
+Entregable_Talleres/Taller_2/
+├── Taller2_Grupo_10.R                 # Script oficial de R para calificación (100% autónomo y ejecutable)
+├── Informe_Taller_2_Grupo_10.pdf      # Copia raíz del informe ejecutivo final (8 páginas)
+├── README.md                          # Guía de organización, reglas metodológicas y outline
+├── 01_informe_quarto/                 # Fuentes del informe ejecutivo de entrega
+│   ├── Informe_Taller_2_Grupo_10.qmd
+│   ├── Informe_Taller_2_Grupo_10.pdf
+│   └── Informe_Taller_2_Grupo_10_figuras/
+├── 02_cuaderno_pedagogico/            # Cuaderno Quarto interactivo alineado con la Guía Pedagógica
+│   ├── Taller2_Cuaderno_Pedagogico.qmd
+│   └── Taller2_Cuaderno_Pedagogico.html
+└── 03_material_apoyo/                 # Insumos de estudio y preparación de entrevista
+    ├── Guia_Estudio_Academica_Taller2.qmd (.pdf)
+    ├── Propuestas_Graficas_Punto4.qmd (.pdf)
+    └── graficas_catalogo/
+```
+
+*Nota sobre la carpeta de salidas:* Todas las tablas (`.xlsx`, `.csv`) y gráficos (`.png`) generados por el script y los cuadernos se almacenan de manera unificada en la carpeta `outputs/` ubicada en la raíz del repositorio.
+
+---
 
 ## 1. Fuente de autoridad
 

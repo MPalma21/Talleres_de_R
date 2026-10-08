@@ -51,7 +51,13 @@ if (.Platform$OS.type == "windows") invisible(suppressWarnings(
   Sys.setlocale("LC_CTYPE", "Spanish_Colombia.1252")
 ))
 
-salidas <- file.path("..", "..", "outputs")
+salidas <- if (requireNamespace("here", quietly = TRUE) && dir.exists(here::here("outputs"))) {
+  here::here("outputs")
+} else if (dir.exists(file.path("..", "..", "..", "outputs"))) {
+  file.path("..", "..", "..", "outputs")
+} else {
+  file.path("..", "..", "outputs")
+}
 directorio_figuras <- "Informe_Taller_2_Grupo_10_figuras"
 dir.create(directorio_figuras, showWarnings = FALSE)
 leer_csv <- function(nombre) read.csv(file.path(salidas, nombre), check.names = FALSE,
