@@ -57,6 +57,8 @@ grafico_4_3 <- ggplot(datos_educ, aes(x = INGLABO, fill = NIVEL, color = NIVEL))
     breaks = c(300000, 650000, 1300000, 3000000, 8000000),
     labels = c("$300k", "$650k", "$1,3M", "$3M", "$8M")
   ) +
+  scale_fill_brewer(palette = "Blues") +
+  scale_color_brewer(palette = "Blues") +
   labs(
     title = "Retornos al capital humano: Distribución salarial según nivel educativo",
     subtitle = "Densidad estimada del ingreso laboral mensual en escala logarítmica (Colombia, GEIH 2024)",
@@ -99,8 +101,8 @@ grafico_4_3 <- ggplot(datos_formalidad, aes(x = INGLABO, fill = CONDICION, color
     breaks = c(200000, 650000, 1300000, 3000000, 10000000),
     labels = c("$200k", "$650k", "$1,3M", "$3M", "$10M")
   ) +
-  scale_fill_manual(values = c("Formal" = "#1B9E77", "Informal" = "#D95F02")) +
-  scale_color_manual(values = c("Formal" = "#1B9E77", "Informal" = "#D95F02")) +
+  scale_fill_manual(values = c("Formal" = "steelblue", "Informal" = "grey75")) +
+  scale_color_manual(values = c("Formal" = "steelblue", "Informal" = "grey75")) +
   labs(
     title = "Dualismo del mercado de trabajo: Penalización salarial de la informalidad",
     subtitle = "Distribución del ingreso según condición formal/informal oficial (Colombia, GEIH 2024)",
@@ -145,7 +147,7 @@ grafico_4_3 <- ggplot(muestra_grafico, aes(x = P6040, y = INGLABO, color = SEXO)
     breaks = c(650000, 1300000, 2600000, 5000000, 10000000),
     labels = c("$650k", "$1,3M", "$2,6M", "$5M", "$10M")
   ) +
-  scale_color_manual(values = c("Hombre" = "#377EB8", "Mujer" = "#E41A1C")) +
+  scale_color_manual(values = c("Hombre" = "steelblue", "Mujer" = "firebrick")) +
   labs(
     title = "Trayectorias salariales en el ciclo vital: Estimación de la parábola de Mincer",
     subtitle = "Ajuste polinomial de segundo orden (edad y edad al cuadrado) sobre ingresos en escala logarítmica",
@@ -186,8 +188,8 @@ grafico_4_3 <- ggplot(datos_dominio, aes(x = INGLABO, fill = DOMINIO, color = DO
     breaks = c(200000, 650000, 1300000, 3000000, 10000000),
     labels = c("$200k", "$650k", "$1,3M", "$3M", "$10M")
   ) +
-  scale_fill_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
-  scale_color_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
+  scale_fill_manual(values = c("Cabecera urbana" = "steelblue", "Centros poblados y rural" = "forestgreen")) +
+  scale_color_manual(values = c("Cabecera urbana" = "steelblue", "Centros poblados y rural" = "forestgreen")) +
   labs(
     title = "Asimetría territorial del ingreso laboral: Cabecera urbana vs. Áreas rurales",
     subtitle = "Densidad estimada del ingreso laboral mensual en escala logarítmica (Colombia, GEIH 2024)",
@@ -228,8 +230,8 @@ grafico_4_3 <- ggplot(datos_rut, aes(x = VENTAS_MES_ANTERIOR, fill = TIENE_RUT, 
     breaks = c(200000, 1000000, 5000000, 20000000, 100000000),
     labels = c("$200k", "$1M", "$5M", "$20M", "$100M")
   ) +
-  scale_fill_manual(values = c("Con RUT formal" = "#2B6CB0", "Sin RUT" = "#C53030")) +
-  scale_color_manual(values = c("Con RUT formal" = "#2B6CB0", "Sin RUT" = "#C53030")) +
+  scale_fill_manual(values = c("Con RUT formal" = "steelblue", "Sin RUT" = "grey75")) +
+  scale_color_manual(values = c("Con RUT formal" = "steelblue", "Sin RUT" = "grey75")) +
   labs(
     title = "Registro tributario y escala productiva: Ventas mensuales en micronegocios",
     subtitle = "Distribución de ventas brutas según tenencia de RUT (Colombia, EMICRON 2024)",
@@ -271,8 +273,8 @@ grafico_4_3 <- ggplot(datos_histograma, aes(x = INGLABO, fill = DOMINIO)) +
     breaks = c(300000, 650000, 1300000, 3000000, 10000000),
     labels = c("$300k", "$650k", "$1,3M", "$3M", "$10M")
   ) +
+  scale_fill_manual(values = c("Cabecera urbana" = "steelblue", "Centros poblados y rural" = "forestgreen")) +
   facet_wrap(~DOMINIO, scales = "free_y") +
-  scale_fill_manual(values = c("Cabecera urbana" = "#1F78B4", "Centros poblados y rural" = "#E31A1C")) +
   labs(
     title = "Concentración de masa salarial: Frecuencia de ingresos por dominio geográfico",
     subtitle = "Histograma de frecuencias en escala logarítmica con facetas independientes (GEIH 2024)",
@@ -322,7 +324,7 @@ datos_mismatch <- ocupados_2024_analisis %>%
 grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
   geom_count(aes(color = after_stat(n)), alpha = 0.85) +
   scale_size_area(max_size = 14) +
-  scale_color_gradient(low = "#9ECAE1", high = "#084594") +
+  scale_color_gradient(low = "lightblue", high = "navy") +
   labs(
     title = "Emparejamiento laboral: Nivel educativo y posición ocupacional en Colombia",
     subtitle = "Frecuencia muestral de intersección entre educación y jerarquía del empleo (GEIH 2024)",
@@ -363,8 +365,8 @@ grafico_4_3 <- ggplot(datos_genero, aes(x = INGLABO, fill = SEXO, color = SEXO))
     breaks = c(300000, 650000, 1300000, 3000000, 10000000),
     labels = c("$300k", "$650k", "$1,3M", "$3M", "$10M")
   ) +
-  scale_fill_manual(values = c("Hombre" = "#3182BD", "Mujer" = "#DE2D26")) +
-  scale_color_manual(values = c("Hombre" = "#3182BD", "Mujer" = "#DE2D26")) +
+  scale_fill_manual(values = c("Hombre" = "steelblue", "Mujer" = "firebrick")) +
+  scale_color_manual(values = c("Hombre" = "steelblue", "Mujer" = "firebrick")) +
   labs(
     title = "Brecha de género en la remuneración laboral: Densidad de ingresos",
     subtitle = "Distribución del ingreso laboral mensual por sexo biológico (Colombia, GEIH 2024)",
@@ -401,8 +403,8 @@ datos_inactivos <- GEIH_2024 %>%
   mutate(CONDICION = ifelse(FT == 1, "Desempleo abierto (Buscando)", "Inactividad / Desaliento (FFT)"))
 
 grafico_4_3 <- ggplot(datos_inactivos, aes(x = P6040, fill = CONDICION)) +
-  geom_histogram(bins = 30, position = "identity", alpha = 0.55, color = "white") +
-  scale_fill_manual(values = c("Desempleo abierto (Buscando)" = "#E41A1C", "Inactividad / Desaliento (FFT)" = "#377EB8")) +
+  geom_histogram(bins = 30, position = "identity", alpha = 0.55) +
+  scale_fill_manual(values = c("Desempleo abierto (Buscando)" = "firebrick", "Inactividad / Desaliento (FFT)" = "steelblue")) +
   labs(
     title = "Fricción laboral en el ciclo vital: Desempleo abierto vs. Inactividad por edad",
     subtitle = "Frecuencia de personas en edad de trabajar no ocupadas en Colombia (GEIH 2024)",
@@ -446,7 +448,7 @@ grafico_4_3 <- ggplot(datos_micro_edad, aes(x = P241, y = VENTAS_MES_ANTERIOR, c
     breaks = c(200000, 1000000, 5000000, 20000000),
     labels = c("$200k", "$1M", "$5M", "$20M")
   ) +
-  scale_color_manual(values = c("Propietario Hombre" = "#2B6CB0", "Propietaria Mujer" = "#D95F02")) +
+  scale_color_manual(values = c("Propietario Hombre" = "steelblue", "Propietaria Mujer" = "firebrick")) +
   labs(
     title = "Edad del propietario y facturación mensual en los micronegocios colombianos",
     subtitle = "Dispersión con jitter y tendencia lineal sobre ventas en escala logarítmica (EMICRON 2024)",

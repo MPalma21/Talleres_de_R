@@ -717,8 +717,8 @@ grafico_tasas <- ggplot(datos_grafico_tasas, aes(x = PERIODO_TRIM, y = VALOR, gr
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
   facet_wrap(~TASA, scales = "free_y", ncol = 3) +
-  scale_color_manual(values = c("Hombre" = "darkblue", "Mujer" = "violet")) +
   scale_x_discrete(labels = c("T1\n2023", "T2\n2023", "T3\n2023", "T4\n2023", "T1\n2024", "T2\n2024", "T3\n2024", "T4\n2024")) +
+  scale_color_manual(values = c("Hombre" = "steelblue", "Mujer" = "firebrick")) +
   labs(
     title = "Evolución de las tasas de mercado laboral según sexo en Colombia",
     subtitle = "Total nacional por trimestres (2023 - 2024)",
@@ -736,7 +736,7 @@ grafico_tasas <- ggplot(datos_grafico_tasas, aes(x = PERIODO_TRIM, y = VALOR, gr
     legend.title = element_text(size = 11),
     legend.position = "bottom",
     plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12, color = "gray30")
+    plot.subtitle = element_text(size = 12)
   )
 
 ggsave(file.path(ruta_outputs, "2_2_tasas_sexo.png"), plot = grafico_tasas, width = 12, height = 6, dpi = 300)
@@ -848,11 +848,11 @@ write.csv(tabla_formalidad_sexo, file.path(ruta_outputs, "2_3_tabla_formalidad_1
 
 ### 2.3.3) Construir y exportar el gráfico de torta ----
 grafico_formalidad <- ggplot(tabla_formalidad_sexo, aes(x = "", y = PORCENTAJE, fill = CONDICION)) +
-  geom_col(width = 1, color = "white") +
+  geom_col(width = 1) +
   coord_polar(theta = "y") +
   facet_wrap(~SEXO) +
-  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), color = "white", size = 5) +
-  scale_fill_manual(values = c("Formal" = "#2CA02C", "Informal" = "#D62728")) +
+  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), size = 5) +
+  scale_fill_manual(values = c("Formal" = "steelblue", "Informal" = "grey75")) +
   labs(
     title = "Distribución de personas ocupadas según condición de formalidad y sexo",
     subtitle = "Total 13 ciudades y áreas metropolitanas - Diciembre de 2024",
@@ -927,7 +927,7 @@ grafico_posicion <- ggplot(posicion_consolidada, aes(x = POSICION_OCUPACIONAL, y
   coord_flip() +
   geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_dodge(width = 0.8), hjust = -0.15, size = 3.5) +
   scale_y_continuous(limits = c(0, max(posicion_consolidada$PORCENTAJE) * 1.15)) +
-  scale_fill_manual(values = c("Total nacional" = "#2CA02C", "Hombres" = "#1F77B4", "Mujeres" = "#E377C2")) +
+  scale_fill_manual(values = c("Total nacional" = "grey50", "Hombres" = "steelblue", "Mujeres" = "firebrick")) +
   labs(
     title = "Distribución de personas ocupadas según posición ocupacional",
     subtitle = "Total nacional, hombres y mujeres - Enero de 2023",
@@ -937,7 +937,7 @@ grafico_posicion <- ggplot(posicion_consolidada, aes(x = POSICION_OCUPACIONAL, y
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12, color = "gray30"),
+    plot.subtitle = element_text(size = 12),
     axis.text.y = element_text(size = 10),
     axis.text.x = element_text(size = 10),
     axis.title = element_text(size = 12),
@@ -1077,9 +1077,9 @@ write.csv(indicadores_credito_ahorro, file.path(ruta_outputs, "3_2_credito_ahorr
 grafico_formas_pago <- ggplot(tabla_formas_pago, aes(x = FORMA_PAGO, y = PORCENTAJE, fill = RAMA)) +
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
   geom_text(aes(label = ifelse(PORCENTAJE > 0, paste0(PORCENTAJE, "%"), "")), position = position_dodge(width = 0.8), hjust = -0.15, size = 3) +
-  scale_y_continuous(limits = c(0, 112), breaks = seq(0, 100, 20), labels = function(x) paste0(x, "%")) +
+  scale_y_continuous(limits = c(0, 112), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%")) +
   coord_flip() +
-  scale_fill_manual(values = c("Agropecuario" = "#2CA02C", "Industria" = "#FF7F0E", "Comercio" = "#1F77B4", "Servicios" = "#9467BD")) +
+  scale_fill_brewer(palette = "Set2") +
   labs(
     title = "Formas de pago aceptadas por los micronegocios según rama de actividad",
     subtitle = "Total nacional - 2024 (Porcentaje de micronegocios dentro de cada rama)",
@@ -1089,7 +1089,7 @@ grafico_formas_pago <- ggplot(tabla_formas_pago, aes(x = FORMA_PAGO, y = PORCENT
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12, color = "gray30"),
+    plot.subtitle = element_text(size = 12),
     axis.text.x = element_text(size = 10),
     axis.text.y = element_text(size = 11),
     axis.title = element_text(size = 12),
@@ -1136,9 +1136,9 @@ write.csv(tabla_contingencia_cruce, file.path(ruta_outputs, "3_3_tabla_educacion
 ### 3.3.4) Construir y exportar el gráfico de relación ----
 grafico_cruce <- ggplot(tabla_contingencia_cruce, aes(x = NIVEL_EDUCATIVO, y = PORCENTAJE, fill = TIENE_RUT)) +
   geom_col(position = "stack", width = 0.65) +
-  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), color = "white", fontface = "bold", size = 4.5) +
-  scale_fill_manual(values = c("Sin RUT" = "#D95F02", "Con RUT" = "#1B9E77")) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = function(x) paste0(x, "%")) +
+  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), fontface = "bold", size = 4.5) +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%")) +
+  scale_fill_manual(values = c("Con RUT" = "steelblue", "Sin RUT" = "grey75")) +
   labs(
     title = "Formalidad tributaria del micronegocio según nivel educativo del propietario",
     subtitle = "Micronegocios emparejados GEIH-EMICRON (Ventana efectiva: Febrero - Diciembre 2024)",
@@ -1148,7 +1148,7 @@ grafico_cruce <- ggplot(tabla_contingencia_cruce, aes(x = NIVEL_EDUCATIVO, y = P
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
-    plot.subtitle = element_text(size = 12, color = "gray30"),
+    plot.subtitle = element_text(size = 12),
     axis.text.x = element_text(size = 10),
     axis.text.y = element_text(size = 10),
     axis.title = element_text(size = 12),
@@ -1205,11 +1205,11 @@ deptos_etiqueta <- datos_deptos %>%
   filter(NOMBRE_DPTO %in% c("Bogotá D.C.", "Antioquia", "Valle del Cauca", "Atlántico", "Chocó", "La Guajira", "Nariño", "Sucre", "Santander", "Cundinamarca"))
 
 grafico_4_1 <- ggplot(datos_deptos, aes(x = TASA_INFORMALIDAD, y = INGRESO_MEDIANO / 1e6)) +
-  geom_smooth(method = "loess", color = "#4A5568", se = TRUE, fill = "#CBD5E0", alpha = 0.35, linewidth = 0.9) +
+  geom_smooth(method = "loess", se = TRUE, alpha = 0.35, linewidth = 0.9, color = "black", fill = "grey70") +
   geom_point(aes(size = OCUPADOS_EXP / 1e6, color = REGION), alpha = 0.85) +
-  geom_text(data = deptos_etiqueta, aes(label = NOMBRE_DPTO), vjust = -0.9, size = 3.2, fontface = "bold", color = "gray20", check_overlap = TRUE) +
+  geom_text(data = deptos_etiqueta, aes(label = NOMBRE_DPTO), vjust = -0.9, size = 3.2, fontface = "bold", check_overlap = TRUE) +
   scale_size_continuous(range = c(2.5, 9), breaks = c(0.5, 1, 2, 4)) +
-  scale_color_manual(values = c("Bogotá D.C." = "#E41A1C", "Central" = "#377EB8", "Caribe" = "#4DAF4A", "Pacífica" = "#984EA3", "Oriental" = "#FF7F00", "Amazonía/Orinoquía" = "#A65628")) +
+  scale_color_brewer(palette = "Dark2") +
   scale_x_continuous(limits = c(30, 90), breaks = seq(30, 90, 10), labels = paste0(seq(30, 90, 10), "%")) +
   scale_y_continuous(limits = c(0.4, 2.0), breaks = seq(0.4, 2.0, 0.2), labels = paste0("$", c("0,4", "0,6", "0,8", "1,0", "1,2", "1,4", "1,6", "1,8", "2,0"), "M")) +
   labs(
@@ -1223,7 +1223,7 @@ grafico_4_1 <- ggplot(datos_deptos, aes(x = TASA_INFORMALIDAD, y = INGRESO_MEDIA
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 14),
-    plot.subtitle = element_text(size = 10.5, color = "gray30"),
+    plot.subtitle = element_text(size = 10.5),
     axis.text = element_text(size = 9.5),
     axis.title = element_text(size = 11, face = "bold"),
     legend.position = "right",
@@ -1263,10 +1263,10 @@ write.csv(resumen_micros, file.path(ruta_outputs, "4_2_tabla_inclusion_ventas.cs
 
 ### 4.2.2) Construcción y exportación del gráfico 4_2_inclusion_ventas_micro.png ----
 grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONES, fill = ACCESO_CREDITO)) +
-  geom_violin(aes(weight = F_EXP), position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width", color = "gray35") +
-  geom_boxplot(aes(weight = F_EXP), position = position_dodge(0.8), width = 0.22, outlier.shape = NA, alpha = 0.9, color = "black") +
+  geom_violin(aes(weight = F_EXP), position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width") +
+  geom_boxplot(aes(weight = F_EXP), position = position_dodge(0.8), width = 0.22, outlier.shape = NA, alpha = 0.9) +
   scale_y_log10(limits = c(0.1, 100), breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = paste0("$", c("0,2", "0,5", "1,0", "2,0", "5,0", "10,0", "20,0", "50,0"), "M")) +
-  scale_fill_manual(values = c("Con crédito aprobado" = "#1B9E77", "Sin crédito formal" = "#D95F02")) +
+  scale_fill_manual(values = c("Con crédito aprobado" = "steelblue", "Sin crédito formal" = "grey75")) +
   labs(
     title = "Inclusión financiera y escala productiva de los micronegocios en Colombia",
     subtitle = "Distribución de ventas brutas mensuales según adopción de pagos electrónicos y acceso a crédito (EMICRON 2024)",
@@ -1278,7 +1278,7 @@ grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONE
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 14),
-    plot.subtitle = element_text(size = 10.5, color = "gray30"),
+    plot.subtitle = element_text(size = 10.5),
     axis.text = element_text(size = 10),
     axis.title = element_text(size = 11, face = "bold"),
     legend.position = "bottom",
@@ -1323,7 +1323,7 @@ write.csv(tabla_mismatch, file.path(ruta_outputs, "4_3_tabla_mismatch_educacion.
 grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
   geom_count(aes(color = after_stat(n)), alpha = 0.85) +
   scale_size_area(max_size = 14) +
-  scale_color_gradient(low = "#9ECAE1", high = "#084594") +
+  scale_color_gradient(low = "lightblue", high = "navy") +
   labs(
     title = "Emparejamiento laboral: Nivel educativo y posición ocupacional en Colombia",
     subtitle = "Frecuencia muestral de intersección entre educación y jerarquía del empleo (GEIH 2024)",
@@ -1335,14 +1335,13 @@ grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 13),
-    plot.subtitle = element_text(size = 10, color = "gray30"),
+    plot.subtitle = element_text(size = 10),
     axis.text = element_text(size = 9.5),
     axis.title = element_text(size = 10.5, face = "bold"),
     legend.position = "right",
     legend.title = element_text(size = 9.5, face = "bold"),
     legend.text = element_text(size = 9)
   )
-grafico_4_3
 ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 9.5, height = 6, dpi = 300)
 
 
