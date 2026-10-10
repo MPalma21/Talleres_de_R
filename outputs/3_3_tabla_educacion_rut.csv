@@ -1,9 +1,27 @@
-"NIVEL_EDUCATIVO","TIENE_RUT","TOTAL_EXPANDIDO","TOTAL_NIVEL","PORCENTAJE"
-"Ninguno / Preescolar","Sin RUT",267217.165247673,274860.976229424,97.2
-"Ninguno / Preescolar","Con RUT",7643.81098175124,274860.976229424,2.8
-"Básica primaria","Sin RUT",1779048.01422103,2035268.95823602,87.4
-"Básica primaria","Con RUT",256220.944014986,2035268.95823602,12.6
-"Secundaria y media","Sin RUT",1697487.42898148,2437674.76094482,69.6
-"Secundaria y media","Con RUT",740187.331963335,2437674.76094482,30.4
-"Superior y posgrado","Sin RUT",29162.0939714306,116639.372541812,25
-"Superior y posgrado","Con RUT",87477.2785703813,116639.372541812,75
+"NIVEL_EDUCATIVO","TIENE_RUT","N_MUESTRA","TOTAL_EXPANDIDO","TOTAL_NIVEL","PORCENTAJE"
+"Ninguno","Sin RUT",3283,266762,274405,97.2
+"Ninguno","Con RUT",107,7644,274405,2.8
+"Preescolar","Sin RUT",6,456,456,100
+"Preescolar","Con RUT",0,0,456,0
+"Básica primaria (1o - 5o)","Sin RUT",16619,1235381,1399138,88.3
+"Básica primaria (1o - 5o)","Con RUT",2475,163757,1399138,11.7
+"Básica secundaria (6o - 9o)","Sin RUT",8007,543667,636131,85.5
+"Básica secundaria (6o - 9o)","Con RUT",1390,92464,636131,14.5
+"Media académica (Bachillerato clásico)","Sin RUT",17566,1144981,1473027,77.7
+"Media académica (Bachillerato clásico)","Con RUT",4938,328046,1473027,22.3
+"Media técnica (Bachillerato técnico)","Sin RUT",1072,70764,96665,73.2
+"Media técnica (Bachillerato técnico)","Con RUT",379,25901,96665,26.8
+"Normalista","Sin RUT",57,3422,3937,86.9
+"Normalista","Con RUT",11,515,3937,13.1
+"Técnica profesional","Sin RUT",3235,184742,279811,66
+"Técnica profesional","Con RUT",1479,95068,279811,34
+"Tecnológica","Sin RUT",1154,82086,146363,56.1
+"Tecnológica","Con RUT",821,64277,146363,43.9
+"Universitaria","Sin RUT",3765,211492,437872,48.3
+"Universitaria","Con RUT",3670,226380,437872,51.7
+"Especialización","Sin RUT",354,22136,82445,26.8
+"Especialización","Con RUT",906,60309,82445,73.2
+"Maestría","Sin RUT",115,6742,31660,21.3
+"Maestría","Con RUT",313,24918,31660,78.7
+"Doctorado","Sin RUT",4,285,2535,11.2
+"Doctorado","Con RUT",28,2250,2535,88.8

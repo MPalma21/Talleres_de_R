@@ -141,7 +141,7 @@ La diferencia en el número de observaciones proviene de la estructura del cuest
 * *Fuerza de trabajo* (657.803 observaciones) se aplica solo a la Población en Edad de Trabajar (PET, 15 años o más).
 * *Ocupados* (353.672) y *No ocupados* (304.131) dividen a la PET en dos grupos mutuamente excluyentes cuya suma es igual al total de personas de 15 años o más.
 
-En los datos se comprobó mes a mes que se cumplen las identidades básicas del mercado de trabajo (`1_2_consistencia_laboral_2024.csv`):
+En el archivo `1_2_consistencia_laboral_2024.csv` se comprobó mes a mes que se cumplen las identidades básicas del mercado de trabajo:
 $$\text{PET} = \text{Fuerza de Trabajo (FT)} + \text{Población Fuera de la Fuerza de Trabajo (FFT)}$$
 $$\text{Fuerza de Trabajo (FT)} = \text{Ocupados (OCI)} + \text{Desocupados (DSI)}$$
 La diferencia entre la suma de los componentes y los totales agregados fue cero en todos los meses.
@@ -242,13 +242,9 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
-Lo primero que se debe resaltar es la importante brecha que hay entre las mujeres y los hombres en la participación en el mercado laboral: en la tasa global de participación, los hombres manejan tasas cercanas a 76,5 % mientras que las mujeres manejan tasas cercanas a 53 % (una brecha de ~13,5pp); con respecto a la tasa de ocupación, los hombres manejan tasas cercanas a 70 % mientras que las mujeres
-
-
-
-y de TO entre 70 y 72 %, mientras que las mujeres presentan una TGP en torno al 51 o 52 % y una TO cerca del 45 o 46 %, lo que deja una brecha de más de 24 puntos porcentuales en ambos indicadores.
-* En desempleo, las mujeres registran tasas entre 11 y 15 %, frente a niveles de 7 a 10 % en los hombres, con una diferencia desfavorable para las mujeres de 4 a 5 puntos porcentuales.
-* En el último trimestre de 2024 se observa un patrón estacional: la TD disminuye tanto en hombres (de 9,57 % a 7,06 %) como en mujeres (de 14,98 % a 11,15 %). Esta baja coincidió con un aumento de la ocupación (la TO subió 2,7 puntos porcentuales en ambos sexos) acompañado de una participación estable o en leve ascenso, lo que refleja la mayor contratación en comercio y servicios hacia fin de año.
+* En participación y ocupación persiste una brecha estructural por sexo: los hombres registran una TGP entre 76,0 % y 77,3 % y una TO entre 69,1 % y 71,7 %, mientras que las mujeres presentan una TGP entre 51,6 % y 53,2 % y una TO entre 44,5 % y 46,8 %, lo que representa una diferencia de más de 24 puntos porcentuales en ambos indicadores.
+* En desempleo, las mujeres registran tasas entre 11,15 % y 14,98 %, frente a niveles de 7,06 % a 9,57 % en los hombres, manteniendo una brecha desfavorable para las mujeres de 4 a 5,4 puntos porcentuales.
+* En el último trimestre de 2024 se observa un patrón estacional: la TD disminuye tanto en hombres (de 9,12 % en J-S a 7,06 % en O-D) como en mujeres (de 13,20 % a 11,15 %). Esta caída respondió a un aumento de la ocupación hacia fin de año en actividades de comercio y servicios.
 
 ## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas 
 
@@ -258,7 +254,7 @@ y de TO entre 70 y 72 %, mientras que las mujeres presentan una TGP en torno al 
 figura_recortada("2_3_formalidad_13ciudades.png")
 ```
 
-La condición de formalidad laboral (`EI`) se programó en R a partir del código SAS publicado por el DANE en el anexo de empleo informal (`anex-GEIHEISS-oct-dic2024.xlsx`) [3]. La definición toma en cuenta la posición ocupacional, el tamaño de la empresa (`P3069`), el registro mercantil (`P3045S1`), la contabilidad (`P3046`) y los aportes a salud y pensión.
+La condición de formalidad laboral (`EI`) se programó en R replicando íntegramente la sintaxis oficial en SAS publicada por el DANE en el anexo de empleo informal (`anex-GEIHEISS-oct-dic2024.xlsx`) [3]. La definición evalúa secuencialmente la rama de actividad (`RAMA2D_R4`), la posición ocupacional (`P6430`), el registro y contabilidad del negocio (`P3045S1`, `P3046`, `P3065`, `P3066`, `P6775`, `P3068`), la ubicación en vivienda (`P6765`, `P3067`, `P3067S1`, `P3067S2`), el tamaño de planta (`P3069`), el oficio (`OFICIO_C8`) y la cotización efectiva a salud (`SALUD`) y pensión (`PENSION`).
 
 Al replicar el cálculo para el trimestre octubre a diciembre de 2024 en las 13 ciudades (con el factor mensual dividido entre tres), la tasa de informalidad estimada fue de 42,5 %, exactamente igual a la cifra oficial del DANE (`2_3_control_ei_dane.csv`). Para el mes de diciembre de 2024, la informalidad en estas ciudades fue de 42,2 % en hombres y 42,3 % en mujeres (`2_3_tabla_formalidad_13ciudades.csv`), lo que indica proporciones similares entre ambos sexos en las áreas metropolitanas.
 
@@ -276,15 +272,28 @@ Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (4
 
 ## 3.1. Indicadores básicos del tejido empresarial 
 
-Al expandir los datos con `F_EXP` en `3_1_indicadores.xlsx`, el total nacional en 2024 es de 5.297.252 micronegocios, cifra idéntica a la publicada por el DANE [2]. El 64,6 % de los negocios está a cargo de hombres y el 35,4 % de mujeres. Por ramas de actividad, comercio y reparación de vehículos (23,9 %) y el sector agropecuario (21,5 %) concentran el 45,4 % del total. En formalidad legal, el 22,4 % cuenta con Registro Único Tributario (RUT) y el 10,3 % tiene registro en Cámara de Comercio.
+Los porcentajes de `3_1_indicadores.xlsx` se calcularon directamente a partir de la suma de `F_EXP` antes de redondear los totales expandidos. El total nacional en 2024 asciende a 5.297.252 micronegocios, cifra que coincide con la publicada por el DANE [2]. El 64,6 % de las unidades está liderado por hombres y el 35,4 % por mujeres; por ramas (`GRUPOS12`), comercio y reparación de vehículos (23,9 %) y agricultura, ganadería, silvicultura y pesca (21,5 %) concentran el 45,4 % del total (mientras que 4 registros con código `GRUPOS12 = 13` suman 82 unidades expandidas, 0,0 %). En formalización tributaria, el 22,4 % cuenta con RUT (`P1633 == 1`) y el 77,6 % no lo posee.
+
+En el registro mercantil ante Cámara de Comercio (`P1055 == 1`), nuestro cálculo arroja **10,3 %** (y **89,7 %** sin registro), frente al **10,5 %** (y **89,5 %**) publicado en el **Gráfico 9** del Boletín Técnico EMICRON 2024 [2], lo que representa una diferencia de **$-0,2$ puntos porcentuales**. Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín oficial, se comprueba que las cantidades absolutas publicadas por el DANE (547.581 micronegocios registrados —548 mil en el cuadro del boletín— sobre 5.297.252 totales) producen un cociente exacto de $\frac{547.580,7}{5.297.252,1} = 10,337$ % (**10,3 %** a un decimal), explicando así la discrepancia frente al Gráfico 9.
 
 **Tabla 6.** Indicadores básicos de micronegocios, total nacional 2024 [2].
 
 ```{r}
 #| results: asis
 i <- openxlsx::read.xlsx(file.path(salidas, "3_1_indicadores.xlsx"), check.names = FALSE)
-i <- i[c(1:3, 4, 6, 8, 9, 17, 19:20), ]
-i <- i[, c("CATEGORIA", "TOTAL_EXPANDIDO", "PORCENTAJE")]
+cats_tabla6 <- c(
+  "Total micronegocios",
+  "Hombre",
+  "Mujer",
+  "Agricultura, ganadería, caza, silvicultura y pesca",
+  "Industrias manufactureras",
+  "Comercio y reparación de vehículos",
+  "Alojamiento y servicios de comida",
+  "Cuenta con RUT",
+  "No registrado",
+  "Registrado ante Cámara de Comercio"
+)
+i <- i[match(cats_tabla6, i$CATEGORIA), c("CATEGORIA", "TOTAL_EXPANDIDO", "PORCENTAJE")]
 names(i) <- c("Categoría", "Micronegocios", "Porcentaje")
 i$Micronegocios <- fmt_entero(i$Micronegocios)
 i$Porcentaje <- paste0(fmt_pct(i$Porcentaje), " %")
@@ -307,17 +316,15 @@ Los resultados muestran diferencias notorias según el tipo de medio de pago: el
 
 La pregunta planteada para el cruce es: *¿se asocia el nivel educativo del propietario (variable GEIH: `P3042`) con la tenencia de RUT en el micronegocio (variable EMICRON: `P1633`)?*
 
-El análisis se expandió exclusivamente con `F_EXP`, ya que la unidad de observación es el micronegocio; combinar factores de personas (`FEX_C18`) y unidades económicas distorsionaría las estimaciones poblacionales. La población corresponde a los propietarios enlazados con respuesta en ambas encuestas (71.754 micronegocios) y el período representativo abarca de febrero a diciembre de 2024, una vez descontados los registros de enero provenientes de la GEIH de 2023.
+El análisis se expandió exclusivamente con `F_EXP`, dado que la unidad de observación es el micronegocio, sobre los propietarios emparejados en la ventana efectiva febrero–diciembre de 2024. Se clasificaron explícitamente las **13 categorías educativas oficiales del diccionario GEIH 2024** (`P3042` de `1` a `13`). La auditoría sobre los 71.754 propietarios emparejados verificó que el 100 % registra niveles conocidos (`1:13`), con 0 registros en el código `99` (*No sabe, no informa*), 0 valores faltantes (`NA`) y 0 códigos inválidos (así como 0 faltantes en `P1633`), conformando un universo expandido de 4.864.444 micronegocios.
 
 ```{r}
-#| fig-cap: "Tenencia de RUT según nivel educativo del propietario enlazado, 2024. Fuente: GEIH y EMICRON (DANE), ponderador: F_EXP."
-#| out-width: "42%"
+#| fig-cap: "Tenencia de RUT según las 13 categorías educativas del DANE (P3042) en propietarios emparejados, 2024. Fuente: GEIH y EMICRON (DANE), ponderador: F_EXP."
+#| out-width: "46%"
 figura_recortada("3_3_cruce.png")
 ```
 
-La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra que la tenencia de RUT aumenta de forma continua con la escolaridad: pasa de 2,8 % entre quienes no tienen estudios o cursaron preescolar, a 12,6 % en primaria, 30,4 % en secundaria y 75,0 % entre propietarios con educación superior o posgrado.
-
-Esta asociación no implica una relación causal directa. Existen al menos dos factores intermedios que ayudan a explicarla: primero, la escala del negocio, pues una mayor escolaridad suele acompañarse de más capital y mayores ventas, lo que acerca la actividad a los topes en los que el registro tributario es obligatorio; segundo, la especialización sectorial, ya que las personas con estudios superiores suelen abrir micronegocios de servicios profesionales donde los clientes exigen factura y RUT para deducir costos, a diferencia de los pequeños comercios o actividades de subsistencia.
+La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) evidencia un gradiente positivo pronunciado a lo largo de la escala educativa oficial: la tenencia de RUT es de 0,0 % en *Preescolar* ($n=6$), 2,8 % en *Ninguno*, 11,7 % en *Básica primaria (1o - 5o)*, 13,1 % en *Normalista*, 14,5 % en *Básica secundaria (6o - 9o)*, 22,3 % en *Media académica* y 26,8 % en *Media técnica*. En educación superior y posgrado la formalización tributaria se acelera: alcanza 34,0 % en *Técnica profesional*, 43,9 % en *Tecnológica*, 51,7 % en *Universitaria*, 73,2 % en *Especialización*, 78,7 % en *Maestría* y 88,8 % en *Doctorado*. Esta asociación responde tanto a la mayor escala operativa de los negocios liderados por propietarios más escolarizados como a su inserción en servicios profesionales donde la facturación y el RUT son requisitos de contratación.
 
 # 4. Análisis socioeconómico de la población colombiana
 
@@ -334,22 +341,23 @@ Los datos departamentales muestran una relación inversa entre la informalidad l
 ## 4.2. Pagos digitales y nivel de ventas en micronegocios 
 
 ```{r}
-#| fig-cap: "Distribución de ventas brutas según pagos digitales y crédito bancario, EMICRON 2024. Fuente: EMICRON 2024."
+#| fig-cap: "Distribución de ventas brutas según medio de pago (P1764_3 vs. efectivo exclusivo) y solicitud de crédito (P1765), EMICRON 2024."
 #| out-width: "44%"
 figura_recortada("4_2_inclusion_ventas_micro.png")
 ```
 
-La distribución de ventas mensuales varía según los medios de pago y el acceso al crédito (`4_2_tabla_inclusion_ventas.csv`). Los negocios que cobran únicamente en efectivo tienen ventas medianas de 1,38 millones de pesos sin crédito y 2,14 millones con crédito. En cambio, las unidades que reciben transferencias o billeteras digitales presentan ventas medianas entre 4,5 y 5,2 millones de pesos. El uso de medios electrónicos deja un registro de cobros que puede servir como historial financiero alternativo, lo que reduce las asimetrías de información con los bancos (*Stiglitz y Weiss, 1981; Gómez-González et al., 2023*) y facilita compras e inventarios de mayor escala.
+De acuerdo con el diccionario oficial de EMICRON 2024, se contrastaron los micronegocios que aceptan **transferencias bancarias o por internet** (`P1764_3 == 1`) frente a aquellos que operan con **efectivo exclusivo** (`P1764_1 == 1` sin ningún otro medio seleccionado entre `P1764_2` y `P1764_7`), cruzados con la **solicitud de crédito** para el negocio (`P1765`: `1 = Solicitó crédito`, `2 = No solicitó crédito`). Sobre los 75.671 micronegocios con ventas positivas, se contabilizaron y excluyeron del gráfico 5.202 registros sin respuesta en `P1765` (`NA`, equivalentes a 338.120 unidades expandidas; 5.376 en toda la EMICRON) y 645 registros pertenecientes a otros perfiles de pago (23 de ellos también con `NA` en `P1765`), analizando 69.847 unidades válidas (4.711.543 expandidas en `4_2_tabla_inclusion_ventas.csv`). En el grupo de **Solo efectivo**, la mediana de ventas mensuales pasa de **\$1,20 millones** entre quienes no solicitaron crédito ($n=37.700$) a **\$1,70 millones** entre quienes sí lo solicitaron ($n=5.804$). En los negocios que aceptan **Transferencias bancarias / internet**, la mediana sube a **\$2,30 millones** sin solicitud de crédito ($n=21.061$) y alcanza **\$3,00 millones** cuando se combina con solicitud de crédito ($n=5.282$), respaldando que la trazabilidad transaccional mitiga asimetrías de información financiera (*Stiglitz y Weiss, 1981; Gómez-González et al., 2023*).
 
 ## 4.3. Nivel educativo y posición ocupacional
 
 ```{r}
-#| fig-cap: "Frecuencia de intersección entre nivel educativo y posición ocupacional, Colombia 2024. Fuente: GEIH 2024."
-#| out-width: "44%"
+#| fig-cap: "Intersección entre las 13 categorías educativas (P3042) y las 9 posiciones ocupacionales (P6430), Colombia 2024. Fuente: GEIH 2024."
+#| out-width: "46%"
 figura_recortada("4_3_mismatch_educacion.png")
 ```
 
-El cruce entre educación y posición ocupacional muestra cómo se distribuye la fuerza laboral en distintas categorías (`4_3_tabla_mismatch_educacion.csv`). La mayoría de las personas asalariadas cuenta con estudios secundarios o superiores, pero el trabajo por cuenta propia también reúne a más de 3 millones de personas con primaria o secundaria y a cerca de 1 millón de ocupados con educación superior. Esta presencia de profesionales en actividades por cuenta propia concuerda con los análisis de desajuste educativo (*Hartog, 2000*), donde la falta de plazas asalariadas formales lleva a personas calificadas a generar ingresos propios en unidades de pequeña escala.
+El cruce entre las **13 categorías educativas oficiales del DANE** (`P3042`) y las **9 posiciones ocupacionales** (`P6430`) abarca 353.668 ocupados de la GEIH 2024 con nivel educativo conocido, tras identificar y excluir únicamente 4 registros con código `99` (*No sabe, no informa*, equivalentes a 473 ocupados expandidos; 0 faltantes y 0 códigos inválidos) (`4_3_tabla_mismatch_educacion.csv`). En los niveles de *Ninguno* (62,5 %), *Básica primaria* (54,8 %) y *Básica secundaria* (48,6 %) predomina el trabajo por cuenta propia; a partir de *Media académica* (47,8 % obrero particular vs. 39,9 % cuenta propia) y *Media técnica* (57,8 % vs. 32,7 %) la inserción principal pasa a ser asalariada. En educación terciaria (*Técnica profesional* 61,5 %, *Tecnológica* 66,6 %, *Universitaria* 62,1 %) y posgrado (*Especialización* 58,4 %, *Maestría* 55,6 %, *Doctorado* 56,5 %) predomina la posición de empleado particular, acompañada por el empleo en el gobierno (que sube de 10,8 % en *Universitaria* a 28,2 % en *Doctorado*). Con todo, se identifican **986.256 ocupados con educación superior o posgrado** (códigos `8` a `13`) desempeñándose como trabajadores por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales), reflejando fenómenos de sobreeducación y absorción en el autoempleo ante rigideces del sector formal (*Hartog, 2000*).
+
 
 # Referencias
 
@@ -360,7 +368,6 @@ El cruce entre educación y posición ocupacional muestra cómo se distribuye la
 \item Bonet-Morón, J., Hahn-De-Castro, L. W., \& Pérez-Valbuena, G. J. (2021). Regional economic disparities and regional policy in Colombia. \textit{Regional Studies}, 55(10-11), 1714--1727.
 \item Gómez-González, J. E., Mendoza, J. C., \& Rojas, M. A. (2023). Fintech payments, financial inclusion, and small firm revenues in Latin America. \textit{Borradores de Economía}, Banco de la República, No. 1242.
 \item Hartog, J. (2000). Over-education and earnings: where are we, where should we go? \textit{Empirical Economics}, 25(1), 1--23.
-\item Lustig, N., Martinez-Aguilar, A., \& Melendez, M. (2022). Fiscal policy and inequality in Latin America. \textit{CEQ Working Paper}, Tulane University.
 \item Stiglitz, J. E., \& Weiss, A. (1981). Credit rationing in markets with imperfect information. \textit{American Economic Review}, 71(3), 393--410.
 \end{enumerate}
 

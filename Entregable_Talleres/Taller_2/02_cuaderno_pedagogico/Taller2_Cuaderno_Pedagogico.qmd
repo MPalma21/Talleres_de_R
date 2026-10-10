@@ -447,6 +447,26 @@ etiquetas_posicion <- data.frame(
   )
 )
 
+etiquetas_educacion <- data.frame(
+  P3042 = c(1:13, 99),
+  NIVEL_EDUCATIVO = c(
+    "Ninguno",
+    "Preescolar",
+    "Básica primaria (1o - 5o)",
+    "Básica secundaria (6o - 9o)",
+    "Media académica (Bachillerato clásico)",
+    "Media técnica (Bachillerato técnico)",
+    "Normalista",
+    "Técnica profesional",
+    "Tecnológica",
+    "Universitaria",
+    "Especialización",
+    "Maestría",
+    "Doctorado",
+    "No sabe, no informa"
+  )
+)
+
 write.csv(diccionario_variables, file.path(ruta_outputs, "1_3_diccionario_variables.csv"), row.names = FALSE)
 ```
 
@@ -719,7 +739,7 @@ distribucion_posicion %>%
   knitr::kable(caption = "Distribución de posición ocupacional declarada en GEIH por propietarios EMICRON")
 ```
 
-**Interpretación conceptual:** Más del **95 %** de los propietarios de micronegocios se declaran en la GEIH como *trabajadores por cuenta propia* (~85 %) o *patrones/empleadores* (~11 %). La pequeña fracción de asalariados (~3 %) refleja ocupaciones secundarias o discrepancias en la fecha exacta de reporte, lo que ilustra la naturaleza difusa de la frontera entre el autoempleo y el trabajo dependiente en economías informales.
+**Interpretación conceptual:** El **97,75 %** de los propietarios de micronegocios emparejados se declara en la GEIH como *trabajador por cuenta propia* (88,53 %) o *patrón o empleador* (9,22 %). El **2,25 %** restante reporta posiciones como obrero o empleado particular (1,95 %) o trabajador familiar sin remuneración (0,24 %), lo cual obedece a transiciones laborales en el mes de desfase entre encuestas o a situaciones de pluriactividad donde el micronegocio constituye una actividad secundaria frente a un empleo asalariado principal.
 
 ---
 
@@ -743,7 +763,8 @@ GEIH <- GEIH %>%
       MES %in% 1:3   ~ "Enero - marzo",
       MES %in% 4:6   ~ "Abril - junio",
       MES %in% 7:9   ~ "Julio - septiembre",
-      MES %in% 10:12 ~ "Octubre - diciembre"
+      MES %in% 10:12 ~ "Octubre - diciembre",
+      TRUE ~ NA_character_
     ),
     PERIODO_TRIM = paste(TRIMESTRE, ANIO),
     FEX_TRIM     = FEX_C18 / 3
@@ -843,8 +864,8 @@ tabla_tasas_mujeres %>% knitr::kable(caption = "Evolución trimestral de indicad
 
 ```{r}
 #| label: 10-grafico-tasas-sexo
-#| fig-width: 11
-#| fig-height: 5.5
+#| fig-width: 12
+#| fig-height: 6
 #| echo: true
 
 datos_grafico_tasas <- tabla_indicadores_trim %>%
@@ -867,62 +888,91 @@ datos_grafico_tasas <- tabla_indicadores_trim %>%
     TASA = factor(TASA, levels = c("Tasa global de participación (TGP)", "Tasa de ocupación (TO)", "Tasa de desempleo (TD)"))
   )
 
-grafico_tasas <- ggplot(datos_grafico_tasas, aes(x = PERIODO_TRIM, y = VALOR, group = SEXO, color = SEXO, shape = SEXO, linetype = SEXO)) +
+# Datos y ponderador: serie trimestral 2023-2024 expandida con FEX_TRIM = FEX_C18 / 3.
+# Mapeo estético (aes): eje X = trimestre ordenado (PERIODO_TRIM), eje Y = valor porcentual (VALOR),
+# y triple codificación redundante por sexo (color, shape y linetype) para accesibilidad e impresión.
+grafico_tasas <- ggplot(
+  datos_grafico_tasas,
+  aes(x = PERIODO_TRIM, y = VALOR, group = SEXO, color = SEXO, shape = SEXO, linetype = SEXO)
+) +
+  # Capas geométricas: líneas de trayectoria temporal (geom_line) y marcadores puntuales por trimestre (geom_point)
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
+  # Facetas: paneles independientes por indicador (TGP, TO, TD) con escala libre en Y (free_y) debido a que TD tiene otro rango
   facet_wrap(~TASA, scales = "free_y", ncol = 3) +
+  # Escala discreta en X: etiquetas compactas en dos líneas (T1..T4 y año) para evitar solapamiento horizontal
   scale_x_discrete(labels = c("T1\n2023", "T2\n2023", "T3\n2023", "T4\n2023", "T1\n2024", "T2\n2024", "T3\n2024", "T4\n2024")) +
+  # Escala de color manual: paleta sobria de alto contraste (azul acero para hombres, rojo ladrillo para mujeres)
   scale_color_manual(values = c("Hombre" = "steelblue", "Mujer" = "firebrick")) +
+  # Etiquetas del gráfico: título, subtítulo, ejes, leyenda unificada y fuente oficial
   labs(
     title    = "Evolución de las tasas de mercado laboral según sexo en Colombia",
     subtitle = "Total nacional por trimestres (2023 - 2024)",
     x        = "Trimestre", 
     y        = "Tasa (%)",
     color    = "Sexo al nacer", shape = "Sexo al nacer", linetype = "Sexo al nacer",
-    caption  = "Fuente: DANE - GEIH (2023-2024)."
+    caption  = "Fuente: DANE - Gran Encuesta Integrada de Hogares (GEIH) 2023-2024. Ponderador trimestral: FEX_C18 / 3."
   ) +
+  # Tema base y personalización tipográfica: fondo blanco con grilla suave (theme_bw) y leyenda inferior
   theme_bw() +
   theme(
     axis.text.x     = element_text(hjust = 0.5, size = 10),
     strip.text      = element_text(face = "bold", size = 12),
+    axis.text.y     = element_text(size = 10),
+    axis.title      = element_text(size = 12),
+    legend.text     = element_text(size = 11),
+    legend.title    = element_text(size = 11),
     legend.position = "bottom",
-    plot.title      = element_text(face = "bold", size = 14)
+    plot.title      = element_text(face = "bold", size = 16),
+    plot.subtitle   = element_text(size = 12)
   )
 
 grafico_tasas
-ggsave(file.path(ruta_outputs, "2_2_tasas_sexo.png"), plot = grafico_tasas, width = 11, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI, formato apaisado 12 x 6 pulgadas para los 3 paneles)
+ggsave(file.path(ruta_outputs, "2_2_tasas_sexo.png"), plot = grafico_tasas, width = 12, height = 6, dpi = 300)
 ```
 
 **Interpretación macroeconómica:**
-- **Brecha estructural de participación:** La TGP masculina se sitúa de forma persistente alrededor del **76-77 %**, mientras que la femenina oscila en torno al **51-52 %**, configurando una brecha estructural superior a **24 puntos porcentuales**.
-- **Dinámica del desempleo:** La tasa de desempleo exhibe una estacionalidad marcada: se incrementa en el primer trimestre de cada año (por el vencimiento de contratos temporales decembrinos) y desciende en el cuarto trimestre cuando la ocupación se expande por la temporada de comercio y servicios. Las mujeres enfrentan una tasa de desempleo promedio entre 3 y 4 puntos porcentuales superior a la de los hombres.
+- **Brecha estructural de participación y ocupación:** La TGP masculina se sitúa entre **76,0 % y 77,3 %** y la TO entre **69,1 % y 71,7 %**, mientras que en las mujeres la TGP oscila entre **51,6 % y 53,2 %** y la TO entre **44,5 % y 46,8 %**, configurando una brecha estructural superior a **24 puntos porcentuales**.
+- **Dinámica del desempleo:** La tasa de desempleo exhibe una estacionalidad marcada: se incrementa en el primer trimestre de cada año (9,57 % en hombres y 14,98 % en mujeres en T1-2024) y desciende en el cuarto trimestre (7,06 % en hombres y 11,15 % en mujeres en T4-2024) cuando la ocupación se expande por la temporada de comercio y servicios. Las mujeres enfrentan una tasa de desempleo entre 4 y 5,4 puntos porcentuales superior a la de los hombres.
 
 ---
 
 ## 2.3 Población Ocupada según Formalidad (13 Ciudades, Diciembre 2024)
 
-### Implementación del algoritmo oficial de informalidad del DANE
-Se adapta a R el algoritmo oficial del DANE para empleo informal (`EI`), donde `EI = 1` denota ocupación formal y `EI = 0` ocupación informal. El algoritmo evalúa cotizaciones a salud y pensión en asalariados, y tamaño de empresa (hasta 5 ocupados) y personería jurídica / contabilidad en trabajadores por cuenta propia y patrones.
+### Implementación de la sintaxis oficial de informalidad del DANE
+Se replica íntegramente en R la sintaxis oficial en SAS del DANE (`Código_SAS` del anexo `anex-GEIHEISS-oct-dic2024.xlsx`) para empleo informal (`EI`), donde `EI = 1` denota ocupación formal y `EI = 0` ocupación informal. El algoritmo construye primero `FORMAL` (formalidad de la unidad económica según rama, registro mercantil, contabilidad, ubicación en vivienda, tamaño de planta y oficio), luego `SALUD` y `PENSION` para asalariados, y finalmente `EI`.
 
 ```{r}
 #| label: 11-formalidad-13ciudades
 #| echo: true
+
+areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
 
 ocupados_2024 <- GEIH_2024 %>%
   filter(OCI == 1) %>%
   mutate(
     OFICIO_C8_2D = if_else(!is.na(OFICIO_C8), substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2), NA_character_),
     ANIOS = ANIO - 1,
-    # Indicador auxiliar: actividad económica en vivienda sin local independiente.
-    # Agrupa los casos institucionales homogéneos: local no independizado (P3067 == 1 y P3067S1 == 2)
-    # o ausencia de local comercial (P3067 == 2).
-    en_viv_no_indep = P6765 == 7 & ((P3067 == 1 & P3067S1 == 2) | P3067 == 2),
-    
+
+    # 1. Clasificación de formalidad de la unidad económica (FORMAL: 1 = Formal, 0 = Informal)
+    # Replicación exacta de las reglas secuenciales de la sintaxis oficial DANE (Código_SAS)
     FORMAL = case_when(
-      # Rama institucional formal por definición: administración pública (84) y extraterritorial (99)
+      # Rama institucional formal por definición: administración pública (84) y organizaciones extraterritoriales (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
-      
-      # 1. Fuera de vivienda (P6765 != 7)
+
+      # A. Asalariados particulares y trabajadores sin remuneración en otras empresas (P6430 %in% c(1, 7))
+      P6430 %in% c(1, 7) & P3045S1 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 1 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 2 ~ 0,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 >= 4 ~ 1,
+      P6430 %in% c(1, 7) & P3045S1 %in% c(2, 9) & P3046 == 9 & P3069 <= 3 ~ 0,
+
+      # B. Posiciones con regla institucional directa sobre la unidad económica en sintaxis DANE
+      P6430 == 2 ~ 1,
+      P6430 %in% c(3, 6, 8) ~ 0,
+
+      # C. Actividad fuera de la vivienda (P6765 != 7)
       P6765 != 7 & P3065 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
@@ -930,37 +980,53 @@ ocupados_2024 <- GEIH_2024 %>%
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
-      
-      # 2. En vivienda con local independiente (P3067 == 1 y P3067S1 == 1)
+
+      # D. Actividad en vivienda con local independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 1)
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
-      
-      # 3. En vivienda sin local independiente (agrupación de ramas institucionales homogéneas)
+
+      # E. Actividad en vivienda con local NO independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 2)
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+
+      # F. Actividad en vivienda sin local comercial (P6765 == 7 & P3067 == 2)
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
-      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 != 1 ~ 0,
-      en_viv_no_indep & P6775 == 2 ~ 0,
-      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
-      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
-      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
-      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
-      
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      P6765 == 7 & P3067 == 2 & P6775 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 2 & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+
       TRUE ~ NA_real_
     ),
+
+    # 2. Afiliación contributiva o especial a salud (SALUD: 1 = Formal, 0 = Informal)
     SALUD = case_when(
       P6430 %in% c(1, 3, 7) & P6100 %in% c(1, 2) & P6110 %in% c(1, 2, 4) ~ 1,
       P6430 %in% c(1, 3, 7) & (P6100 == 9 | P6110 == 9) & P6450 == 2 ~ 1,
       P6430 %in% c(1, 3, 7) ~ 0,
       TRUE ~ NA_real_
     ),
+
+    # 3. Cotización a pensión o condición de pensionado (PENSION: 1 = Formal, 0 = Informal)
     PENSION = case_when(
       P6430 %in% c(1, 3, 7) & P6920 == 3 ~ 1,
       P6430 %in% c(1, 3, 7) & P6920 == 1 & P6930 %in% 1:3 & P6940 %in% c(1, 3) ~ 1,
       P6430 %in% c(1, 3, 7) ~ 0,
       TRUE ~ NA_real_
     ),
+
+    # 4. Empleo formal / informal total (EI: 1 = Formal, 0 = Informal)
     EI = case_when(
       P6430 == 2 ~ 1,
       P6430 %in% c(6, 8) ~ 0,
@@ -970,8 +1036,6 @@ ocupados_2024 <- GEIH_2024 %>%
       TRUE ~ NA_real_
     )
   )
-
-areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
 
 GEIH_13ciudades_tri <- ocupados_2024 %>%
   filter(MES %in% 10:12, as.numeric(AREA) %in% areas_13ciudades)
@@ -1007,33 +1071,48 @@ write.csv(tabla_formalidad_sexo, file.path(ruta_outputs, "2_3_tabla_formalidad_1
 
 ```{r}
 #| label: 12-grafico-torta-formalidad
-#| fig-width: 8
-#| fig-height: 4.5
+#| fig-width: 9
+#| fig-height: 5
 #| echo: true
 
+# Datos y ponderador: ocupados de las 13 ciudades y A.M. en diciembre de 2024 expandidos con FEX_C18.
+# Mapeo estético (aes): eje X vacío ("") para barra única, eje Y = porcentaje (PORCENTAJE), relleno (fill) = condición (CONDICION).
 grafico_formalidad <- ggplot(tabla_formalidad_sexo, aes(x = "", y = PORCENTAJE, fill = CONDICION)) +
+  # Capa geométrica de barras apiladas al 100 % que sirve de base para la transformación polar
   geom_col(width = 1) +
+  # Coordenadas polares sobre el eje Y (theta = "y") para transformar la barra apilada en gráfico de torta
   coord_polar(theta = "y") +
+  # Facetas por sexo para comparar lado a lado la composición porcentual de hombres y mujeres
   facet_wrap(~SEXO) +
+  # Etiquetas de texto centradas en cada sector circular mediante position_stack(vjust = 0.5)
   geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), size = 5) +
+  # Escala manual de relleno: azul acero para formalidad y gris claro para informalidad
   scale_fill_manual(values = c("Formal" = "steelblue", "Informal" = "grey75")) +
+  # Títulos, subtítulo, leyenda y nota de fuente con el ponderador utilizado
   labs(
     title    = "Distribución de personas ocupadas según condición de formalidad y sexo",
     subtitle = "Total 13 ciudades y áreas metropolitanas - Diciembre de 2024",
-    fill     = "Condición laboral"
+    fill     = "Condición laboral",
+    caption  = "Fuente: DANE - GEIH (Diciembre 2024). Ponderador mensual: FEX_C18."
   ) +
+  # Tema vacío (theme_void) para eliminar ejes cartesianos innecesarios en coordenadas polares
   theme_void() +
   theme(
     legend.position = "bottom",
+    legend.text     = element_text(size = 11),
+    legend.title    = element_text(size = 11),
     strip.text      = element_text(size = 12, face = "bold"),
-    plot.title      = element_text(size = 14, face = "bold")
+    plot.title      = element_text(size = 16, face = "bold"),
+    plot.subtitle   = element_text(size = 12),
+    plot.caption    = element_text(size = 9.5, hjust = 0.5)
   )
 
 grafico_formalidad
-ggsave(file.path(ruta_outputs, "2_3_formalidad_13ciudades.png"), plot = grafico_formalidad, width = 8, height = 4.5, dpi = 300)
+# Exportación del gráfico de torta en alta resolución (300 DPI)
+ggsave(file.path(ruta_outputs, "2_3_formalidad_13ciudades.png"), plot = grafico_formalidad, width = 9, height = 5, dpi = 300)
 ```
 
-**Verificación externa DANE:** El cálculo para el trimestre Oct-Dic 2024 arroja **`r control_ei_dane$INFORMALIDAD_CALCULADA`%**, con una discrepancia nula frente a la cifra oficial del DANE (**42,5 %**). En diciembre, la formalidad en las 13 áreas metropolitanas es mayoritaria tanto para hombres como para mujeres (~58 % formal), en contraste con el total nacional donde predomina la informalidad.
+**Verificación externa DANE:** El cálculo para el trimestre Oct-Dic 2024 arroja **`r control_ei_dane$INFORMALIDAD_CALCULADA`%**, con una discrepancia nula frente a la cifra oficial del DANE (**42,5 %**). En diciembre, la formalidad en las 13 áreas metropolitanas es mayoritaria tanto para hombres (57,8 % formal vs. 42,2 % informal) como para mujeres (57,7 % formal vs. 42,3 % informal).
 
 ---
 
@@ -1041,8 +1120,8 @@ ggsave(file.path(ruta_outputs, "2_3_formalidad_13ciudades.png"), plot = grafico_
 
 ```{r}
 #| label: 13-posicion-ocupacional-grafico
-#| fig-width: 10
-#| fig-height: 5.5
+#| fig-width: 11
+#| fig-height: 6
 #| echo: true
 
 GEIH_2023_ENE <- GEIH %>%
@@ -1082,31 +1161,47 @@ prop_cuenta_propia_patron <- posicion_total %>%
   summarise(PORCENTAJE_CONJUNTO = sum(PORCENTAJE)) %>%
   pull(PORCENTAJE_CONJUNTO)
 
+# Datos y ponderador: ocupados en enero de 2023 expandidos con FEX_C18 según las 9 categorías DANE de P6430.
+# Mapeo estético (aes): eje X = posición ocupacional ordenada por peso nacional, eje Y = proporción (%), fill = grupo.
 grafico_posicion <- ggplot(posicion_consolidada, aes(x = POSICION_OCUPACIONAL, y = PORCENTAJE, fill = GRUPO)) +
+  # Barras agrupadas (position_dodge) para contrastar Total nacional, Hombres y Mujeres en cada categoría
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  # Inversión de coordenadas (coord_flip) para lectura horizontal de las etiquetas completas del DANE
   coord_flip() +
-  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_dodge(width = 0.8), hjust = -0.15, size = 3.2) +
+  # Etiquetas de datos al extremo derecho de cada barra agrupada
+  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_dodge(width = 0.8), hjust = -0.15, size = 3.5) +
+  # Ampliación del límite superior del eje Y (15 % adicional) para que las etiquetas de texto no se recorten
   scale_y_continuous(limits = c(0, max(posicion_consolidada$PORCENTAJE) * 1.15)) +
+  # Escala manual de colores coherente con el resto del taller
   scale_fill_manual(values = c("Total nacional" = "grey50", "Hombres" = "steelblue", "Mujeres" = "firebrick")) +
+  # Etiquetas descriptivas y fuente oficial
   labs(
     title    = "Distribución de personas ocupadas según posición ocupacional",
     subtitle = "Total nacional, hombres y mujeres - Enero de 2023",
-    x        = "Posición ocupacional", 
+    x        = "Posición ocupacional (P6430)", 
     y        = "Proporción (%)", 
     fill     = "Grupo de análisis",
-    caption  = "Fuente: DANE - GEIH (Enero 2023)."
+    caption  = "Fuente: DANE - GEIH (Enero 2023). Ponderador mensual: FEX_C18."
   ) +
+  # Tema limpio con grilla de referencia y leyenda inferior
   theme_bw() +
   theme(
-    legend.position = "bottom",
-    plot.title      = element_text(face = "bold", size = 14)
+    plot.title      = element_text(face = "bold", size = 16),
+    plot.subtitle   = element_text(size = 12),
+    axis.text.y     = element_text(size = 10),
+    axis.text.x     = element_text(size = 10),
+    axis.title      = element_text(size = 12),
+    legend.text     = element_text(size = 11),
+    legend.title    = element_text(size = 11),
+    legend.position = "bottom"
   )
 
 grafico_posicion
-ggsave(file.path(ruta_outputs, "2_4_posicion_nacional.png"), plot = grafico_posicion, width = 10, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI)
+ggsave(file.path(ruta_outputs, "2_4_posicion_nacional.png"), plot = grafico_posicion, width = 11, height = 6, dpi = 300)
 ```
 
-**Conexión analítica:** En conjunto, los trabajadores por cuenta propia y los patrones o empleadores concentran el **`r prop_cuenta_propia_patron`%** de toda la ocupación en Colombia. Este dato es el fundamento conceptual directo del **Punto 3**: casi la mitad de los trabajadores colombianos operan como unidades económicas independientes, constituyendo el universo potencial que investiga la encuesta EMICRON.
+**Conexión analítica:** En conjunto, los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) concentran el **`r prop_cuenta_propia_patron`%** de toda la ocupación en Colombia. Este dato es el fundamento conceptual directo del **Punto 3**: casi la mitad de los trabajadores colombianos operan como unidades económicas independientes, constituyendo el universo potencial que investiga la encuesta EMICRON.
 
 ---
 
@@ -1114,7 +1209,7 @@ ggsave(file.path(ruta_outputs, "2_4_posicion_nacional.png"), plot = grafico_posi
 
 ## 3.1 Indicadores Básicos y Verificación con Boletín DANE (2024)
 
-Todas las cifras de micronegocios deben expandirse obligatoriamente con el ponderador anual `F_EXP`.
+Todas las cifras de micronegocios se expanden con el ponderador anual `F_EXP`. Los porcentajes se calculan directamente con la suma exacta de `F_EXP` antes de redondear los totales expandidos (`TOTAL_SIN_REDONDEAR`), evitando errores de redondeo intermedio.
 
 ```{r}
 #| label: 14-indicadores-basicos-emicron
@@ -1122,7 +1217,10 @@ Todas las cifras de micronegocios deben expandirse obligatoriamente con el ponde
 
 # Total nacional
 total_nacional_micros <- emicron %>%
-  summarise(TOTAL_EXPANDIDO = round(sum(F_EXP, na.rm = TRUE), 0)) %>%
+  summarise(
+    TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE),
+    TOTAL_EXPANDIDO     = round(TOTAL_SIN_REDONDEAR, 0)
+  ) %>%
   mutate(INDICADOR = "Total nacional", CATEGORIA = "Total micronegocios", PORCENTAJE = 100.0) %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
@@ -1142,14 +1240,16 @@ distribucion_rama <- emicron %>%
       GRUPOS12 == 10 ~ "Educación",
       GRUPOS12 == 11 ~ "Salud humana y asistencia social",
       GRUPOS12 == 12 ~ "Otras actividades de servicios comunitarios, sociales y personales",
-      TRUE ~ "Otras actividades / No informa"
+      GRUPOS12 == 13 ~ "Actividades no clasificadas / Sin información",
+      TRUE ~ "No informa"
     )
   ) %>%
   group_by(GRUPOS12, CATEGORIA) %>%
-  summarise(TOTAL_EXPANDIDO = round(sum(F_EXP, na.rm = TRUE), 0), .groups = "drop") %>%
+  summarise(TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE), .groups = "drop") %>%
   mutate(
-    INDICADOR  = "Distribución por rama de actividad (GRUPOS12)",
-    PORCENTAJE = round(TOTAL_EXPANDIDO / sum(TOTAL_EXPANDIDO) * 100, 1)
+    INDICADOR       = "Distribución por rama de actividad (GRUPOS12)",
+    PORCENTAJE      = round(TOTAL_SIN_REDONDEAR / sum(TOTAL_SIN_REDONDEAR) * 100, 1),
+    TOTAL_EXPANDIDO = round(TOTAL_SIN_REDONDEAR, 0)
   ) %>%
   arrange(GRUPOS12) %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
@@ -1158,10 +1258,11 @@ distribucion_rama <- emicron %>%
 distribucion_sexo <- emicron %>%
   mutate(CATEGORIA = case_when(P35 == 1 ~ "Hombre", P35 == 2 ~ "Mujer", TRUE ~ "No informa")) %>%
   group_by(CATEGORIA) %>%
-  summarise(TOTAL_EXPANDIDO = round(sum(F_EXP, na.rm = TRUE), 0), .groups = "drop") %>%
+  summarise(TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE), .groups = "drop") %>%
   mutate(
-    INDICADOR  = "Distribución según sexo del propietario (P35)",
-    PORCENTAJE = round(TOTAL_EXPANDIDO / sum(TOTAL_EXPANDIDO) * 100, 1)
+    INDICADOR       = "Distribución según sexo del propietario (P35)",
+    PORCENTAJE      = round(TOTAL_SIN_REDONDEAR / sum(TOTAL_SIN_REDONDEAR) * 100, 1),
+    TOTAL_EXPANDIDO = round(TOTAL_SIN_REDONDEAR, 0)
   ) %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
@@ -1169,10 +1270,11 @@ distribucion_sexo <- emicron %>%
 distribucion_rut <- emicron %>%
   mutate(CATEGORIA = case_when(P1633 == 1 ~ "Cuenta con RUT", P1633 == 2 ~ "No cuenta con RUT", TRUE ~ "No informa")) %>%
   group_by(CATEGORIA) %>%
-  summarise(TOTAL_EXPANDIDO = round(sum(F_EXP, na.rm = TRUE), 0), .groups = "drop") %>%
+  summarise(TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE), .groups = "drop") %>%
   mutate(
-    INDICADOR  = "Registro Único Tributario - RUT (P1633)",
-    PORCENTAJE = round(TOTAL_EXPANDIDO / sum(TOTAL_EXPANDIDO) * 100, 1)
+    INDICADOR       = "Registro Único Tributario - RUT (P1633)",
+    PORCENTAJE      = round(TOTAL_SIN_REDONDEAR / sum(TOTAL_SIN_REDONDEAR) * 100, 1),
+    TOTAL_EXPANDIDO = round(TOTAL_SIN_REDONDEAR, 0)
   ) %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
@@ -1180,10 +1282,11 @@ distribucion_rut <- emicron %>%
 distribucion_camara <- emicron %>%
   mutate(CATEGORIA = case_when(P1055 == 1 ~ "Registrado ante Cámara de Comercio", P1055 == 2 ~ "No registrado", TRUE ~ "No informa")) %>%
   group_by(CATEGORIA) %>%
-  summarise(TOTAL_EXPANDIDO = round(sum(F_EXP, na.rm = TRUE), 0), .groups = "drop") %>%
+  summarise(TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE), .groups = "drop") %>%
   mutate(
-    INDICADOR  = "Registro ante Cámara de Comercio (P1055)",
-    PORCENTAJE = round(TOTAL_EXPANDIDO / sum(TOTAL_EXPANDIDO) * 100, 1)
+    INDICADOR       = "Registro ante Cámara de Comercio (P1055)",
+    PORCENTAJE      = round(TOTAL_SIN_REDONDEAR / sum(TOTAL_SIN_REDONDEAR) * 100, 1),
+    TOTAL_EXPANDIDO = round(TOTAL_SIN_REDONDEAR, 0)
   ) %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
@@ -1191,19 +1294,52 @@ tabla_indicadores_micros <- bind_rows(
   total_nacional_micros, distribucion_sexo, distribucion_rama, distribucion_rut, distribucion_camara
 )
 write.xlsx(tabla_indicadores_micros, file.path(ruta_outputs, "3_1_indicadores.xlsx"))
+
+# Comparación calculada frente al Boletín Técnico DANE (Gráfico 9 y Tabla 8 / Anexo F.6)
+camara_exacto_pct <- emicron %>%
+  summarise(PCT_EXACTO = sum(F_EXP[P1055 == 1], na.rm = TRUE) / sum(F_EXP, na.rm = TRUE) * 100) %>%
+  pull(PCT_EXACTO)
+
+verificacion_3_1_dane <- data.frame(
+  INDICADOR = c(
+    "Total nacional de micronegocios (unidades)",
+    "Propietarios hombres (%)",
+    "Propietarias mujeres (%)",
+    "Micronegocios con RUT (%)",
+    "Micronegocios con Cámara de Comercio (%) - Gráfico 9 Boletín",
+    "Micronegocios con Cámara de Comercio (%) - Tabla 8 / Anexo F.6"
+  ),
+  VALOR_CALCULADO = c(
+    total_nacional_micros$TOTAL_EXPANDIDO,
+    distribucion_sexo$PORCENTAJE[distribucion_sexo$CATEGORIA == "Hombre"],
+    distribucion_sexo$PORCENTAJE[distribucion_sexo$CATEGORIA == "Mujer"],
+    distribucion_rut$PORCENTAJE[distribucion_rut$CATEGORIA == "Cuenta con RUT"],
+    distribucion_camara$PORCENTAJE[distribucion_camara$CATEGORIA == "Registrado ante Cámara de Comercio"],
+    round(camara_exacto_pct, 3)
+  ),
+  VALOR_PUBLICADO_DANE = c(
+    5297252,
+    64.6,
+    35.4,
+    22.4,
+    10.5,
+    round(547581 / 5297252 * 100, 3)
+  )
+) %>%
+  mutate(DIFERENCIA = round(VALOR_CALCULADO - VALOR_PUBLICADO_DANE, 3))
 ```
 
 ```{r}
 #| label: 14-tabla-cotejo-dane
 #| echo: false
-bind_rows(distribucion_sexo, distribucion_rut, distribucion_camara) %>%
-  knitr::kable(caption = "Indicadores sociodemográficos y de formalización de micronegocios (DANE EMICRON 2024)")
+verificacion_3_1_dane %>%
+  knitr::kable(caption = "Comparación calculada de indicadores básicos frente al Boletín Técnico DANE (EMICRON 2024)")
 ```
 
 **Verificación frente al boletín técnico del DANE (EMICRON 2024):**
-- **Total micronegocios:** **`r format(total_nacional_micros$TOTAL_EXPANDIDO, big.mark=".")`**, coincidencia exacta con el boletín oficial.
-- **RUT:** El **`r distribucion_rut$PORCENTAJE[distribucion_rut$CATEGORIA == "Cuenta con RUT"]`%** cuenta con RUT frente a un 77,6 % que no lo posee.
-- **Cámara de Comercio:** Únicamente el **`r distribucion_camara$PORCENTAJE[distribucion_camara$CATEGORIA == "Registrado ante Cámara de Comercio"]`%** cuenta con matrícula mercantil vigente.
+- **Total micronegocios:** **`r format(total_nacional_micros$TOTAL_EXPANDIDO, big.mark=".")`** unidades expandidas, coincidencia con la cifra publicada por el DANE.
+- **Sexo del propietario y RUT:** Hombres **64,6 %** y mujeres **35,4 %**; tenencia de RUT **22,4 %** (frente a **77,6 %** sin RUT), coincidiendo a un decimal con las cifras del boletín.
+- **Cámara de Comercio (`P1055 == 1`):** El porcentaje calculado con `F_EXP` antes de redondear es **10,3 %** (`10,337 %` exacto: $547.580,7 / 5.297.252,1$, y **89,7 %** sin registro), mientras que el **Gráfico 9** del boletín técnico del DANE reporta **10,5 %** (y **89,5 %** sin registro), lo que arroja una diferencia de **$-0,2$ puntos porcentuales**. Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín oficial, las cantidades publicadas por el DANE ($547.581$ micronegocios con registro mercantil —$548\text{ mil}$ en el cuadro del boletín— sobre $5.297.252$ totales) producen exactamente $\frac{547.581}{5.297.252} = 10,337\,\%$ (**10,3 %**), explicando que la discrepancia obedece a la presentación del Gráfico 9 y no al cálculo sobre el microdato.
 
 ---
 
@@ -1216,7 +1352,7 @@ Se procesan las 7 variables dicotómicas de medios de pago (`P1764_1` a `P1764_7
 #| label: 15-formas-pago-bucle
 #| echo: true
 
-base_inclusion <- emicron %>% filter(GRUPOS4 %in% 1:4)
+base_inclusion <- emicron %>% filter(GRUPOS4 %in% 1:4) # Excluimos registros sin clasificación en las 4 macrorramas (GRUPOS4 == 5)
 
 diccionario_formas <- data.frame(
   VARIABLE   = paste0("P1764_", 1:7),
@@ -1237,7 +1373,14 @@ for (variable_pago in diccionario_formas$VARIABLE) {
 tabla_formas_pago <- bind_rows(lista_formas_pago) %>%
   left_join(diccionario_formas, by = "VARIABLE") %>%
   mutate(
-    RAMA       = case_when(GRUPOS4 == 1 ~ "Agropecuario", GRUPOS4 == 2 ~ "Industria", GRUPOS4 == 3 ~ "Comercio", GRUPOS4 == 4 ~ "Servicios"),
+    RAMA       = case_when(
+      GRUPOS4 == 1 ~ "Agropecuario",
+      GRUPOS4 == 2 ~ "Industria",
+      GRUPOS4 == 3 ~ "Comercio",
+      GRUPOS4 == 4 ~ "Servicios",
+      TRUE ~ NA_character_
+    ),
+    # Transformación a factor ordenado para preservar la jerarquía visual en el gráfico 3.2.4
     FORMA_PAGO = factor(FORMA_PAGO, levels = diccionario_formas$FORMA_PAGO),
     RAMA       = factor(RAMA, levels = c("Agropecuario", "Industria", "Comercio", "Servicios"))
   )
@@ -1252,115 +1395,226 @@ write.csv(indicadores_credito_ahorro, file.path(ruta_outputs, "3_2_credito_ahorr
 
 ```{r}
 #| label: 16-grafico-formas-pago
-#| fig-width: 10
-#| fig-height: 5.5
+#| fig-width: 11
+#| fig-height: 6
 #| echo: true
 
+# Datos y ponderador: micronegocios clasificados en GRUPOS4 (1:4) expandidos con el factor anual F_EXP.
+# Mapeo estético (aes): eje X = forma de pago (FORMA_PAGO), eje Y = porcentaje de adopción dentro de la rama (PORCENTAJE),
+# y relleno (fill) = macrorrama de actividad económica (RAMA).
 grafico_formas_pago <- ggplot(tabla_formas_pago, aes(x = FORMA_PAGO, y = PORCENTAJE, fill = RAMA)) +
+  # Capa geométrica de barras agrupadas lado a lado (position_dodge) para comparar las 4 ramas en cada medio de pago
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  # Capa de etiquetas de texto: muestra el porcentaje solo cuando es mayor a 0 % para evitar saturación visual
   geom_text(aes(label = ifelse(PORCENTAJE > 0, paste0(PORCENTAJE, "%"), "")), position = position_dodge(width = 0.8), hjust = -0.15, size = 3) +
+  # Escala continua del eje Y: límites entre 0 y 112 % (margen para etiquetas) con marcas cada 20 puntos porcentuales
   scale_y_continuous(limits = c(0, 112), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%")) +
+  # Coordenadas volteadas (coord_flip) para desplegar las barras horizontalmente y facilitar la lectura de las categorías
   coord_flip() +
+  # Escala cromática cualitativa ColorBrewer "Set2" para diferenciar las cuatro ramas de actividad
   scale_fill_brewer(palette = "Set2") +
+  # Etiquetas descriptivas: título, subtítulo explicativo del denominador por rama, ejes, leyenda y nota técnica
   labs(
     title    = "Formas de pago aceptadas por los micronegocios según rama de actividad",
     subtitle = "Total nacional - 2024 (Porcentaje de micronegocios dentro de cada rama)",
     x        = "Forma de pago aceptada", 
     y        = "Porcentaje de adopción (%)", 
     fill     = "Rama de actividad (GRUPOS4)",
-    caption  = "Fuente: DANE - EMICRON (2024). Ponderador: F_EXP."
+    caption  = "Fuente: DANE - EMICRON (2024). Pregunta multirrespuesta (P1764_1 a P1764_7) expandida con F_EXP."
   ) +
+  # Tema base blanco y negro (theme_bw) y ajustes tipográficos de títulos, ejes y leyenda en la parte inferior
   theme_bw() +
   theme(
-    legend.position = "bottom",
-    plot.title      = element_text(face = "bold", size = 14)
+    plot.title      = element_text(face = "bold", size = 16),
+    plot.subtitle   = element_text(size = 12),
+    axis.text.x     = element_text(size = 10),
+    axis.text.y     = element_text(size = 11),
+    axis.title      = element_text(size = 12),
+    legend.text     = element_text(size = 11),
+    legend.title    = element_text(size = 11),
+    legend.position = "bottom"
   )
 
 grafico_formas_pago
-ggsave(file.path(ruta_outputs, "3_2_formas_pago.png"), plot = grafico_formas_pago, width = 10, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI, 11 x 6 pulgadas)
+ggsave(file.path(ruta_outputs, "3_2_formas_pago.png"), plot = grafico_formas_pago, width = 11, height = 6, dpi = 300)
 ```
 
 **Interpretación de la evidencia:**
-- El **efectivo** es universal, aceptado por más del **98 %** de las unidades en todas las ramas.
-- Las **transferencias electrónicas** (billeteras digitales como Nequi/Daviplata) han alcanzado una penetración notable en comercio (~48 %) y servicios (~43 %), pero no superan el 9 % en el sector agropecuario.
-- Los canales que exigen infraestructura contractual bancaria (tarjetas débito y crédito) apenas son aceptados por entre el 2 % y el 7 % de las unidades.
-- Esta brecha se vincula directamente con el bajo acceso al sistema financiero formal: solo el **`r indicadores_credito_ahorro$SOLICITO_CREDITO_PCT`%** de los propietarios solicitó crédito y el **`r indicadores_credito_ahorro$AHORRO_PCT`%** reportó hábitos de ahorro productivo.
+- El **efectivo** (`P1764_1`) es el medio predominante en todas las ramas (supera el **85 %** en agropecuario e industria y alcanza el **94,3 %** en comercio y **89,7 %** en servicios).
+- Las **transferencias bancarias o por internet** (`P1764_3`) muestran una brecha sectorial marcada: alcanzan el **51,9 %** en servicios y el **43,4 %** en comercio (y **36,1 %** en industria), pero apenas llegan al **6,7 %** en el sector agropecuario.
+- Los canales que exigen infraestructura bancaria tradicional (tarjetas débito y crédito) son aceptados por menos del **8 %** de los micronegocios en comercio y servicios, y menos del **0,5 %** en el agro.
+- Esta brecha coincide con bajos niveles de inclusión en otros servicios: solo el **`r indicadores_credito_ahorro$SOLICITO_CREDITO_PCT`%** solicitó crédito y el **`r indicadores_credito_ahorro$AHORRO_PCT`%** reportó ahorro vinculado al negocio.
 
 ---
 
 ## 3.3 Análisis Conjunto GEIH – EMICRON: Capital Humano y Formalidad Tributaria
 
-### Pregunta de investigación y delimitación muestral
+### Pregunta de investigación, auditoría de códigos y categorías explícitas del DANE
 **Pregunta:** *¿Existe una asociación entre el nivel educativo alcanzado por el propietario del micronegocio (medido en GEIH: `P3042`) y la formalización tributaria de la unidad económica (medida en EMICRON: `P1633`, tenencia de RUT)?*
 
 **Delimitación y ponderación:** 
-- Universo: Propietarios de micronegocios emparejados exitosamente entre GEIH y EMICRON.
+- Universo: Propietarios de micronegocios emparejados exitosamente entre GEIH y EMICRON (`71.754` propietarios; `4.864.444` micronegocios expandidos).
 - Ventana temporal efectiva: Febrero a diciembre de 2024 (excluyendo enero debido al desfase de recolección demostrado en 1.4).
 - Ponderador exclusivo: `F_EXP`.
+- Categorías educativas: Se utilizan explícitamente las **13 categorías de niveles conocidos del diccionario GEIH 2024** (`P3042 == 1` a `P3042 == 13`), identificando y auditando previamente el código `99` (*No sabe, no informa*), valores faltantes (`NA`) y códigos inválidos.
 
 ```{r}
 #| label: 17-analisis-cruce-geih-emicron
 #| echo: true
 
+# Auditoría explícita de códigos de P3042 (1:13, 99, NA e inválidos) y P1633 en propietarios emparejados
+auditoria_educacion_3_3 <- base_micro %>%
+  filter(EMPAREJADO) %>%
+  summarise(
+    TOTAL_EMPAREJADOS     = n(),
+    P3042_CONOCIDOS_1_13  = sum(P3042 %in% 1:13, na.rm = TRUE),
+    P3042_NO_SABE_99      = sum(P3042 == 99, na.rm = TRUE),
+    P3042_NA              = sum(is.na(P3042)),
+    P3042_INVALIDOS       = sum(!is.na(P3042) & !(P3042 %in% c(1:13, 99))),
+    P1633_VALIDOS_1_2     = sum(P1633 %in% c(1, 2), na.rm = TRUE),
+    P1633_NO_INFORMA_O_NA = sum(is.na(P1633) | !(P1633 %in% c(1, 2)))
+  )
+print(auditoria_educacion_3_3)
+
+niveles_dane_p3042 <- c(
+  "Ninguno",
+  "Preescolar",
+  "Básica primaria (1o - 5o)",
+  "Básica secundaria (6o - 9o)",
+  "Media académica (Bachillerato clásico)",
+  "Media técnica (Bachillerato técnico)",
+  "Normalista",
+  "Técnica profesional",
+  "Tecnológica",
+  "Universitaria",
+  "Especialización",
+  "Maestría",
+  "Doctorado"
+)
+
 datos_cruce <- base_micro %>%
-  filter(EMPAREJADO, !is.na(P3042), !is.na(P1633)) %>%
+  filter(EMPAREJADO) %>%
   mutate(
     NIVEL_EDUCATIVO = case_when(
-      P3042 %in% 1:2   ~ "Ninguno / Preescolar",
-      P3042 %in% 3:4   ~ "Básica primaria",
-      P3042 %in% 5:10  ~ "Secundaria y media",
-      P3042 %in% 11:13 ~ "Superior y posgrado",
-      TRUE ~ "No informa"
+      P3042 == 1  ~ "Ninguno",
+      P3042 == 2  ~ "Preescolar",
+      P3042 == 3  ~ "Básica primaria (1o - 5o)",
+      P3042 == 4  ~ "Básica secundaria (6o - 9o)",
+      P3042 == 5  ~ "Media académica (Bachillerato clásico)",
+      P3042 == 6  ~ "Media técnica (Bachillerato técnico)",
+      P3042 == 7  ~ "Normalista",
+      P3042 == 8  ~ "Técnica profesional",
+      P3042 == 9  ~ "Tecnológica",
+      P3042 == 10 ~ "Universitaria",
+      P3042 == 11 ~ "Especialización",
+      P3042 == 12 ~ "Maestría",
+      P3042 == 13 ~ "Doctorado",
+      P3042 == 99 ~ "No sabe, no informa",
+      is.na(P3042) ~ "Faltante (NA)",
+      TRUE ~ "Código inválido"
     ),
-    TIENE_RUT = case_when(P1633 == 1 ~ "Con RUT", P1633 == 2 ~ "Sin RUT", TRUE ~ "No informa"),
-    NIVEL_EDUCATIVO = factor(NIVEL_EDUCATIVO, levels = c("Ninguno / Preescolar", "Básica primaria", "Secundaria y media", "Superior y posgrado")),
-    TIENE_RUT = factor(TIENE_RUT, levels = c("Sin RUT", "Con RUT"))
+    TIENE_RUT = case_when(
+      P1633 == 1 ~ "Con RUT",
+      P1633 == 2 ~ "Sin RUT",
+      TRUE ~ "No informa"
+    )
+  ) %>%
+  # Se excluyen del cruce analítico los códigos 99 ("No sabe, no informa"), faltantes (NA) e inválidos
+  filter(P3042 %in% 1:13, P1633 %in% c(1, 2)) %>%
+  mutate(
+    NIVEL_EDUCATIVO = factor(NIVEL_EDUCATIVO, levels = niveles_dane_p3042),
+    TIENE_RUT       = factor(TIENE_RUT, levels = c("Sin RUT", "Con RUT"))
   )
 
 tabla_contingencia_cruce <- datos_cruce %>%
   group_by(NIVEL_EDUCATIVO, TIENE_RUT) %>%
-  summarise(TOTAL_EXPANDIDO = sum(F_EXP, na.rm = TRUE), .groups = "drop") %>%
+  summarise(
+    N_MUESTRA           = n(),
+    TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  complete(
+    NIVEL_EDUCATIVO,
+    TIENE_RUT,
+    fill = list(N_MUESTRA = 0L, TOTAL_SIN_REDONDEAR = 0)
+  ) %>%
   group_by(NIVEL_EDUCATIVO) %>%
-  mutate(TOTAL_NIVEL = sum(TOTAL_EXPANDIDO), PORCENTAJE = round(TOTAL_EXPANDIDO / TOTAL_NIVEL * 100, 1)) %>%
-  ungroup()
+  mutate(
+    TOTAL_NIVEL_SIN_REDONDEAR = sum(TOTAL_SIN_REDONDEAR),
+    PORCENTAJE                = round(TOTAL_SIN_REDONDEAR / TOTAL_NIVEL_SIN_REDONDEAR * 100, 1),
+    TOTAL_EXPANDIDO           = round(TOTAL_SIN_REDONDEAR, 0),
+    TOTAL_NIVEL               = round(TOTAL_NIVEL_SIN_REDONDEAR, 0)
+  ) %>%
+  ungroup() %>%
+  select(NIVEL_EDUCATIVO, TIENE_RUT, N_MUESTRA, TOTAL_EXPANDIDO, TOTAL_NIVEL, PORCENTAJE)
 
 write.csv(tabla_contingencia_cruce, file.path(ruta_outputs, "3_3_tabla_educacion_rut.csv"), row.names = FALSE)
 ```
 
 ```{r}
 #| label: 18-grafico-cruce-educacion-rut
-#| fig-width: 9.5
-#| fig-height: 5
+#| fig-width: 11
+#| fig-height: 7
 #| echo: true
 
-grafico_cruce <- ggplot(tabla_contingencia_cruce, aes(x = NIVEL_EDUCATIVO, y = PORCENTAJE, fill = TIENE_RUT)) +
-  geom_col(position = "stack", width = 0.65) +
-  geom_text(aes(label = paste0(PORCENTAJE, "%")), position = position_stack(vjust = 0.5), fontface = "bold", size = 4) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%")) +
-  scale_fill_manual(values = c("Con RUT" = "steelblue", "Sin RUT" = "grey75")) +
+# Datos y ponderador: 71.754 propietarios emparejados GEIH-EMICRON con nivel educativo conocido (1:13),
+# expandidos con F_EXP (4.864.444 micronegocios).
+# Mapeo estético (aes): se invierte el orden de los niveles en el eje vertical (rev(levels(...)))
+# para que, al aplicar coord_flip(), "Ninguno" aparezca arriba y "Doctorado" abajo.
+grafico_cruce <- ggplot(
+  tabla_contingencia_cruce %>%
+    mutate(NIVEL_EDUCATIVO_PLOT = factor(NIVEL_EDUCATIVO, levels = rev(niveles_dane_p3042))),
+  aes(x = NIVEL_EDUCATIVO_PLOT, y = PORCENTAJE, fill = TIENE_RUT)
+) +
+  # Capa de barras apiladas al 100 % para comparar la composición tributaria dentro de cada nivel educativo
+  geom_col(position = "stack", width = 0.72) +
+  # Etiquetas de texto centradas en cada segmento; se ocultan valores iguales a 0 % (p. ej. Preescolar - Con RUT)
+  geom_text(
+    aes(label = ifelse(PORCENTAJE > 0, paste0(PORCENTAJE, "%"), "")),
+    position = position_stack(vjust = 0.5),
+    fontface = "bold",
+    size = 3.2
+  ) +
+  # Inversión de coordenadas (coord_flip) para lectura horizontal íntegra de las 13 categorías del DANE
+  coord_flip() +
+  # Escala continua del eje porcentual de 0 % a 100 % con marcas cada 20 puntos porcentuales
+  scale_y_continuous(limits = c(0, 100.5), breaks = seq(0, 100, 20), labels = paste0(seq(0, 100, 20), "%")) +
+  # Escala manual de colores: azul acero para micronegocios con RUT y gris claro para sin RUT
+  scale_fill_manual(values = c("Con RUT" = "steelblue", "Sin RUT" = "grey75"), breaks = c("Con RUT", "Sin RUT")) +
+  # Títulos, ejes, leyenda y nota metodológica
   labs(
     title    = "Formalidad tributaria del micronegocio según nivel educativo del propietario",
-    subtitle = "Micronegocios emparejados GEIH-EMICRON (Ventana efectiva: Febrero - Diciembre 2024)",
-    x        = "Nivel educativo del propietario (GEIH: P3042)", 
-    y        = "Distribución porcentual (%)", 
+    subtitle = "Categorías explícitas DANE (P3042) en propietarios emparejados GEIH-EMICRON (Feb - Dic 2024)",
+    x        = "Nivel educativo alcanzado por el propietario (GEIH: P3042)", 
+    y        = "Distribución porcentual dentro de cada nivel (%)", 
     fill     = "Condición tributaria (EMICRON: P1633)",
-    caption  = "Fuente: GEIH y EMICRON 2024 (DANE). Universo: Propietarios emparejados. Factor: F_EXP."
+    caption  = "Fuente: GEIH y EMICRON 2024 (DANE). Universo: 71.754 propietarios emparejados con nivel conocido (1:13). Ponderador: F_EXP."
   ) +
+  # Tema blanco y negro con leyenda inferior y tipografía legible para las 13 categorías
   theme_bw() +
   theme(
-    legend.position = "bottom",
-    plot.title      = element_text(face = "bold", size = 14)
+    plot.title      = element_text(face = "bold", size = 14.5),
+    plot.subtitle   = element_text(size = 11),
+    axis.text.x     = element_text(size = 10),
+    axis.text.y     = element_text(size = 10),
+    axis.title      = element_text(size = 11.5, face = "bold"),
+    legend.text     = element_text(size = 10.5),
+    legend.title    = element_text(size = 10.5, face = "bold"),
+    legend.position = "bottom"
   )
 
 grafico_cruce
-ggsave(file.path(ruta_outputs, "3_3_cruce.png"), plot = grafico_cruce, width = 9.5, height = 5, dpi = 300)
+# Exportación en alta resolución (300 DPI, 11 x 7 pulgadas para alojar las 13 barras horizontales)
+ggsave(file.path(ruta_outputs, "3_3_cruce.png"), plot = grafico_cruce, width = 11, height = 7, dpi = 300)
 ```
 
 **Interpretación y factores explicativos no causales:**
-- La proporción de micronegocios con RUT asciende monótonamente con la escolaridad del propietario: desde el **10,6 %** en propietarios sin escolaridad hasta el **51,3 %** en aquellos con educación superior o posgrado.
-- *Límites interpretativos:* Este gradiente positivo describe una **asociación estadística**, pero no debe interpretarse como una relación causal directa en la que la educación por sí sola genere formalidad. Al menos dos factores no observados median esta relación:
-  1. **Efectos de escala y sofisticación de la actividad:** Los profesionales suelen emprender en servicios de mayor valor agregado (consultoría, servicios de salud) que exigen facturación para contratar con empresas formales.
-  2. **Costos de cumplimiento y alfabetización financiera:** La complejidad de los trámites ante la DIAN impone un costo fijo de cumplimiento que penaliza en mayor medida a propietarios con baja dotación de habilidades técnicas.
+- La auditoría confirma que los `71.754` propietarios emparejados tienen niveles educativos conocidos en `1:13` (`0` en `99 = No sabe, no informa`, `0` faltantes y `0` códigos inválidos).
+- La proporción de micronegocios con RUT exhibe un gradiente positivo pronunciado a lo largo de las 13 categorías del DANE: pasa de **0,0 %** en *Preescolar* ($n=6$) y **2,8 %** en *Ninguno*, a **11,7 %** en *Básica primaria (1o - 5o)*, **13,1 %** en *Normalista*, **14,5 %** en *Básica secundaria (6o - 9o)*, **22,3 %** en *Media académica* y **26,8 %** en *Media técnica*. En educación superior y posgrado se acelera: **34,0 %** en *Técnica profesional*, **43,9 %** en *Tecnológica*, **51,7 %** en *Universitaria*, **73,2 %** en *Especialización*, **78,7 %** en *Maestría* y **88,8 %** en *Doctorado*.
+- *Límites interpretativos:* Este gradiente describe una **asociación estadística**, pero no debe interpretarse como una relación causal directa. Al menos dos mecanismos intermedios explican la relación:
+  1. **Escala del negocio y topes regulatorios:** Mayor escolaridad suele asociarse con mayor capital inicial y volumen de ventas, acercando al negocio a los umbrales de inscripción tributaria obligatoria.
+  2. **Especialización sectorial:** Los propietarios con estudios superiores y de posgrado se concentran en servicios profesionales donde los clientes corporativos o estatales exigen RUT y facturación para deducir costos.
 
 ---
 
@@ -1374,7 +1628,7 @@ Se analiza el dualismo centro-periferia en Colombia contrastando la tasa de info
 ```{r}
 #| label: 19-punto4-geografia-informalidad
 #| fig-width: 9.5
-#| fig-height: 5.5
+#| fig-height: 6
 #| echo: true
 
 # Reutilizamos la base ocupados_2024 con la variable de formalidad (EI) ya clasificada en el numeral 2.3.1
@@ -1411,63 +1665,114 @@ datos_deptos <- ocupados_2024_analisis %>%
 
 write.csv(datos_deptos, file.path(ruta_outputs, "4_1_tabla_departamental.csv"), row.names = FALSE)
 
+# Selección de 10 departamentos representativos de los extremos y centros urbanos para etiquetado directo
 deptos_etiqueta <- datos_deptos %>%
   filter(NOMBRE_DPTO %in% c("Bogotá D.C.", "Antioquia", "Valle del Cauca", "Atlántico", "Chocó", "La Guajira", "Nariño", "Sucre", "Santander", "Cundinamarca"))
 
+# Datos y ponderador: 24 dominios departamentales GEIH 2024 con tasa de informalidad expandida (FEX_C18 / 12)
+# y mediana muestral de ingresos laborales monetarios positivos (INGLABO > 0).
+# Mapeo estético (aes): eje X = tasa de informalidad (%), eje Y = ingreso mediano en millones de COP.
 grafico_4_1 <- ggplot(datos_deptos, aes(x = TASA_INFORMALIDAD, y = INGRESO_MEDIANO / 1e6)) +
+  # Capa de suavizado no paramétrico (LOESS) con banda de confianza al 95 % para capturar la relación inversa
   geom_smooth(method = "loess", se = TRUE, alpha = 0.35, linewidth = 0.9, color = "black", fill = "grey70") +
+  # Capa de burbujas (geom_point): tamaño proporcional al volumen de ocupados (millones) y color por macrorregión
   geom_point(aes(size = OCUPADOS_EXP / 1e6, color = REGION), alpha = 0.85) +
+  # Etiquetas de texto para los 10 departamentos seleccionados con control de solapamiento (check_overlap = TRUE)
   geom_text(data = deptos_etiqueta, aes(label = NOMBRE_DPTO), vjust = -0.9, size = 3.2, fontface = "bold", check_overlap = TRUE) +
+  # Escala continua de tamaño de burbuja (entre 2,5 y 9 mm) y paleta cualitativa ColorBrewer "Dark2"
   scale_size_continuous(range = c(2.5, 9), breaks = c(0.5, 1, 2, 4)) +
   scale_color_brewer(palette = "Dark2") +
+  # Escalas continuas en X (30 % a 90 %) e Y ($0,4M a $2,0M COP)
   scale_x_continuous(limits = c(30, 90), breaks = seq(30, 90, 10), labels = paste0(seq(30, 90, 10), "%")) +
   scale_y_continuous(limits = c(0.4, 2.0), breaks = seq(0.4, 2.0, 0.2), labels = paste0("$", c("0,4", "0,6", "0,8", "1,0", "1,2", "1,4", "1,6", "1,8", "2,0"), "M")) +
+  # Títulos, ejes, leyendas y nota metodológica
   labs(
     title    = "Dualismo territorial: Tasa de informalidad laboral e ingreso mediano departamental",
-    subtitle = "Colombia, 2024. Ocupados con ingresos laborales monetarios",
-    x        = "Tasa de informalidad laboral departamental (%) [Definición DANE]",
+    subtitle = "Colombia, 2024. Muestra total nacional de la GEIH (ocupados con ingresos laborales monetarios)",
+    x        = "Tasa de informalidad laboral departamental (%) [Definición oficial DANE]",
     y        = "Mediana del ingreso laboral mensual (Millones de COP)",
     size     = "Ocupados (Millones)", 
     color    = "Región geográfica",
-    caption  = "Fuente: GEIH 2024 (DANE). Ponderador: FEX_C18 / 12."
+    caption  = "Fuente: GEIH 2024 (DANE). Cálculos Grupo 10. Ponderador: FEX_C18 / 12. Mediana calculada sobre ocupados con INGLABO > 0."
   ) +
+  # Tema blanco y negro con leyenda lateral derecha
   theme_bw() +
   theme(
+    plot.title      = element_text(face = "bold", size = 14),
+    plot.subtitle   = element_text(size = 10.5),
+    axis.text       = element_text(size = 9.5),
+    axis.title      = element_text(size = 11, face = "bold"),
     legend.position = "right",
-    plot.title      = element_text(face = "bold", size = 13)
+    legend.title    = element_text(size = 9.5, face = "bold"),
+    legend.text     = element_text(size = 9)
   )
 
 grafico_4_1
-ggsave(file.path(ruta_outputs, "4_1_geografia_informalidad.png"), plot = grafico_4_1, width = 9.5, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI)
+ggsave(file.path(ruta_outputs, "4_1_geografia_informalidad.png"), plot = grafico_4_1, width = 9.5, height = 6, dpi = 300)
 ```
 
-**Interpretación:** La relación exhibe una pendiente negativa pronunciada. En departamentos centrales (Bogotá, Antioquia, Santander), la informalidad se ubica por debajo del 45 % y los ingresos medianos superan los \$1,4M COP. En contraste, departamentos periféricos como Chocó, La Guajira y Sucre superan el 75-80 % de informalidad con ingresos medianos inferiores a \$0,7M COP, evidenciando una profunda fractura territorial del mercado laboral.
+**Interpretación:** La relación exhibe una pendiente negativa pronunciada. En Bogotá (34,6 % de informalidad e ingreso mediano de \$1,6M COP), Cundinamarca (44,6 %) y Antioquia (44,9 %), la mayor densidad del tejido empresarial formal sostiene ingresos medianos superiores a \$1,4M COP. En contraste, departamentos periféricos como Chocó (80,8 %), Sucre (79,9 %) y La Guajira (79,5 %) registran ingresos medianos de \$0,6M COP, evidenciando una profunda fractura territorial del mercado laboral.
 
 ---
 
 ## 4.2 Inclusión Financiera Digital y Escala de Ventas en Micronegocios
 
-### Pregunta y variables
-A partir de la base integrada `base_micro` y de `EMICRON`, se examina si la adopción de billeteras digitales y el acceso a crédito formal se asocian con mayores escalas de ventas mensuales (`VENTAS_MES_ANTERIOR`).
+### Pregunta, corrección de variables y contabilización de no respuesta
+A partir de `base_micro`, se examina cómo varía la distribución de ventas brutas mensuales (`VENTAS_MES_ANTERIOR > 0`) según el perfil de medios de pago y la solicitud de crédito:
+- **Transferencias bancarias / internet (`P1764_3 == 1`):** según el diccionario oficial de EMICRON 2024, `P1764_3` identifica transferencias bancarias o por internet (mientras que `P1764_2` corresponde a cheque).
+- **Solo efectivo (efectivo exclusivo):** micronegocios que aceptan efectivo (`P1764_1 == 1`) y ningún otro medio seleccionado entre `P1764_2` y `P1764_7`.
+- **Solicitud de crédito (`P1765`):** mide si solicitó crédito para el negocio (`1 = Solicitó crédito`, `2 = No solicitó crédito`, `NA = No informa solicitud`). Se contabiliza explícitamente la no respuesta antes de graficar los 4 perfiles válidos.
 
 ```{r}
 #| label: 20-punto4-inclusion-ventas
 #| fig-width: 9.5
-#| fig-height: 5.5
+#| fig-height: 6
 #| echo: true
 
-datos_micros <- base_micro %>%
+datos_micros_todos <- base_micro %>%
   filter(!is.na(VENTAS_MES_ANTERIOR), VENTAS_MES_ANTERIOR > 0, !is.na(F_EXP), F_EXP > 0) %>%
   mutate(
+    OTROS_MEDIOS_DISTINTOS_EFECTIVO = (!is.na(P1764_2) & P1764_2 == 1) |
+      (!is.na(P1764_3) & P1764_3 == 1) |
+      (!is.na(P1764_4) & P1764_4 == 1) |
+      (!is.na(P1764_5) & P1764_5 == 1) |
+      (!is.na(P1764_6) & P1764_6 == 1) |
+      (!is.na(P1764_7) & P1764_7 == 1),
     ADOPCION_DIGITAL = case_when(
-      P1764_2 == 1 ~ "Transferencias y billeteras",
-      P1764_1 == 1 & (is.na(P1764_2) | P1764_2 != 1) ~ "Solo efectivo",
-      TRUE ~ "Otro canal"
+      !is.na(P1764_3) & P1764_3 == 1 ~ "Transferencias bancarias / internet",
+      !is.na(P1764_1) & P1764_1 == 1 & !OTROS_MEDIOS_DISTINTOS_EFECTIVO ~ "Solo efectivo",
+      TRUE ~ "Otro perfil de pago"
     ),
-    ACCESO_CREDITO   = case_when(P1765 == 1 ~ "Con crédito aprobado", TRUE ~ "Sin crédito formal"),
-    VENTAS_MILLONES  = VENTAS_MES_ANTERIOR / 1e6
+    ACCESO_CREDITO = case_when(
+      P1765 == 1 ~ "Solicitó crédito",
+      P1765 == 2 ~ "No solicitó crédito",
+      is.na(P1765) ~ "No informa solicitud (NA)",
+      TRUE ~ "Código inválido"
+    ),
+    VENTAS_MILLONES = VENTAS_MES_ANTERIOR / 1e6
+  )
+
+# Contabilización explícita de perfiles de pago y no respuesta en P1765
+auditoria_inclusion_4_2 <- datos_micros_todos %>%
+  group_by(ADOPCION_DIGITAL, ACCESO_CREDITO) %>%
+  summarise(
+    N_MUESTRA        = n(),
+    TOTAL_MICROS_EXP = round(sum(F_EXP, na.rm = TRUE), 0),
+    .groups = "drop"
+  )
+print(auditoria_inclusion_4_2)
+
+# Subconjunto analítico de los 4 perfiles válidos
+datos_micros <- datos_micros_todos %>%
+  filter(
+    ADOPCION_DIGITAL %in% c("Solo efectivo", "Transferencias bancarias / internet"),
+    ACCESO_CREDITO %in% c("No solicitó crédito", "Solicitó crédito")
   ) %>%
-  filter(ADOPCION_DIGITAL %in% c("Solo efectivo", "Transferencias y billeteras"))
+  mutate(
+    ADOPCION_DIGITAL = factor(ADOPCION_DIGITAL, levels = c("Solo efectivo", "Transferencias bancarias / internet")),
+    ACCESO_CREDITO   = factor(ACCESO_CREDITO, levels = c("No solicitó crédito", "Solicitó crédito"))
+  )
 
 resumen_micros <- datos_micros %>%
   group_by(ADOPCION_DIGITAL, ACCESO_CREDITO) %>%
@@ -1479,94 +1784,181 @@ resumen_micros <- datos_micros %>%
   )
 write.csv(resumen_micros, file.path(ruta_outputs, "4_2_tabla_inclusion_ventas.csv"), row.names = FALSE)
 
+# Datos y ponderador: 69.847 micronegocios con ventas positivas y respuesta válida en medios de pago y solicitud
+# de crédito (4.711.543 micronegocios expandidos con F_EXP; se documentan 5.202 registros con NA en P1765 y 645 en otros medios).
+# Mapeo estético (aes): eje X = perfil de medio de pago (ADOPCION_DIGITAL), eje Y = ventas en millones (VENTAS_MILLONES),
+# relleno (fill) = solicitud de crédito (ACCESO_CREDITO), y peso muestral (weight = F_EXP).
 grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONES, fill = ACCESO_CREDITO)) +
+  # Capa de violín ponderada (weight = F_EXP) para visualizar la densidad completa de ventas por perfil
   geom_violin(aes(weight = F_EXP), position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width") +
+  # Capa de diagrama de caja ponderada (geom_boxplot) superpuesta para destacar mediana y rango intercuartílico
   geom_boxplot(aes(weight = F_EXP), position = position_dodge(0.8), width = 0.22, outlier.shape = NA, alpha = 0.9) +
+  # Escala logarítmica en base 10 sobre el eje Y para corregir la asimetría positiva extrema de las ventas
   scale_y_log10(limits = c(0.1, 100), breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = paste0("$", c("0,2", "0,5", "1,0", "2,0", "5,0", "10,0", "20,0", "50,0"), "M")) +
-  scale_fill_manual(values = c("Con crédito aprobado" = "steelblue", "Sin crédito formal" = "grey75")) +
+  # Escala manual de colores: gris claro para quienes no solicitaron crédito y azul acero para quienes sí solicitaron
+  scale_fill_manual(values = c("No solicitó crédito" = "grey75", "Solicitó crédito" = "steelblue")) +
+  # Títulos, subtítulo, ejes, leyenda y nota metodológica con las exclusiones documentadas
   labs(
     title    = "Inclusión financiera y escala productiva de los micronegocios en Colombia",
-    subtitle = "Distribución de ventas brutas mensuales según pagos electrónicos y crédito (EMICRON 2024)",
-    x        = "Canal de pagos aceptado en la unidad productiva",
+    subtitle = "Distribución de ventas brutas mensuales según medio de pago (P1764_3 vs efectivo exclusivo) y solicitud de crédito (P1765)",
+    x        = "Perfil de medio de pago aceptado en el micronegocio",
     y        = "Ventas brutas mensuales (Escala logarítmica en Millones de COP)",
-    fill     = "Condición de crédito bancario:",
-    caption  = "Fuente: EMICRON 2024 (DANE). Universo: Micronegocios con ventas positivas. Ponderador: F_EXP."
+    fill     = "Solicitud de crédito (P1765):",
+    caption  = "Fuente: EMICRON 2024 (DANE). Universo: 69.847 micronegocios con ventas > 0 (excluye 5.202 NA en P1765 y 645 otros medios). Ponderador: F_EXP."
   ) +
+  # Tema blanco y negro con leyenda inferior
   theme_bw() +
   theme(
+    plot.title      = element_text(face = "bold", size = 14),
+    plot.subtitle   = element_text(size = 10),
+    axis.text       = element_text(size = 10),
+    axis.title      = element_text(size = 11, face = "bold"),
     legend.position = "bottom",
-    plot.title      = element_text(face = "bold", size = 13)
+    legend.title    = element_text(size = 10, face = "bold"),
+    legend.text     = element_text(size = 9.5),
+    plot.caption    = element_text(size = 8.5)
   )
 
 grafico_4_2
-ggsave(file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"), plot = grafico_4_2, width = 9.5, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI)
+ggsave(file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"), plot = grafico_4_2, width = 9.5, height = 6, dpi = 300)
 ```
 
-**Interpretación:** La mediana de ventas de micronegocios que aceptan billeteras digitales dobla a la de aquellos restringidos al efectivo (\$2,2M vs \$1,1M COP). A su vez, contar con crédito aprobado desplaza toda la masa de la distribución hacia la derecha, evidenciando cómo la inclusión financiera actúa como catalizador de escala comercial en microempresas.
+**Interpretación:** Sobre los `75.671` micronegocios con ventas positivas, se contabilizaron `5.202` registros sin respuesta en `P1765` (`338.120` expandidos; `5.376` en toda la EMICRON) y `645` en otros perfiles de pago (de los cuales 23 coinciden con `NA` en `P1765`), conformando un universo analítico de `69.847` unidades válidas (`4.711.543` expandidas). En **Solo efectivo**, las ventas medianas pasan de **\$1,20M COP** sin solicitud de crédito ($n=37.700$) a **\$1,70M COP** cuando se solicitó crédito ($n=5.804$). En los negocios que aceptan **Transferencias bancarias / internet**, la mediana casi se duplica hasta **\$2,30M COP** sin solicitud de crédito ($n=21.061$) y asciende a **\$3,00M COP** entre quienes solicitaron crédito ($n=5.282$).
 
 ---
 
 ## 4.3 Emparejamiento Laboral: Nivel Educativo y Posición Ocupacional
 
-### Pregunta y variables
-Se evalúa la inserción ocupacional de la mano de obra colombiana según su nivel de credenciales formales (`P3042`) y su jerarquía de empleo (`P6430`), ilustrado mediante un gráfico de conteos y áreas de frecuencia.
+### Pregunta y uso explícito de las 13 categorías educativas del DANE
+Se evalúa la inserción ocupacional de los ocupados en Colombia (`OCI == 1` en GEIH 2024) cruzando las **13 categorías explícitas de nivel educativo (`P3042`: 1 a 13)** con las **9 posiciones ocupacionales oficiales (`P6430`: 1 a 9)** mediante un gráfico de conteos de intersecciones (`geom_count`).
 
 ```{r}
 #| label: 21-punto4-mismatch-educacion
-#| fig-width: 9.5
-#| fig-height: 5.5
+#| fig-width: 11.5
+#| fig-height: 7
 #| echo: true
 
+# Auditoría explícita de códigos educativos y posición ocupacional en ocupados 2024
+auditoria_educacion_4_3 <- ocupados_2024_analisis %>%
+  summarise(
+    TOTAL_OCUPADOS_2024  = n(),
+    P3042_CONOCIDOS_1_13 = sum(P3042 %in% 1:13, na.rm = TRUE),
+    P3042_NO_SABE_99     = sum(P3042 == 99, na.rm = TRUE),
+    P3042_NA             = sum(is.na(P3042)),
+    P3042_INVALIDOS      = sum(!is.na(P3042) & !(P3042 %in% c(1:13, 99))),
+    P6430_VALIDOS_1_9    = sum(P6430 %in% 1:9, na.rm = TRUE),
+    P6430_NA             = sum(is.na(P6430))
+  )
+print(auditoria_educacion_4_3)
+
+niveles_posicion_p6430 <- etiquetas_posicion$POSICION_OCUPACIONAL
+
 datos_mismatch <- ocupados_2024_analisis %>%
-  filter(!is.na(P3042), !is.na(P6430)) %>%
   mutate(
     NIVEL = case_when(
-      P3042 %in% 1:3 ~ "Primaria o menos",
-      P3042 %in% 4:5 ~ "Secundaria / Media",
-      P3042 %in% 6:9 ~ "Educación Superior"
+      P3042 == 1  ~ "Ninguno",
+      P3042 == 2  ~ "Preescolar",
+      P3042 == 3  ~ "Básica primaria (1o - 5o)",
+      P3042 == 4  ~ "Básica secundaria (6o - 9o)",
+      P3042 == 5  ~ "Media académica (Bachillerato clásico)",
+      P3042 == 6  ~ "Media técnica (Bachillerato técnico)",
+      P3042 == 7  ~ "Normalista",
+      P3042 == 8  ~ "Técnica profesional",
+      P3042 == 9  ~ "Tecnológica",
+      P3042 == 10 ~ "Universitaria",
+      P3042 == 11 ~ "Especialización",
+      P3042 == 12 ~ "Maestría",
+      P3042 == 13 ~ "Doctorado",
+      P3042 == 99 ~ "No sabe, no informa",
+      is.na(P3042) ~ "Faltante (NA)",
+      TRUE ~ "Código inválido"
     ),
     POSICION = case_when(
-      P6430 == 1 ~ "Obrero particular",
-      P6430 == 2 ~ "Obrero del gobierno",
-      P6430 == 4 ~ "Cuenta propia",
-      P6430 == 5 ~ "Patrón / Empleador",
-      TRUE       ~ "Otros / Doméstico"
+      P6430 == 1 ~ "Obrero o empleado de empresa particular",
+      P6430 == 2 ~ "Obrero o empleado del gobierno",
+      P6430 == 3 ~ "Empleado doméstico",
+      P6430 == 4 ~ "Trabajador por cuenta propia",
+      P6430 == 5 ~ "Patrón o empleador",
+      P6430 == 6 ~ "Trabajador familiar sin remuneración",
+      P6430 == 7 ~ "Trabajador sin remuneración en empresas de otros hogares",
+      P6430 == 8 ~ "Jornalero o peón",
+      P6430 == 9 ~ "Otro",
+      TRUE ~ "No informa"
     )
+  ) %>%
+  # Excluimos los 4 registros con P3042 == 99 ("No sabe, no informa") para analizar los 13 niveles educativos conocidos
+  filter(P3042 %in% 1:13, P6430 %in% 1:9) %>%
+  mutate(
+    NIVEL    = factor(NIVEL, levels = niveles_dane_p3042),
+    POSICION = factor(POSICION, levels = niveles_posicion_p6430)
   )
 
 tabla_mismatch <- datos_mismatch %>%
   group_by(NIVEL, POSICION) %>%
   summarise(
-    N_MUESTRA    = n(),
-    OCUPADOS_EXP = round(sum(FEX_C18 / 12), 0),
-    .groups      = "drop"
-  )
+    N_MUESTRA              = n(),
+    OCUPADOS_SIN_REDONDEAR = sum(FEX_C18 / 12, na.rm = TRUE),
+    .groups                = "drop"
+  ) %>%
+  complete(
+    NIVEL,
+    POSICION,
+    fill = list(N_MUESTRA = 0L, OCUPADOS_SIN_REDONDEAR = 0)
+  ) %>%
+  group_by(NIVEL) %>%
+  mutate(
+    PORCENTAJE_FILA = round(OCUPADOS_SIN_REDONDEAR / sum(OCUPADOS_SIN_REDONDEAR) * 100, 1),
+    OCUPADOS_EXP    = round(OCUPADOS_SIN_REDONDEAR, 0)
+  ) %>%
+  ungroup() %>%
+  select(NIVEL, POSICION, N_MUESTRA, OCUPADOS_EXP, PORCENTAJE_FILA)
+
 write.csv(tabla_mismatch, file.path(ruta_outputs, "4_3_tabla_mismatch_educacion.csv"), row.names = FALSE)
 
-grafico_4_3 <- ggplot(datos_mismatch, aes(x = NIVEL, y = POSICION)) +
+# Datos y ponderador: 353.668 ocupados de la GEIH 2024 con nivel educativo conocido (1:13) y posición ocupacional (1:9),
+# excluyendo 4 registros con P3042 == 99. El conteo muestral se representa mediante geom_count y la tabla exporta FEX_C18 / 12.
+# Mapeo estético (aes): eje X = posición ocupacional (POSICION, 9 categorías DANE) y eje Y = nivel educativo (NIVEL, 13 categorías DANE)
+# para garantizar la lectura horizontal completa de las 13 etiquetas educativas en el eje vertical.
+grafico_4_3 <- ggplot(datos_mismatch, aes(x = POSICION, y = NIVEL)) +
+  # Capa de conteo de intersecciones discretas (geom_count): área y color proporcionales a la frecuencia muestral after_stat(n)
   geom_count(aes(color = after_stat(n)), alpha = 0.85) +
-  scale_size_area(max_size = 14) +
+  # Escalas discretas en X e Y conservando la totalidad de categorías oficiales del DANE (drop = FALSE)
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  # Escala de área proporcional (cero corresponde a área cero) con diámetro máximo de 12 mm
+  scale_size_area(max_size = 12) +
+  # Gradiente continuo de color desde azul claro hasta azul marino profundo para reforzar la densidad de la celda
   scale_color_gradient(low = "lightblue", high = "navy") +
+  # Etiquetas descriptivas de ambos ejes categóricos oficiales del DANE y nota metodológica
   labs(
     title    = "Emparejamiento laboral: Nivel educativo y posición ocupacional en Colombia",
-    subtitle = "Frecuencia muestral de intersección entre educación y jerarquía del empleo (GEIH 2024)",
-    x        = "Nivel educativo aprobado",
-    y        = "Posición ocupacional declarada",
-    size     = "Ocupados:", 
-    color    = "Frecuencia:",
-    caption  = "Fuente: GEIH 2024 (DANE)."
+    subtitle = "Intersección entre las 13 categorías educativas (P3042) y las 9 posiciones ocupacionales (P6430) - GEIH 2024",
+    x        = "Posición ocupacional declarada (GEIH: P6430)",
+    y        = "Nivel educativo aprobado (GEIH: P3042)",
+    size     = "Ocupados (muestra):", 
+    color    = "Frecuencia (n):",
+    caption  = "Fuente: GEIH 2024 (DANE). Universo: 353.668 ocupados con nivel conocido (excluye 4 registros con P3042 = 99)."
   ) +
+  # Tema blanco y negro con etiquetas del eje X inclinadas 25 grados para evitar solapamiento entre las 9 posiciones
   theme_bw() +
   theme(
+    plot.title      = element_text(face = "bold", size = 13.5),
+    plot.subtitle   = element_text(size = 10),
+    axis.text.x     = element_text(size = 8.5, angle = 25, hjust = 1),
+    axis.text.y     = element_text(size = 9.5),
+    axis.title      = element_text(size = 10.5, face = "bold"),
     legend.position = "right",
-    plot.title      = element_text(face = "bold", size = 13)
+    legend.title    = element_text(size = 9.5, face = "bold"),
+    legend.text     = element_text(size = 9)
   )
 
 grafico_4_3
-ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 9.5, height = 5.5, dpi = 300)
+# Exportación en alta resolución (300 DPI, 11.5 x 7 pulgadas para acomodar la matriz 13 x 9)
+ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 11.5, height = 7, dpi = 300)
 ```
 
-**Interpretación:** La masa principal de trabajadores con educación primaria o secundaria se concentra en el autoempleo por cuenta propia o en empleos particulares no calificados. En contraste, la educación superior es condición casi necesaria para acceder al empleo público formal y a posiciones asalariadas con estabilidad contractual, confirmando las predicciones de la teoría del capital humano y la segmentación laboral.
+**Interpretación:** Sobre los `353.672` ocupados de la GEIH 2024, `353.668` cuentan con nivel educativo conocido (`1:13`) y solo `4` registran el código `99` (*No sabe, no informa*, equivalentes a 473 ocupados expandidos; 0 faltantes y 0 códigos inválidos). En los niveles de *Ninguno* (62,5 %), *Básica primaria* (54,8 %) y *Básica secundaria* (48,6 %) predomina el trabajo por cuenta propia; a partir de *Media académica* (47,8 % obrero particular vs. 39,9 % cuenta propia) y *Media técnica* (57,8 % vs. 32,7 %) la inserción principal pasa a ser asalariada particular. En educación superior (*Técnica profesional* 61,5 %, *Tecnológica* 66,6 %, *Universitaria* 62,1 %) y posgrado (*Especialización* 58,4 %, *Maestría* 55,6 %, *Doctorado* 56,5 %) predomina el empleo particular acompañado del empleo público (que alcanza 17,6 % en especialización, 23,6 % en maestría y 28,2 % en doctorado). Aun así, se observan **986.256 ocupados con educación superior o posgrado** (códigos `8` a `13`) trabajando por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales).
 
 ---
 

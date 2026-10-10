@@ -1,21 +1,118 @@
-"NIVEL","POSICION","N_MUESTRA","OCUPADOS_EXP"
-"Educación Superior","Cuenta propia",17179,996411
-"Educación Superior","Obrero del gobierno",3186,145923
-"Educación Superior","Obrero particular",31791,2067737
-"Educación Superior","Otros / Doméstico",1892,134874
-"Educación Superior","Patrón / Empleador",1194,83631
-"Primaria o menos","Cuenta propia",43772,3030375
-"Primaria o menos","Obrero del gobierno",168,6978
-"Primaria o menos","Obrero particular",14565,1016033
-"Primaria o menos","Otros / Doméstico",10983,817071
-"Primaria o menos","Patrón / Empleador",1679,134606
-"Secundaria / Media","Cuenta propia",66315,4090507
-"Secundaria / Media","Obrero del gobierno",2326,105990
-"Secundaria / Media","Obrero particular",64512,4452077
-"Secundaria / Media","Otros / Doméstico",12455,909188
-"Secundaria / Media","Patrón / Empleador",3184,223034
-NA,"Cuenta propia",24179,1344153
-NA,"Obrero del gobierno",13800,634275
-NA,"Obrero particular",36789,2612098
-NA,"Otros / Doméstico",1066,62624
-NA,"Patrón / Empleador",2637,168459
+"NIVEL","POSICION","N_MUESTRA","OCUPADOS_EXP","PORCENTAJE_FILA"
+"Ninguno","Obrero o empleado de empresa particular",1121,80214,11.3
+"Ninguno","Obrero o empleado del gobierno",9,384,0.1
+"Ninguno","Empleado doméstico",483,27660,3.9
+"Ninguno","Trabajador por cuenta propia",6340,486298,68.3
+"Ninguno","Patrón o empleador",108,9468,1.3
+"Ninguno","Trabajador familiar sin remuneración",261,27374,3.8
+"Ninguno","Trabajador sin remuneración en empresas de otros hogares",965,81018,11.4
+"Ninguno","Jornalero o peón",0,0,0
+"Ninguno","Otro",0,0,0
+"Preescolar","Obrero o empleado de empresa particular",3,33,2.5
+"Preescolar","Obrero o empleado del gobierno",0,0,0
+"Preescolar","Empleado doméstico",0,0,0
+"Preescolar","Trabajador por cuenta propia",17,769,57.7
+"Preescolar","Patrón o empleador",0,0,0
+"Preescolar","Trabajador familiar sin remuneración",1,82,6.1
+"Preescolar","Trabajador sin remuneración en empresas de otros hogares",7,450,33.7
+"Preescolar","Jornalero o peón",0,0,0
+"Preescolar","Otro",0,0,0
+"Básica primaria (1o - 5o)","Obrero o empleado de empresa particular",13441,935786,21.8
+"Básica primaria (1o - 5o)","Obrero o empleado del gobierno",159,6594,0.2
+"Básica primaria (1o - 5o)","Empleado doméstico",3888,230724,5.4
+"Básica primaria (1o - 5o)","Trabajador por cuenta propia",37415,2543308,59.3
+"Básica primaria (1o - 5o)","Patrón o empleador",1571,125138,2.9
+"Básica primaria (1o - 5o)","Trabajador familiar sin remuneración",1374,108055,2.5
+"Básica primaria (1o - 5o)","Trabajador sin remuneración en empresas de otros hogares",3996,341182,8
+"Básica primaria (1o - 5o)","Jornalero o peón",8,526,0
+"Básica primaria (1o - 5o)","Otro",0,0,0
+"Básica secundaria (6o - 9o)","Obrero o empleado de empresa particular",11921,847349,33.5
+"Básica secundaria (6o - 9o)","Obrero o empleado del gobierno",109,5297,0.2
+"Básica secundaria (6o - 9o)","Empleado doméstico",2080,124935,4.9
+"Básica secundaria (6o - 9o)","Trabajador por cuenta propia",20678,1299136,51.4
+"Básica secundaria (6o - 9o)","Patrón o empleador",733,52946,2.1
+"Básica secundaria (6o - 9o)","Trabajador familiar sin remuneración",847,75953,3
+"Básica secundaria (6o - 9o)","Trabajador sin remuneración en empresas de otros hogares",1356,122275,4.8
+"Básica secundaria (6o - 9o)","Jornalero o peón",11,1833,0.1
+"Básica secundaria (6o - 9o)","Otro",0,0,0
+"Media académica (Bachillerato clásico)","Obrero o empleado de empresa particular",52591,3604729,49.7
+"Media académica (Bachillerato clásico)","Obrero o empleado del gobierno",2217,100693,1.4
+"Media académica (Bachillerato clásico)","Empleado doméstico",4212,243518,3.4
+"Media académica (Bachillerato clásico)","Trabajador por cuenta propia",45637,2791372,38.5
+"Media académica (Bachillerato clásico)","Patrón o empleador",2451,170088,2.3
+"Media académica (Bachillerato clásico)","Trabajador familiar sin remuneración",2150,164762,2.3
+"Media académica (Bachillerato clásico)","Trabajador sin remuneración en empresas de otros hogares",1746,171082,2.4
+"Media académica (Bachillerato clásico)","Jornalero o peón",53,4829,0.1
+"Media académica (Bachillerato clásico)","Otro",0,0,0
+"Media técnica (Bachillerato técnico)","Obrero o empleado de empresa particular",4718,304295,55.7
+"Media técnica (Bachillerato técnico)","Obrero o empleado del gobierno",230,10581,1.9
+"Media técnica (Bachillerato técnico)","Empleado doméstico",200,14779,2.7
+"Media técnica (Bachillerato técnico)","Trabajador por cuenta propia",2848,180786,33.1
+"Media técnica (Bachillerato técnico)","Patrón o empleador",171,11522,2.1
+"Media técnica (Bachillerato técnico)","Trabajador familiar sin remuneración",151,13326,2.4
+"Media técnica (Bachillerato técnico)","Trabajador sin remuneración en empresas de otros hogares",92,10174,1.9
+"Media técnica (Bachillerato técnico)","Jornalero o peón",6,690,0.1
+"Media técnica (Bachillerato técnico)","Otro",0,0,0
+"Normalista","Obrero o empleado de empresa particular",179,10282,38.3
+"Normalista","Obrero o empleado del gobierno",171,6461,24
+"Normalista","Empleado doméstico",13,212,0.8
+"Normalista","Trabajador por cuenta propia",153,8484,31.6
+"Normalista","Patrón o empleador",6,186,0.7
+"Normalista","Trabajador familiar sin remuneración",10,629,2.3
+"Normalista","Trabajador sin remuneración en empresas de otros hogares",1,302,1.1
+"Normalista","Jornalero o peón",4,309,1.1
+"Normalista","Otro",0,0,0
+"Técnica profesional","Obrero o empleado de empresa particular",17962,1114403,60.2
+"Técnica profesional","Obrero o empleado del gobierno",2009,86140,4.6
+"Técnica profesional","Empleado doméstico",634,37214,2
+"Técnica profesional","Trabajador por cuenta propia",10125,540949,29.2
+"Técnica profesional","Patrón o empleador",604,41022,2.2
+"Técnica profesional","Trabajador familiar sin remuneración",336,21798,1.2
+"Técnica profesional","Trabajador sin remuneración en empresas de otros hogares",110,9909,0.5
+"Técnica profesional","Jornalero o peón",20,1063,0.1
+"Técnica profesional","Otro",0,0,0
+"Tecnológica","Obrero o empleado de empresa particular",8932,638756,63.7
+"Tecnológica","Obrero o empleado del gobierno",776,42742,4.3
+"Tecnológica","Empleado doméstico",117,8419,0.8
+"Tecnológica","Trabajador por cuenta propia",4053,266192,26.5
+"Tecnológica","Patrón o empleador",413,30900,3.1
+"Tecnológica","Trabajador familiar sin remuneración",153,12493,1.2
+"Tecnológica","Trabajador sin remuneración en empresas de otros hogares",43,3485,0.3
+"Tecnológica","Jornalero o peón",2,72,0
+"Tecnológica","Otro",0,0,0
+"Universitaria","Obrero o empleado de empresa particular",29303,1975297,57.3
+"Universitaria","Obrero o empleado del gobierno",6523,274448,8
+"Universitaria","Empleado doméstico",278,16622,0.5
+"Universitaria","Trabajador por cuenta propia",18745,1019958,29.6
+"Universitaria","Patrón o empleador",1931,119444,3.5
+"Universitaria","Trabajador familiar sin remuneración",640,36078,1
+"Universitaria","Trabajador sin remuneración en empresas de otros hogares",67,6025,0.2
+"Universitaria","Jornalero o peón",29,1577,0
+"Universitaria","Otro",0,0,0
+"Especialización","Obrero o empleado de empresa particular",5085,398433,47
+"Especialización","Obrero o empleado del gobierno",4102,188579,22.3
+"Especialización","Empleado doméstico",4,46,0
+"Especialización","Trabajador por cuenta propia",4000,227235,26.8
+"Especialización","Patrón o empleador",497,31507,3.7
+"Especialización","Trabajador familiar sin remuneración",36,1388,0.2
+"Especialización","Trabajador sin remuneración en empresas de otros hogares",0,0,0
+"Especialización","Jornalero o peón",2,141,0
+"Especialización","Otro",0,0,0
+"Maestría","Obrero o empleado de empresa particular",2183,215813,46.3
+"Maestría","Obrero o empleado del gobierno",2681,146444,31.4
+"Maestría","Empleado doméstico",0,0,0
+"Maestría","Trabajador por cuenta propia",1319,88409,18.9
+"Maestría","Patrón o empleador",187,15710,3.4
+"Maestría","Trabajador familiar sin remuneración",6,202,0
+"Maestría","Trabajador sin remuneración en empresas de otros hogares",0,0,0
+"Maestría","Jornalero o peón",0,0,0
+"Maestría","Otro",0,0,0
+"Doctorado","Obrero o empleado de empresa particular",217,22545,38.8
+"Doctorado","Obrero o empleado del gobierno",494,24803,42.7
+"Doctorado","Empleado doméstico",1,336,0.6
+"Doctorado","Trabajador por cuenta propia",114,8539,14.7
+"Doctorado","Patrón o empleador",21,1784,3.1
+"Doctorado","Trabajador familiar sin remuneración",2,116,0.2
+"Doctorado","Trabajador sin remuneración en empresas de otros hogares",0,0,0
+"Doctorado","Jornalero o peón",0,0,0
+"Doctorado","Otro",0,0,0
