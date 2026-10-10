@@ -96,12 +96,43 @@ construyen llaves artificiales.
 Se mantiene una única ruta base y todas las rutas se derivan de ella. No se
 introducen rutas absolutas personales.
 
-## 9. Outputs
+## 9. Outputs y Matriz de Auditoría de Archivos
 
-Los productos solicitados deben generarse desde el script, guardarse en
-`outputs` y tener nombres asociados al numeral correspondiente. No se generan
-outputs adicionales sin una razón clara. Los outputs históricos no se borran
-ni se modifican manualmente.
+Los productos solicitados deben generarse directamente desde el script oficial `Taller2_Grupo_10.R`, guardarse en la carpeta raíz `outputs/` y tener nombres asociados al numeral correspondiente. La siguiente matriz clasifica los 31 archivos conservados en la carpeta según su función evaluativa y técnica:
+
+| Archivo | Numeral | Categoría | Función y Justificación |
+|---|---|---|---|
+| `2_1_tasas_hombres.xlsx` | 2.1 | Entregable obligatorio | Tabla Excel de indicadores laborales para hombres (2023-2024). |
+| `2_1_tasas_mujeres.xlsx` | 2.1 | Entregable obligatorio | Tabla Excel de indicadores laborales para mujeres (2023-2024). |
+| `2_2_tasas_sexo.png` | 2.2 | Entregable obligatorio | Gráfico de serie de tiempo de TGP, TO y TD por sexo en paneles. |
+| `2_3_formalidad_13ciudades.png` | 2.3 | Entregable obligatorio | Gráfico circular de distribución de formalidad en 13 ciudades (Dic 2024). |
+| `2_4_posicion_nacional.png` | 2.4 | Entregable obligatorio | Gráfico de barras horizontales de posición ocupacional (Ene 2023). |
+| `3_1_indicadores.xlsx` | 3.1 | Entregable obligatorio | Tabla Excel de caracterización estructural de micronegocios (2024). |
+| `3_2_formas_pago.png` | 3.2 | Entregable obligatorio | Gráfico de barras apiladas de medios de pago por rama de actividad. |
+| `3_3_cruce.png` | 3.3 | Entregable obligatorio | Gráfico del análisis conjunto GEIH-EMICRON (Educación vs. Tenencia de RUT). |
+| `4_1_geografia_informalidad.png` | 4.1 | Entregable obligatorio | Gráfico de dispersión departamental de informalidad vs. ingreso mediano. |
+| `4_2_inclusion_ventas_micro.png` | 4.2 | Entregable obligatorio | Diagrama de cajas de ventas mensuales según adopción digital y crédito. |
+| `4_3_desigualdad_lorenz.png` | 4.3 | Entregable obligatorio | Curvas de Lorenz de ingreso laboral comparadas por dominio geográfico. |
+| `4_3_mismatch_educacion.png` | 4.3 | Apoyo ejercicio libre | Gráfico alternativo de desajuste educativo por posición ocupacional. |
+| `1_1_verificacion_llaves.csv` | 1.1 | Verificación auditable | Auditoría mensual de unicidad de llave en los 4 módulos de GEIH. |
+| `1_1_verificacion_pegues.csv` | 1.1 | Verificación auditable | Control mensual de no multiplicación de filas tras left_join. |
+| `1_1_eficiencia.csv` | 1.1 | Verificación auditable | Evidencia de reducción de columnas antes y después de select(). |
+| `1_2_descripcion_geih_2024.csv` | 1.2 | Insumo de informe | Tabla 1 del informe: tamaño mensual de módulos y total anual 2024. |
+| `1_2_consistencia_laboral_2024.csv` | 1.2 | Verificación auditable | Validación de identidades laborales (PET = FT + FFT; FT = Ocup + Desoc). |
+| `1_3_diccionario_variables.csv` | 1.3 | Insumo de informe | Tabla 2 del informe: diccionario de variables analíticas de la GEIH. |
+| `1_4_relacion_orden.csv` | 1.4.c | Verificación auditable | Evidencia empírica de equivalencia SECUENCIA_ENCUESTA == ORDEN (100 %). |
+| `1_4_relacion_meses.csv` | 1.4.c | Verificación auditable | Evidencia empírica de desfase temporal MES_REF == MES_GEIH + 1. |
+| `1_4_auditoria_mensual.csv` | 1.4.f | Insumo de informe | Tabla 3 del informe: auditoría mensual de enlace y no emparejados. |
+| `1_4_fuera_2024.csv` | 1.4.f | Verificación auditable | Demostración de que no emparejados de Ene 2024 provienen de Dic 2023. |
+| `1_4_posicion_ocupacional.csv` | 1.4.g | Insumo de informe | Distribución de posición ocupacional GEIH en propietarios de EMICRON. |
+| `2_1_consistencia_tasas.csv` | 2.1 | Verificación auditable | Comprobación de que FT = Ocupados + Desocupados en datos expandidos. |
+| `2_3_control_ei_dane.csv` | 2.3 | Verificación auditable | Validación exacta frente al DANE (42,5 % informalidad, 0,0 pp diferencia). |
+| `2_3_tabla_formalidad_13ciudades.csv` | 2.3 | Insumo de informe | Cifras expandidas de personas formales e informales por sexo. |
+| `3_2_credito_ahorro.csv` | 3.2 | Insumo de informe | Porcentajes de solicitud de crédito (P1765) y ahorro (P3014) en micronegocios. |
+| `3_3_tabla_educacion_rut.csv` | 3.3 | Insumo de informe | Tabla de contingencia expandida de nivel educativo por registro en RUT. |
+| `4_1_tabla_departamental.csv` | 4.1 | Insumo de informe | Datos agregados por departamento para el análisis espacial libre. |
+| `4_2_tabla_inclusion_ventas.csv` | 4.2 | Insumo de informe | Estadísticas descriptivas de ventas por perfil de inclusión financiera. |
+| `4_3_tabla_mismatch_educacion.csv` | 4.3 | Insumo de informe | Distribución de niveles educativos por posición ocupacional. |
 
 ## 10. Comentarios
 
