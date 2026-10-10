@@ -20,7 +20,7 @@ format:
     df-print: paged
     smooth-scroll: true
 execute:
-  warning: false
+  warning: true
   message: false
   echo: true
 ---
@@ -50,7 +50,7 @@ Este bloque inicial declara todas las dependencias del proyecto, garantizando qu
 rm(list = ls())
 
 # 0.2 Carga de librerías autorizadas en el curso
-library(here)       # Resolución reproducible de rutas relativas a la raíz del proyecto
+suppressPackageStartupMessages(library(here)) # Resolución reproducible de rutas relativas a la raíz del proyecto
 library(dplyr)      # Gramática de manipulación de datos y agregaciones
 library(tidyr)      # Reestructuración de tablas y formatos anchos/largos
 library(ggplot2)    # Visualización gramatical de datos
@@ -92,7 +92,7 @@ donde `DIRECTORIO` identifica la vivienda, `SECUENCIA_P` el hogar dentro de la v
 
 ```{r}
 #| label: 01-pegue-geih-mensual
-#| cache: true
+#| cache: false
 #| echo: true
 
 # Definición de períodos y llave maestra
@@ -114,9 +114,9 @@ verificacion_eficiencia <- list()
 # Contador global para indexar las listas de auditoría y verificación mensual.
 # Se inicializa en 1 antes de los bucles y se incrementa en 1 en cada iteración mensual
 # (corriendo de 1 a 24 para los 24 meses analizados en 2023 y 2024).
-# Asignar directamente por posición (lista[[contador]] <- df) es computacionalmente
-# eficiente en R porque preasigna la posición en la lista y evita la continua copia
-# y reasignación de memoria que ocurriría al usar append() o c() repetidamente.
+# El contador asigna una posición a cada mes en las listas de auditoría.
+# Las listas se inicializan vacías y se consolidan al final con bind_rows();
+# esta indexación no constituye una preasignación de memoria.
 contador <- 1
 
 # Bucle anidado: 2 años x 12 meses = 24 iteraciones
@@ -295,7 +295,7 @@ head(tabla_pegues, 4) %>% knitr::kable(caption = "Auditoría de integridad muest
 **Evidencia de integridad:**
 - En los 24 meses analizados, la suma de duplicados en la llave `(DIRECTORIO, SECUENCIA_P, ORDEN)` fue exactamente **cero** para los 4 módulos.
 - El número de filas tras el pegue secuencial de Fuerza de Trabajo, Ocupados y No Ocupados se mantuvo exactamente igual a las filas del módulo base de Características Generales (`GENERAL == DESPUES_FUERZA == DESPUES_OCUPADOS == DESPUES_NO_OCUPADOS`).
-- La selección de variables al importar redujo el módulo de ocupados de más de 200 columnas a únicamente 23 columnas contractuales, disminuyendo el uso de memoria RAM en más del 85 %.
+- La selección de variables redujo Ocupados de 200 a 23 columnas (88,5 %). Este control mide el ancho de la tabla; no mide directamente el ahorro de RAM.
 
 ---
 
@@ -365,7 +365,7 @@ tabla_1_2 %>%
 ```
 
 **Interpretación sustantiva:**
-- En 2024 se encuestaron **`r format(total_2024$GENERAL, big.mark=".")`** personas en total (`GENERAL`). De ellas, **`r format(total_2024$FUERZA_MODULO, big.mark=".")`** (`r round(total_2024$FUERZA_MODULO/total_2024$GENERAL*100, 1)`%) corresponden a la población en edad de trabajar (PET, $\ge 15$ años). La diferencia corresponde a menores de 15 años que no responden el módulo laboral.
+- En 2024 se acumularon **`r format(total_2024$GENERAL, big.mark=".", decimal.mark=",")`** observaciones mensuales (`GENERAL`); no corresponden necesariamente a personas únicas. De ellas, **`r format(total_2024$FUERZA_MODULO, big.mark=".", decimal.mark=",")`** (`r round(total_2024$FUERZA_MODULO/total_2024$GENERAL*100, 1)` %) pertenecen a la población en edad de trabajar (PET, $\ge 15$ años).
 - La condición $\text{OCUPADOS} + \text{NO OCUPADOS} == \text{FUERZA\_MODULO}$ se cumple al **100 %** en todos los meses (`PARTICION_PET = TRUE`). Esto valida que no existen vacíos de cobertura ni registros clasificados simultáneamente en más de un estado.
 
 ---
@@ -400,11 +400,30 @@ if (!verificacion_presentes || !verificacion_adicionales) {
 # 1.3.2 Diccionario de variables
 diccionario_variables <- data.frame(
   VARIABLE = c(
-    "DIRECTORIO", "SECUENCIA_P", "ORDEN", "PERIODO", "MES",
-    "P3271", "P3042", "P6090", "P6040", "P6160",
-    "DPTO", "AREA", "CLASE", "FEX_C18", "PT",
-    "PET", "FT", "FFT", "P6240",
-    "OCI", "RAMA2D_R4", "P6430", "INGLABO", "DSI"
+    "DIRECTORIO",
+    "SECUENCIA_P",
+    "ORDEN",
+    "PERIODO",
+    "MES",
+    "P3271",
+    "P3042",
+    "P6090",
+    "P6040",
+    "P6160",
+    "DPTO",
+    "AREA",
+    "CLASE",
+    "FEX_C18",
+    "PT",
+    "PET",
+    "FT",
+    "FFT",
+    "P6240",
+    "OCI",
+    "RAMA2D_R4",
+    "P6430",
+    "INGLABO",
+    "DSI"
   ),
   MODULO = c(
     rep("Características generales", 15),
@@ -413,21 +432,56 @@ diccionario_variables <- data.frame(
     "No ocupados"
   ),
   DESCRIPCION = c(
-    "Identificador del directorio", "Secuencia del hogar", "Número de orden de la persona",
-    "Período de la encuesta", "Mes de la encuesta", "Sexo", "Nivel educativo",
-    "Afiliación a seguridad social en salud", "Edad", "Sabe leer y escribir",
-    "Departamento", "Área geográfica", "Clase geográfica", "Factor de expansión",
-    "Población total", "Población en edad de trabajar", "Población en la fuerza de trabajo",
-    "Población fuera de la fuerza de trabajo", "Actividad principal",
-    "Población ocupada", "Rama de actividad económica", "Posición ocupacional",
-    "Ingreso laboral monetario", "Población desocupada"
+    "Identificador del directorio",
+    "Secuencia del hogar",
+    "Número de orden de la persona",
+    "Período de la encuesta",
+    "Mes de la encuesta",
+    "Sexo",
+    "Nivel educativo",
+    "Afiliación a seguridad social en salud",
+    "Edad",
+    "Sabe leer y escribir",
+    "Departamento",
+    "Área geográfica",
+    "Clase geográfica",
+    "Factor de expansión",
+    "Población total",
+    "Población en edad de trabajar",
+    "Población en la fuerza de trabajo",
+    "Población fuera de la fuerza de trabajo",
+    "Actividad principal",
+    "Población ocupada",
+    "Rama de actividad económica",
+    "Posición ocupacional",
+    "Ingreso laboral monetario",
+    "Población desocupada"
   ),
   CATEGORIA_UNIDAD = c(
-    "Identificador alfanumérico", "Secuencia", "Secuencia persona", "YYYYMM", "Mes (1-12)",
-    "1 Hombre; 2 Mujer", "Nivel educativo (1-13)", "1 Contributivo; 2 Subsidiado; 3 Especial; 4 No afiliado", "Años cumplidos",
-    "1 Sí; 2 No", "Código DIVIPOLA departamental", "Área metropolitana / cabecera", "1 Cabecera; 2 Centros poblados y rural", "Ponderador muestral", "Indicador = 1",
-    "PET = 1 (>= 15 años)", "FT = 1 (Fuerza de trabajo)", "FFT = 1 (Inactivos)", "Tipo de inactividad / actividad",
-    "OCI = 1 (Ocupados)", "CIIU Rev. 4 (2 dígitos)", "Posición ocupacional (1-9)", "COP mensuales", "DSI = 1 (Desocupados)"
+    "Identificador alfanumérico",
+    "Secuencia",
+    "Secuencia persona",
+    "AAAAMMDD",
+    "Mes (1-12)",
+    "1 Hombre; 2 Mujer",
+    "Nivel educativo (1-13); 99 No sabe, no informa",
+    "1 Sí; 2 No; 9 No sabe, no informa",
+    "Años cumplidos",
+    "1 Sí; 2 No",
+    "Código DIVIPOLA departamental",
+    "Código de ciudad / área metropolitana",
+    "1 Cabecera; 2 Centros poblados y rural disperso",
+    "Ponderador muestral",
+    "Indicador = 1",
+    "PET = 1 (>= 15 años)",
+    "FT = 1 (Fuerza de trabajo)",
+    "FFT = 1 (Inactivos)",
+    "Actividad principal (1-6)",
+    "OCI = 1 (Ocupados)",
+    "CIIU Rev. 4 (2 dígitos)",
+    "Posición ocupacional (1-9)",
+    "COP mensuales",
+    "DSI = 1 (Desocupados)"
   )
 )
 
@@ -484,7 +538,7 @@ La Encuesta de Micronegocios (EMICRON) no es una muestra aleatoria independiente
 
 Esto genera dos hechos estructurales que deben verificarse empíricamente:
 1. **Asimetría del pegue:** Todo micronegocio de EMICRON proviene de una persona entrevistada en la GEIH, pero solo una pequeña fracción de la GEIH califica para EMICRON.
-2. **Desfase temporal del período de referencia:** Las preguntas de ventas de EMICRON preguntan por el mes inmediatamente anterior (`MES_REF`), mientras que la GEIH registra la situación laboral en el mes calendario de la visita (`MES`).
+2. **Período de referencia:** `MES_REF` identifica el mes de entrevista EMICRON; las ventas corresponden al mes anterior y las preguntas de crédito y ahorro al año anterior. Su relación con `MES` de la GEIH debe comprobarse con los datos.
 
 ```{r}
 #| label: 04-construccion-emicron
@@ -535,6 +589,7 @@ tabla_llaves_emicron <- data.frame(
 )
 
 print(tabla_llaves_emicron)
+write.csv(tabla_llaves_emicron, file.path(ruta_outputs, "1_4_llaves_emicron.csv"), row.names = FALSE)
 
 # Unión de módulos EMICRON
 emicron <- emicron_identificacion %>%
@@ -615,7 +670,7 @@ write.csv(tabla_relacion_meses, file.path(ruta_outputs, "1_4_relacion_meses.csv"
 tabla_relacion_meses %>% knitr::kable(caption = "Evaluación de hipótesis temporales: Desfase predominante entre MES_REF y MES")
 ```
 
-**Conclusión temporal:** La hipótesis predominante con más del **85 %** de correspondencia es **un mes hacia atrás**, debido a que el cuestionario de ingresos de micronegocios indaga por el flujo del mes cerrado inmediatamente anterior.
+**Conclusión temporal:** Al comparar los 78.501 registros con la GEIH de 2023 y 2024, `MES_REF` está un mes adelante de `MES` en el 100 % de los casos. Las otras dos hipótesis obtienen cero coincidencias. Enero de 2024 en EMICRON corresponde a diciembre de 2023 en GEIH. Las ventas del mes previo a la entrevista no deben confundirse con el mes registrado en `MES_REF`.
 
 ### Pegue de EMICRON con GEIH 2024 y Validación de Calidad
 Se enlaza `base_micro` exclusivamente a través de la llave de persona `(DIRECTORIO, SECUENCIA_P, ORDEN)`, sin incorporar el mes en la llave. Para verificar que el enlace no unió a personas equivocadas, se contrastan 3 variables sociodemográficas medidas de forma independiente en ambas fuentes: Sexo, Edad y Clase geográfica.
@@ -739,7 +794,7 @@ distribucion_posicion %>%
   knitr::kable(caption = "Distribución de posición ocupacional declarada en GEIH por propietarios EMICRON")
 ```
 
-**Interpretación conceptual:** El **97,75 %** de los propietarios de micronegocios emparejados se declara en la GEIH como *trabajador por cuenta propia* (88,53 %) o *patrón o empleador* (9,22 %). El **2,25 %** restante reporta posiciones como obrero o empleado particular (1,95 %) o trabajador familiar sin remuneración (0,24 %), lo cual obedece a transiciones laborales en el mes de desfase entre encuestas o a situaciones de pluriactividad donde el micronegocio constituye una actividad secundaria frente a un empleo asalariado principal.
+**Interpretación conceptual:** El 88,53 % de los propietarios enlazados declaró trabajo por cuenta propia y el 9,22 % ser patrón o empleador (97,75 % en conjunto). El 2,25 % restante incluye empleados particulares (1,54 %) y trabajadores sin remuneración en empresas de otros hogares (0,33 %). Podrían intervenir cambios ocupacionales, actividades secundarias o imprecisiones de reporte; el cruce no permite distinguir estas hipótesis. La identificación como propietario en EMICRON y la posición del empleo principal en GEIH describen aspectos distintos de la actividad económica.
 
 ---
 
@@ -933,15 +988,16 @@ ggsave(file.path(ruta_outputs, "2_2_tasas_sexo.png"), plot = grafico_tasas, widt
 ```
 
 **Interpretación macroeconómica:**
-- **Brecha estructural de participación y ocupación:** La TGP masculina se sitúa entre **76,0 % y 77,3 %** y la TO entre **69,1 % y 71,7 %**, mientras que en las mujeres la TGP oscila entre **51,6 % y 53,2 %** y la TO entre **44,5 % y 46,8 %**, configurando una brecha estructural superior a **24 puntos porcentuales**.
-- **Dinámica del desempleo:** La tasa de desempleo exhibe una estacionalidad marcada: se incrementa en el primer trimestre de cada año (9,57 % en hombres y 14,98 % en mujeres en T1-2024) y desciende en el cuarto trimestre (7,06 % en hombres y 11,15 % en mujeres en T4-2024) cuando la ocupación se expande por la temporada de comercio y servicios. Las mujeres enfrentan una tasa de desempleo entre 4 y 5,4 puntos porcentuales superior a la de los hombres.
+* En participación, la TGP de los hombres oscila entre 76,27 % y 76,84 %, frente a 52,02 % a 53,07 % en las mujeres. La brecha trimestral va de 23,64 a 24,37 puntos porcentuales. En ocupación, la TO masculina varía entre 68,97 % y 70,96 %, y la femenina entre 44,23 % y 46,88 %; la brecha es de 24,08 a 25,22 puntos.
+* La TD femenina varía entre 11,15 % y 15,09 %, frente a 7,06 % a 9,57 % en hombres. La diferencia desfavorable para las mujeres se sitúa entre 3,84 y 5,91 puntos porcentuales.
+* Entre julio-septiembre y octubre-diciembre de 2024, la TD cae de 7,67 % a 7,06 % en hombres y de 12,12 % a 11,15 % en mujeres. La TO aumenta de 70,51 % a 70,92 % y de 46,30 % a 46,79 %, respectivamente, mientras la TGP disminuye ligeramente (76,37 % a 76,30 % y 52,69 % a 52,66 %). La caída del desempleo coincide con una mayor ocupación relativa a la PET y una menor participación: $\text{TD}=100(1-\text{TO}/\text{TGP})$. La serie no identifica causas sectoriales ni permite establecer un patrón estacional.
 
 ---
 
 ## 2.3 Población Ocupada según Formalidad (13 Ciudades, Diciembre 2024)
 
 ### Implementación de la sintaxis oficial de informalidad del DANE
-Se replica íntegramente en R la sintaxis oficial en SAS del DANE (`Código_SAS` del anexo `anex-GEIHEISS-oct-dic2024.xlsx`) para empleo informal (`EI`), donde `EI = 1` denota ocupación formal y `EI = 0` ocupación informal. El algoritmo construye primero `FORMAL` (formalidad de la unidad económica según rama, registro mercantil, contabilidad, ubicación en vivienda, tamaño de planta y oficio), luego `SALUD` y `PENSION` para asalariados, y finalmente `EI`.
+Se adapta la sintaxis oficial en SAS del DANE (`Código_SAS` del anexo `anex-GEIHEISS-oct-dic2024.xlsx`) para obtener `EI = 1` en empleo formal y `EI = 0` en informal. Se construyen `FORMAL`, `SALUD` y `PENSION` antes de `EI`. El contraste independiente coincide en `EI` para los 353.672 ocupados de 2024. `FORMAL` difiere en 11.911 empleados domésticos (0 en R y faltante en SAS), sin cambiar la clasificación final. Las variables de negocio describen forma de trabajo, registro y renovación, contabilidad, separación de gastos, tamaño y oficio.
 
 ```{r}
 #| label: 11-formalidad-13ciudades
@@ -956,7 +1012,7 @@ ocupados_2024 <- GEIH_2024 %>%
     ANIOS = ANIO - 1,
 
     # 1. Clasificación de formalidad de la unidad económica (FORMAL: 1 = Formal, 0 = Informal)
-    # Replicación exacta de las reglas secuenciales de la sintaxis oficial DANE (Código_SAS)
+    # Adaptación de las reglas del DANE: EI final contrastado con Código_SAS
     FORMAL = case_when(
       # Rama institucional formal por definición: administración pública (84) y organizaciones extraterritoriales (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
@@ -972,7 +1028,7 @@ ocupados_2024 <- GEIH_2024 %>%
       P6430 == 2 ~ 1,
       P6430 %in% c(3, 6, 8) ~ 0,
 
-      # C. Actividad fuera de la vivienda (P6765 != 7)
+      # C. Formas de trabajo distintas de negocio o finca (P6765 != 7)
       P6765 != 7 & P3065 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
@@ -981,11 +1037,11 @@ ocupados_2024 <- GEIH_2024 %>%
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
 
-      # D. Actividad en vivienda con local independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 1)
+      # D. Negocio con registro mercantil renovado (P6765 == 7 & P3067 == 1 & P3067S1 == 1)
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
 
-      # E. Actividad en vivienda con local NO independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 2)
+      # E. Negocio con registro mercantil no renovado (P6765 == 7 & P3067 == 1 & P3067S1 == 2)
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
@@ -995,7 +1051,7 @@ ocupados_2024 <- GEIH_2024 %>%
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
 
-      # F. Actividad en vivienda sin local comercial (P6765 == 7 & P3067 == 2)
+      # F. Negocio sin registro mercantil (P6765 == 7 & P3067 == 2)
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
@@ -1295,7 +1351,7 @@ tabla_indicadores_micros <- bind_rows(
 )
 write.xlsx(tabla_indicadores_micros, file.path(ruta_outputs, "3_1_indicadores.xlsx"))
 
-# Comparación calculada frente al Boletín Técnico DANE (Gráfico 9 y Tabla 8 / Anexo F.6)
+# Comparación calculada frente al Boletín Técnico DANE (Gráfico 9 y Tabla 8)
 camara_exacto_pct <- emicron %>%
   summarise(PCT_EXACTO = sum(F_EXP[P1055 == 1], na.rm = TRUE) / sum(F_EXP, na.rm = TRUE) * 100) %>%
   pull(PCT_EXACTO)
@@ -1307,7 +1363,7 @@ verificacion_3_1_dane <- data.frame(
     "Propietarias mujeres (%)",
     "Micronegocios con RUT (%)",
     "Micronegocios con Cámara de Comercio (%) - Gráfico 9 Boletín",
-    "Micronegocios con Cámara de Comercio (%) - Tabla 8 / Anexo F.6"
+    "Micronegocios con Cámara de Comercio (%) - Tabla 8"
   ),
   VALOR_CALCULADO = c(
     total_nacional_micros$TOTAL_EXPANDIDO,
@@ -1337,9 +1393,9 @@ verificacion_3_1_dane %>%
 ```
 
 **Verificación frente al boletín técnico del DANE (EMICRON 2024):**
-- **Total micronegocios:** **`r format(total_nacional_micros$TOTAL_EXPANDIDO, big.mark=".")`** unidades expandidas, coincidencia con la cifra publicada por el DANE.
+- **Total micronegocios:** **`r format(total_nacional_micros$TOTAL_EXPANDIDO, big.mark=".", decimal.mark=",")`** unidades expandidas, coincidencia con la cifra publicada por el DANE.
 - **Sexo del propietario y RUT:** Hombres **64,6 %** y mujeres **35,4 %**; tenencia de RUT **22,4 %** (frente a **77,6 %** sin RUT), coincidiendo a un decimal con las cifras del boletín.
-- **Cámara de Comercio (`P1055 == 1`):** El porcentaje calculado con `F_EXP` antes de redondear es **10,3 %** (`10,337 %` exacto: $547.580,7 / 5.297.252,1$, y **89,7 %** sin registro), mientras que el **Gráfico 9** del boletín técnico del DANE reporta **10,5 %** (y **89,5 %** sin registro), lo que arroja una diferencia de **$-0,2$ puntos porcentuales**. Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín oficial, las cantidades publicadas por el DANE ($547.581$ micronegocios con registro mercantil —$548\text{ mil}$ en el cuadro del boletín— sobre $5.297.252$ totales) producen exactamente $\frac{547.581}{5.297.252} = 10,337\,\%$ (**10,3 %**), explicando que la discrepancia obedece a la presentación del Gráfico 9 y no al cálculo sobre el microdato.
+- **Cámara de Comercio (`P1055 == 1`):** El porcentaje calculado con `F_EXP` antes de redondear es **10,3 %** (`10,337 %` exacto: $547.580,7 / 5.297.252,1$, y **89,7 %** sin registro), mientras que el **Gráfico 9** del boletín técnico del DANE reporta **10,5 %** (y **89,5 %** sin registro), lo que arroja una diferencia de **$-0,2$ puntos porcentuales**. Al contrastar la **Tabla 8** del mismo boletín oficial, las cantidades publicadas por el DANE ($547.581$ micronegocios con registro mercantil sobre $5.297.252$ totales) producen exactamente $\frac{547.581}{5.297.252} = 10,337\,\%$ (**10,3 %**), la diferencia con el Gráfico 9 no se explica por redondeo. No se identificó documentalmente la causa de esa discrepancia.
 
 ---
 
@@ -1441,10 +1497,7 @@ ggsave(file.path(ruta_outputs, "3_2_formas_pago.png"), plot = grafico_formas_pag
 ```
 
 **Interpretación de la evidencia:**
-- El **efectivo** (`P1764_1`) es el medio predominante en todas las ramas (supera el **85 %** en agropecuario e industria y alcanza el **94,3 %** en comercio y **89,7 %** en servicios).
-- Las **transferencias bancarias o por internet** (`P1764_3`) muestran una brecha sectorial marcada: alcanzan el **51,9 %** en servicios y el **43,4 %** en comercio (y **36,1 %** en industria), pero apenas llegan al **6,7 %** en el sector agropecuario.
-- Los canales que exigen infraestructura bancaria tradicional (tarjetas débito y crédito) son aceptados por menos del **8 %** de los micronegocios en comercio y servicios, y menos del **0,5 %** en el agro.
-- Esta brecha coincide con bajos niveles de inclusión en otros servicios: solo el **`r indicadores_credito_ahorro$SOLICITO_CREDITO_PCT`%** solicitó crédito y el **`r indicadores_credito_ahorro$AHORRO_PCT`%** reportó ahorro vinculado al negocio.
+El efectivo se acepta en el 99,0 % de los micronegocios agropecuarios y de comercio, el 98,0 % de industria y el 95,7 % de servicios. Las transferencias bancarias o por internet alcanzan 6,7 %, 39,0 %, 43,4 % y 51,9 %, respectivamente. Los porcentajes son ponderados con `F_EXP` dentro de cada rama y las opciones son multirrespuesta. Entre micronegocios con rama clasificada y respuesta válida a cada pregunta, el 14,2 % solicitó crédito o préstamo y el 18,1 % ahorró dinero del negocio durante el año anterior. La solicitud no demuestra aprobación ni distingue crédito formal de otras fuentes.
 
 ---
 
@@ -1611,10 +1664,10 @@ ggsave(file.path(ruta_outputs, "3_3_cruce.png"), plot = grafico_cruce, width = 1
 
 **Interpretación y factores explicativos no causales:**
 - La auditoría confirma que los `71.754` propietarios emparejados tienen niveles educativos conocidos en `1:13` (`0` en `99 = No sabe, no informa`, `0` faltantes y `0` códigos inválidos).
-- La proporción de micronegocios con RUT exhibe un gradiente positivo pronunciado a lo largo de las 13 categorías del DANE: pasa de **0,0 %** en *Preescolar* ($n=6$) y **2,8 %** en *Ninguno*, a **11,7 %** en *Básica primaria (1o - 5o)*, **13,1 %** en *Normalista*, **14,5 %** en *Básica secundaria (6o - 9o)*, **22,3 %** en *Media académica* y **26,8 %** en *Media técnica*. En educación superior y posgrado se acelera: **34,0 %** en *Técnica profesional*, **43,9 %** en *Tecnológica*, **51,7 %** en *Universitaria*, **73,2 %** en *Especialización*, **78,7 %** en *Maestría* y **88,8 %** en *Doctorado*.
-- *Límites interpretativos:* Este gradiente describe una **asociación estadística**, pero no debe interpretarse como una relación causal directa. Al menos dos mecanismos intermedios explican la relación:
-  1. **Escala del negocio y topes regulatorios:** Mayor escolaridad suele asociarse con mayor capital inicial y volumen de ventas, acercando al negocio a los umbrales de inscripción tributaria obligatoria.
-  2. **Especialización sectorial:** Los propietarios con estudios superiores y de posgrado se concentran en servicios profesionales donde los clientes corporativos o estatales exigen RUT y facturación para deducir costos.
+- La proporción de micronegocios con RUT muestra una asociación positiva general, con excepciones entre categorías sucesivas: pasa de **0,0 %** en *Preescolar* ($n=6$) y **2,8 %** en *Ninguno*, a **11,7 %** en *Básica primaria (1o - 5o)*, **13,1 %** en *Normalista*, **14,5 %** en *Básica secundaria (6o - 9o)*, **22,3 %** en *Media académica* y **26,8 %** en *Media técnica*. Los porcentajes en educación superior y posgrado son: **34,0 %** en *Técnica profesional*, **43,9 %** en *Tecnológica*, **51,7 %** en *Universitaria*, **73,2 %** en *Especialización*, **78,7 %** en *Maestría* y **88,8 %** en *Doctorado*.
+- *Límites interpretativos:* Este gradiente describe una **asociación estadística**, pero no debe interpretarse como una relación causal directa. Dos hipótesis que podrían explicar la asociación, sin identificar causalidad, son:
+  1. **Escala del negocio:** Los negocios de mayor tamaño podrían combinar propietarios con mayor escolaridad y mayor registro tributario. Este cruce no prueba esa explicación.
+  2. **Composición sectorial:** La participación en actividades profesionales podría asociarse tanto con educación como con RUT. Verificarlo requeriría controlar por rama y otras características.
 
 ---
 
@@ -1712,7 +1765,7 @@ grafico_4_1
 ggsave(file.path(ruta_outputs, "4_1_geografia_informalidad.png"), plot = grafico_4_1, width = 9.5, height = 6, dpi = 300)
 ```
 
-**Interpretación:** La relación exhibe una pendiente negativa pronunciada. En Bogotá (34,6 % de informalidad e ingreso mediano de \$1,6M COP), Cundinamarca (44,6 %) y Antioquia (44,9 %), la mayor densidad del tejido empresarial formal sostiene ingresos medianos superiores a \$1,4M COP. En contraste, departamentos periféricos como Chocó (80,8 %), Sucre (79,9 %) y La Guajira (79,5 %) registran ingresos medianos de \$0,6M COP, evidenciando una profunda fractura territorial del mercado laboral.
+**Interpretación:** Los datos departamentales muestran una relación inversa entre informalidad e ingreso laboral (`4_1_tabla_departamental.csv`). En Bogotá la informalidad es de 34,6 % y la mediana muestral del ingreso mensual positivo es de 1,5 millones de pesos; en Chocó, de 79,2 % y 1,2 millones; en La Guajira, de 79,4 % y 800.000 pesos; y en Sucre, de 82,1 % y 800.000 pesos. Las tasas se expanden con `FEX_C18 / 12`, mientras que las medianas son estadísticas muestrales sin ponderar de ocupados con ingreso positivo y `EI` conocido. La comparación describe diferencias territoriales y no identifica sus causas.
 
 ---
 
@@ -1790,11 +1843,13 @@ write.csv(resumen_micros, file.path(ruta_outputs, "4_2_tabla_inclusion_ventas.cs
 # relleno (fill) = solicitud de crédito (ACCESO_CREDITO), y peso muestral (weight = F_EXP).
 grafico_4_2 <- ggplot(datos_micros, aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONES, fill = ACCESO_CREDITO)) +
   # Capa de violín ponderada (weight = F_EXP) para visualizar la densidad completa de ventas por perfil
-  geom_violin(aes(weight = F_EXP), position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width") +
+  geom_violin(aes(weight = F_EXP), quantiles = NULL, position = position_dodge(0.8), trim = TRUE, alpha = 0.45, scale = "width") +
   # Capa de diagrama de caja ponderada (geom_boxplot) superpuesta para destacar mediana y rango intercuartílico
   geom_boxplot(aes(weight = F_EXP), position = position_dodge(0.8), width = 0.22, outlier.shape = NA, alpha = 0.9) +
   # Escala logarítmica en base 10 sobre el eje Y para corregir la asimetría positiva extrema de las ventas
-  scale_y_log10(limits = c(0.1, 100), breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = paste0("$", c("0,2", "0,5", "1,0", "2,0", "5,0", "10,0", "20,0", "50,0"), "M")) +
+  scale_y_log10(breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0), labels = paste0("$", c("0,2", "0,5", "1,0", "2,0", "5,0", "10,0", "20,0", "50,0"), "M")) +
+  # Zoom de coordenadas: conserva todos los registros en las estadísticas.
+  coord_cartesian(ylim = c(0.1, 100)) +
   # Escala manual de colores: gris claro para quienes no solicitaron crédito y azul acero para quienes sí solicitaron
   scale_fill_manual(values = c("No solicitó crédito" = "grey75", "Solicitó crédito" = "steelblue")) +
   # Títulos, subtítulo, ejes, leyenda y nota metodológica con las exclusiones documentadas
@@ -1824,7 +1879,7 @@ grafico_4_2
 ggsave(file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"), plot = grafico_4_2, width = 9.5, height = 6, dpi = 300)
 ```
 
-**Interpretación:** Sobre los `75.671` micronegocios con ventas positivas, se contabilizaron `5.202` registros sin respuesta en `P1765` (`338.120` expandidos; `5.376` en toda la EMICRON) y `645` en otros perfiles de pago (de los cuales 23 coinciden con `NA` en `P1765`), conformando un universo analítico de `69.847` unidades válidas (`4.711.543` expandidas). En **Solo efectivo**, las ventas medianas pasan de **\$1,20M COP** sin solicitud de crédito ($n=37.700$) a **\$1,70M COP** cuando se solicitó crédito ($n=5.804$). En los negocios que aceptan **Transferencias bancarias / internet**, la mediana casi se duplica hasta **\$2,30M COP** sin solicitud de crédito ($n=21.061$) y asciende a **\$3,00M COP** entre quienes solicitaron crédito ($n=5.282$).
+**Interpretación:** Se comparan transferencias bancarias o por internet (`P1764_3`) y efectivo exclusivo según solicitud de crédito o préstamo (`P1765`, año anterior). De 75.671 registros con ventas positivas, se excluyen 5.202 sin respuesta en crédito (338.120 unidades expandidas; 5.376 faltantes en toda EMICRON) y 645 con otros perfiles de pago, con 23 registros en ambas exclusiones. Quedan 69.847 registros (4.711.543 expandidos). Las medianas muestrales, sin ponderar, son \$1,20 millones y \$1,70 millones para efectivo sin y con solicitud ($n=37.700$ y $n=5.804$); para transferencias son \$2,30 millones y \$3,00 millones ($n=21.061$ y $n=5.282$). El gráfico pondera las distribuciones con `F_EXP` y conserva todos los registros en el cálculo. Esta asociación no identifica efectos causales ni demuestra mecanismos de información financiera ([Stiglitz y Weiss, 1981](https://doi.org/10.2307/1802787)).
 
 ---
 
@@ -1958,7 +2013,7 @@ grafico_4_3
 ggsave(file.path(ruta_outputs, "4_3_mismatch_educacion.png"), plot = grafico_4_3, width = 11.5, height = 7, dpi = 300)
 ```
 
-**Interpretación:** Sobre los `353.672` ocupados de la GEIH 2024, `353.668` cuentan con nivel educativo conocido (`1:13`) y solo `4` registran el código `99` (*No sabe, no informa*, equivalentes a 473 ocupados expandidos; 0 faltantes y 0 códigos inválidos). En los niveles de *Ninguno* (62,5 %), *Básica primaria* (54,8 %) y *Básica secundaria* (48,6 %) predomina el trabajo por cuenta propia; a partir de *Media académica* (47,8 % obrero particular vs. 39,9 % cuenta propia) y *Media técnica* (57,8 % vs. 32,7 %) la inserción principal pasa a ser asalariada particular. En educación superior (*Técnica profesional* 61,5 %, *Tecnológica* 66,6 %, *Universitaria* 62,1 %) y posgrado (*Especialización* 58,4 %, *Maestría* 55,6 %, *Doctorado* 56,5 %) predomina el empleo particular acompañado del empleo público (que alcanza 17,6 % en especialización, 23,6 % en maestría y 28,2 % en doctorado). Aun así, se observan **986.256 ocupados con educación superior o posgrado** (códigos `8` a `13`) trabajando por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales).
+**Interpretación:** El cruce comprende 353.668 ocupados con educación conocida; excluye cuatro registros con `P3042 == 99` (473 ocupados expandidos), sin faltantes ni códigos inválidos (`4_3_tabla_mismatch_educacion.csv`). El gráfico representa frecuencias muestrales; los porcentajes y poblaciones siguientes usan `FEX_C18 / 12`. Cuenta propia predomina en *Ninguno* (62,5 %), *Primaria* (54,8 %) y *Secundaria* (48,6 %). Desde *Media académica* (47,8 % empleado particular; 39,9 % cuenta propia) y *Media técnica* (57,8 %; 32,7 %) predomina el empleo particular. Sus proporciones son 61,5 % en técnica profesional, 66,6 % en tecnológica, 62,1 % en universitaria, 58,4 % en especialización, 55,6 % en maestría y 56,5 % en doctorado. El empleo público pasa de 10,8 % en universitaria a 28,2 % en doctorado. Hay 986.256 ocupados con educación superior por cuenta propia, incluidos 454.991 universitarios y 360.875 técnicos profesionales. Identificar sobreeducación requiere conocer la educación exigida por el puesto ([Hartog, 2000](https://doi.org/10.1016/S0272-7757(99)00050-3)).
 
 ---
 
@@ -1974,7 +2029,7 @@ En concordancia con la sección 13 de la *Guía pedagógica para escribir códig
 | **Control de llaves y joins** | Cumplido | Auditoría de unicidad en 4 módulos GEIH y 4 módulos EMICRON. Control con `stop()` para evitar multiplicación de filas. |
 | **Ponderadores estadísticos** | Cumplido | Uso estricto de `FEX_C18 / 3` para trimestres, `FEX_C18 / 12` para anuales GEIH, y `F_EXP` para universo micronegocios. |
 | **Rigor interpretativo** | Cumplido | Se distingue explícitamente descripción/asociación de causalidad, explicitando factores de confusión en el punto 3.3. |
-| **Persistencia de artefactos** | Cumplido | Se reexportan y auditan las 35 salidas oficiales a la carpeta `outputs/` de la raíz del proyecto. |
+| **Persistencia de artefactos** | Cumplido | Se reexportan y auditan las 33 salidas a la carpeta `outputs/` de la raíz del proyecto. |
 
 ---
 
