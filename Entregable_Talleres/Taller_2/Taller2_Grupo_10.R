@@ -49,7 +49,12 @@ verificacion_llaves <- list()
 verificacion_pegues <- list()
 verificacion_eficiencia <- list()
 
-# Definimos un contador que permite iterar a lo largo de las carpetass de los dos anos
+# Contador global para indexar las listas de auditoría y verificación mensual.
+# Se inicializa en 1 antes de los bucles y se incrementa en 1 en cada iteración mensual
+# (corriendo de 1 a 24 para los 24 meses analizados en 2023 y 2024).
+# Asignar directamente por posición (lista[[contador]] <- df) es computacionalmente
+# eficiente en R porque preasigna la posición en la lista y evita la continua copia
+# y reasignación de memoria que ocurriría al usar append() o c() repetidamente.
 contador <- 1
 
 ### 1.1.3) Loop para construir las bases mensuales ----
@@ -194,18 +199,18 @@ for (anio in anios) {
         ANIO = as.numeric(substr(as.character(PERIODO), 1, 4))
         )
     
-    # Guardar en una lista las iteraciones i
+    # Almacenar la base del mes i (1 a 12) en la lista acumuladora del año actual
     bases_mensuales_anio[[i]] <- base_mes
     
-    # Mensaje gomelo
+    # Registro en consola del progreso mensual procesado
     cat("Procesado:", anio, "-", mes, "\n")
     
-    # Guardar el numero de iteraciones
+    # Incrementar el contador global de auditoría mensual (1 a 24)
     contador <- contador + 1
   }
   
   ### 1.1.4) Construir las bases anuales ----
-  # Unimos las dos listas
+  # Consolida los 12 meses del año en un único data frame anual mediante bind_rows
   bases_anuales[[anio]] <- bind_rows(bases_mensuales_anio)
 }
 
@@ -397,7 +402,7 @@ tabla_na_llaves_emicron <- data.frame(
   NA_SECUENCIA_P = c(sum(is.na(emicron_identificacion$SECUENCIA_P)), sum(is.na(emicron_caracteristicas$SECUENCIA_P)), sum(is.na(emicron_inclusion$SECUENCIA_P)), sum(is.na(emicron_ventas$SECUENCIA_P))),
   NA_SECUENCIA_ENCUESTA = c(sum(is.na(emicron_identificacion$SECUENCIA_ENCUESTA)), sum(is.na(emicron_caracteristicas$SECUENCIA_ENCUESTA)), sum(is.na(emicron_inclusion$SECUENCIA_ENCUESTA)), sum(is.na(emicron_ventas$SECUENCIA_ENCUESTA)))
 )
-write.csv(tabla_na_llaves_emicron, file.path(ruta_outputs, "1_4_na_llaves_emicron.csv"), row.names = FALSE)
+print(tabla_na_llaves_emicron)
 
 tabla_llaves_emicron <- data.frame(
   MODULO = c("Identificación", "Características", "Inclusión financiera", "Ventas o ingresos"),
@@ -409,7 +414,7 @@ tabla_llaves_emicron <- data.frame(
     sum(duplicated(emicron_ventas[, llave_emicron]))
   )
 )
-write.csv(tabla_llaves_emicron, file.path(ruta_outputs, "1_4_llaves_emicron.csv"), row.names = FALSE)
+print(tabla_llaves_emicron)
 
 #### 1.4.a.5) Construir la base EMICRON ----
 emicron <- emicron_identificacion %>%
@@ -431,7 +436,7 @@ tabla_secuencia_encuesta <- emicron %>%
   group_by(SECUENCIA_ENCUESTA) %>%
   summarise(REGISTROS = n(), .groups = "drop") %>%
   arrange(SECUENCIA_ENCUESTA)
-write.csv(tabla_secuencia_encuesta, file.path(ruta_outputs, "1_4_secuencia_encuesta.csv"), row.names = FALSE)
+print(tabla_secuencia_encuesta)
 
 #### 1.4.c.2) SECUENCIA_ENCUESTA dentro de los hogares ----
 tabla_propietarios_hogar <- emicron %>%
@@ -440,7 +445,7 @@ tabla_propietarios_hogar <- emicron %>%
   group_by(PROPIETARIOS) %>%
   summarise(HOGARES = n(), .groups = "drop") %>%
   arrange(PROPIETARIOS)
-write.csv(tabla_propietarios_hogar, file.path(ruta_outputs, "1_4_propietarios_hogar.csv"), row.names = FALSE)
+print(tabla_propietarios_hogar)
 
 #### 1.4.c.3) Comparación con ORDEN ----
 geih_personas <- GEIH %>% select(DIRECTORIO, SECUENCIA_P, ORDEN)
@@ -522,7 +527,7 @@ resumen_pegue <- base_micro %>%
     NO_EMPAREJADOS = sum(!EMPAREJADO),
     PORCENTAJE_EMPAREJADO = round(mean(EMPAREJADO) * 100, 2)
   )
-write.csv(resumen_pegue, file.path(ruta_outputs, "1_4_resumen_pegue.csv"), row.names = FALSE)
+print(resumen_pegue)
 
 ### 1.4.e) Validación de la calidad del pegue ----
 validacion_pegue <- base_micro %>%
@@ -532,7 +537,7 @@ validacion_pegue <- base_micro %>%
     COINCIDENCIA_EDAD = round(mean(P241 == P6040, na.rm = TRUE) * 100, 2),
     COINCIDENCIA_CLASE = round(mean(as.character(CLASE_TE) == as.character(CLASE), na.rm = TRUE) * 100, 2)
   )
-write.csv(validacion_pegue, file.path(ruta_outputs, "1_4_validacion_pegue.csv"), row.names = FALSE)
+print(validacion_pegue)
 
 ### 1.4.f) Auditoría del pegue ----
 #### 1.4.f.1) Auditoría mensual ----
@@ -570,7 +575,7 @@ auditoria_2023 <- comparacion_2023 %>%
   filter(EN_GEIH_2023) %>%
   group_by(MES_REF, MES) %>%
   summarise(REGISTROS = n(), .groups = "drop")
-write.csv(auditoria_2023, file.path(ruta_outputs, "1_4_auditoria_2023.csv"), row.names = FALSE)
+print(auditoria_2023)
 
 ### 1.4.g) Interpretación ----
 #### 1.4.g.1) Distribución de P6430 ----
@@ -754,40 +759,40 @@ ocupados_2024 <- GEIH_2024 %>%
     OFICIO_C8_2D = if_else(!is.na(OFICIO_C8), substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2), NA_character_),
     ANIOS = ANIO - 1,
     
+    # Indicador auxiliar: actividad económica en vivienda sin local independiente.
+    # Agrupa los casos institucionales homogéneos: local no independizado (P3067 == 1 y P3067S1 == 2)
+    # o ausencia de local comercial (P3067 == 2).
+    en_viv_no_indep = P6765 == 7 & ((P3067 == 1 & P3067S1 == 2) | P3067 == 2),
+    
     FORMAL = case_when(
+      # Rama institucional formal por definición: administración pública (84) y extraterritorial (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
       
-      # Fuera de vivienda (P6765 != 7)
+      # 1. Fuera de vivienda (P6765 != 7)
       P6765 != 7 & P3065 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
       
-      # En vivienda (P6765 == 7)
+      # 2. En vivienda con local independiente (P3067 == 1 y P3067S1 == 1)
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
       
+      # 3. En vivienda sin local independiente (agrupación de ramas institucionales homogéneas)
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
-      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 != 1 ~ 0,
+      en_viv_no_indep & P6775 == 2 ~ 0,
+      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
+      
       TRUE ~ NA_real_
     ),
     

@@ -110,6 +110,13 @@ conteos_modulos         <- list()
 verificacion_llaves     <- list()
 verificacion_pegues     <- list()
 verificacion_eficiencia <- list()
+
+# Contador global para indexar las listas de auditoría y verificación mensual.
+# Se inicializa en 1 antes de los bucles y se incrementa en 1 en cada iteración mensual
+# (corriendo de 1 a 24 para los 24 meses analizados en 2023 y 2024).
+# Asignar directamente por posición (lista[[contador]] <- df) es computacionalmente
+# eficiente en R porque preasigna la posición en la lista y evita la continua copia
+# y reasignación de memoria que ocurriría al usar append() o c() repetidamente.
 contador <- 1
 
 # Bucle anidado: 2 años x 12 meses = 24 iteraciones
@@ -245,11 +252,18 @@ for (anio in anios) {
     base_mes <- base_mes %>% 
       mutate(ANIO = as.numeric(substr(as.character(PERIODO), 1, 4)))
     
+    # Almacenar la base del mes i (1 a 12) en la lista acumuladora del año actual
     bases_mensuales_anio[[i]] <- base_mes
+    
+    # Registro en consola del progreso mensual procesado
+    cat("Procesado:", anio, "-", mes, "\n")
+    
+    # Incrementar el contador global de auditoría mensual (1 a 24)
     contador <- contador + 1
   }
   
-  # Consolidación anual
+  ### 1.1.4) Construir las bases anuales ----
+  # Consolida los 12 meses del año en un único data frame anual mediante bind_rows
   bases_anuales[[anio]] <- bind_rows(bases_mensuales_anio)
 }
 
@@ -500,7 +514,7 @@ tabla_llaves_emicron <- data.frame(
   )
 )
 
-write.csv(tabla_llaves_emicron, file.path(ruta_outputs, "1_4_llaves_emicron.csv"), row.names = FALSE)
+print(tabla_llaves_emicron)
 
 # Unión de módulos EMICRON
 emicron <- emicron_identificacion %>%
@@ -894,47 +908,45 @@ Se adapta a R el algoritmo oficial del DANE para empleo informal (`EI`), donde `
 #| label: 11-formalidad-13ciudades
 #| echo: true
 
-areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
-
-GEIH_13ciudades_tri <- GEIH %>%
-  filter(ANIO == 2024, MES %in% 10:12, OCI == 1, as.numeric(AREA) %in% areas_13ciudades) %>%
+ocupados_2024 <- GEIH_2024 %>%
+  filter(OCI == 1) %>%
   mutate(
     OFICIO_C8_2D = if_else(!is.na(OFICIO_C8), substr(sprintf("%04d", as.integer(OFICIO_C8)), 1, 2), NA_character_),
-    ANIOS        = ANIO - 1,
+    ANIOS = ANIO - 1,
+    # Indicador auxiliar: actividad económica en vivienda sin local independiente.
+    # Agrupa los casos institucionales homogéneos: local no independizado (P3067 == 1 y P3067S1 == 2)
+    # o ausencia de local comercial (P3067 == 2).
+    en_viv_no_indep = P6765 == 7 & ((P3067 == 1 & P3067S1 == 2) | P3067 == 2),
+    
     FORMAL = case_when(
+      # Rama institucional formal por definición: administración pública (84) y extraterritorial (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
       
-      # Fuera de vivienda (P6765 != 7)
+      # 1. Fuera de vivienda (P6765 != 7)
       P6765 != 7 & P3065 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
       
-      # En vivienda (P6765 == 7)
+      # 2. En vivienda con local independiente (P3067 == 1 y P3067S1 == 1)
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
       
+      # 3. En vivienda sin local independiente (agrupación de ramas institucionales homogéneas)
+      P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
-      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
-      P6765 == 7 & P3067 == 2 & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
-      P6765 == 7 & P3067 == 2 & P6775 == 2 ~ 0,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 >= 4 ~ 1,
-      P6430 == 5 & P6765 == 7 & P3067 == 2 & P6775 == 9 & P3069 <= 3 ~ 0,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D <= "20" ~ 1,
-      P6430 == 4 & P6765 == 7 & P3067 == 2 & P6775 == 9 & OFICIO_C8_2D >= "21" ~ 0,
+      P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 != 1 ~ 0,
+      en_viv_no_indep & P6775 == 2 ~ 0,
+      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D <= "20" ~ 1,
+      en_viv_no_indep & P6775 == 3 & OFICIO_C8_2D >= "21" ~ 0,
+      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 >= 4 ~ 1,
+      en_viv_no_indep & P6775 == 9 & P6430 == 5 & P3069 <= 3 ~ 0,
+      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D <= "20" ~ 1,
+      en_viv_no_indep & P6775 == 9 & P6430 == 4 & OFICIO_C8_2D >= "21" ~ 0,
+      
       TRUE ~ NA_real_
     ),
     SALUD = case_when(
@@ -958,6 +970,11 @@ GEIH_13ciudades_tri <- GEIH %>%
       TRUE ~ NA_real_
     )
   )
+
+areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
+
+GEIH_13ciudades_tri <- ocupados_2024 %>%
+  filter(MES %in% 10:12, as.numeric(AREA) %in% areas_13ciudades)
 
 # Verificación de referencia DANE (42,5 % informalidad en 13 ciudades, Oct-Dic 2024)
 control_ei_dane <- GEIH_13ciudades_tri %>%
