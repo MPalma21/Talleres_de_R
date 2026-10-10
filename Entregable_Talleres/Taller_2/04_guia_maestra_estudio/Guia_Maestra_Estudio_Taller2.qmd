@@ -89,10 +89,10 @@ El script ejecuta dos controles de parada inmediata (`stop()`):
 El módulo de características generales abarca a toda la población encuestada. Los demás módulos corresponden a filtros temáticos y poblaciones específicas:
 
 ### Relación de Inclusión y Tamaños Muestrales
-- **Población Total (Módulo General):** Registra a todas las personas del hogar, incluidos menores de edad. En 2024 suma 530.137 observaciones muestrales.
-- **Población en Edad de Trabajar (PET, Módulo Fuerza de Trabajo):** En Colombia, la PET comprende a personas de 15 años y más (anteriormente 12 años en zonas urbanas y 10 en rurales, estandarizado por el DANE bajo lineamientos OIT). Suma 438.411 registros en 2024.
-- **Ocupados (Módulo Ocupados):** Personas que durante la semana de referencia trabajaron al menos una hora remunerada, o no trabajaron pero tenían empleo, o trabajadores familiares sin remuneración que laboraron al menos una hora. Suma 216.719 registros en 2024.
-- **No Ocupados (Módulo No Ocupados):** Agrupa a los desocupados (cesantes y aspirantes) y a la población fuera de la fuerza de trabajo (estudiantes, personas dedicadas al cuidado del hogar, rentistas, jubilados). Suma 221.692 registros en 2024.
+- **Población Total (Módulo General):** Registra a todas las personas del hogar, incluidos menores de edad. En 2024 suma 829.683 observaciones muestrales.
+- **Población en Edad de Trabajar (PET, Módulo Fuerza de Trabajo):** En Colombia, la PET comprende a personas de 15 años y más (estandarizado por el DANE bajo lineamientos OIT). Suma 657.803 registros en 2024.
+- **Ocupados (Módulo Ocupados):** Personas que durante la semana de referencia trabajaron al menos una hora remunerada, o no trabajaron pero tenían empleo, o trabajadores familiares sin remuneración que laboraron al menos una hora. Suma 353.672 registros en 2024.
+- **No Ocupados (Módulo No Ocupados):** Agrupa a los desocupados (cesantes y aspirantes) y a la población fuera de la fuerza de trabajo (estudiantes, personas dedicadas al cuidado del hogar, rentistas, jubilados). Suma 304.131 registros en 2024.
 
 ### Verificación de Identidades Conceptuales
 El código comprueba programáticamente dos identidades laborales en cada uno de los 12 meses de 2024 (`1_2_consistencia_laboral_2024.csv`):
@@ -119,13 +119,13 @@ Variables obligatorias solicitadas en los literales a) a d) del numeral 1.3:
 | `PERIODO` | GEIH | Características generales | Período de recolección de la encuesta | Numérico | Formato YYYYMM (ej. 202401) | Registro | Filtro temporal | 1.1, 1.3 | Se extrae `ANIO` con `substr(1, 4)` |
 | `MES` | GEIH | Características generales | Mes de recolección de la encuesta | Numérico | 1 a 12 (Enero a Diciembre) | Registro | Filtro y control | 1.1, 1.4, 2.1 | Numérico para agregaciones |
 | `P3271` | GEIH | Características generales | Sexo al nacer del encuestado | Categórico | 1 = Hombre, 2 = Mujer | Persona | Clasificación | 1.3, 1.4, 2.1 | Etiquetado en factores para gráficos |
-| `P3042` | GEIH | Características generales | Mayor nivel educativo alcanzado | Categórico | 1=Ninguno, 2=Primaria, 3=Secundaria, 4=Media, 5=Superior, 9=No sabe | Persona | Indicador de capital humano | 1.3, 3.3, 4.3 | Agrupado en categorías analíticas |
-| `P6090` | GEIH | Características generales | Afiliación al Sistema de Seguridad Social en Salud | Categórico | 1 = Sí, 2 = No | Persona | Caracterización social | 1.3 | Mantenido en base analítica |
+| `P3042` | GEIH | Características generales | Mayor nivel educativo alcanzado | Categórico | 1=Ninguno, 2=Preescolar, 3=Básica primaria (1o-5o), 4=Básica secundaria (6o-9o), 5=Media académica, 6=Media técnica, 7=Normalista, 8=Técnica profesional, 9=Tecnológica, 10=Universitaria, 11=Especialización, 12=Maestría, 13=Doctorado, 99=No sabe/no informa | Persona | Indicador de capital humano | 1.3, 3.3, 4.3 | Clasificación explícita de los 13 niveles conocidos y auditoría de `99` y `NA` |
+| `P6090` | GEIH | Características generales | Afiliación al Sistema de Seguridad Social en Salud | Categórico | 1 = Sí, 2 = No, 9 = No sabe | Persona | Caracterización social | 1.3 | Mantenido en base analítica |
 | `P6040` | GEIH | Características generales | Edad en años cumplidos | Numérico | 0 a 110 años | Persona | Filtro demográfico | 1.3, 1.4 | Validado contra edad EMICRON (`P241`) |
 | `P6160` | GEIH | Características generales | ¿Sabe leer y escribir? (Alfabetismo) | Categórico | 1 = Sí, 2 = No | Persona | Caracterización social | 1.3 | Mantenido en base analítica |
 | `DPTO` | GEIH | Características generales | Código DANE del departamento | Categórico | Códigos DIVIPOLA de 2 dígitos (05 a 99) | Departamento | Dominio geográfico | 1.3, 4.1 | Cruce espacial departamental |
 | `AREA` | GEIH | Características generales | Dominio geográfico o área metropolitana | Categórico | Códigos de área metropolitana y dominios | Área urbana | Filtro geográfico | 1.3, 2.3 | Filtro de las 13 ciudades principales |
-| `CLASE` | GEIH | Características generales | Tipo de zona geográfica de la vivienda | Categórico | 1 = Cabecera, 2 = Centros poblados y rural disperso | Zona | Dominio geográfico | 1.3, 1.4, 4.3 | Contrastado con `CLASE_TE` |
+| `CLASE` | GEIH | Características generales | Tipo de zona geográfica de la vivienda | Categórico | 1 = Cabecera, 2 = Centros poblados y rural disperso | Zona | Dominio geográfico | 1.3, 1.4 | Contrastado con `CLASE_TE` |
 | `FEX_C18` | GEIH | Características generales | Factor de expansión mensual calibrado | Numérico | Ponderador poblacional continuo | Persona | Factor de expansión | 1.1 a 2.4, 4 | Ajustado $/ 3$ en trimestres y $/ 12$ en año |
 | `PT` | GEIH | Características generales | Indicador de Población Total | Binario | 1 = Población total | Persona | Agregador poblacional | 1.3, 2.1 | Ponderado con `FEX_C18` |
 | `PET` | GEIH | Fuerza de trabajo | Indicador de Población en Edad de Trabajar | Binario | 1 = Pertenece a PET (15 años o más), NA = Menor de 15 | Persona | Filtro laboral | 1.2, 1.3, 2.1 | Denominador de TGP y TO |
@@ -134,33 +134,33 @@ Variables obligatorias solicitadas en los literales a) a d) del numeral 1.3:
 | `P6240` | GEIH | Fuerza de trabajo | Actividad principal realizada la semana anterior | Categórico | 1=Trabajando, 2=Buscando, 3=Estudiando, 4=Hogar, 5=Incapacitado, 6=Otro | Persona | Caracterización laboral | 1.3 | Mantenido en base analítica |
 | `OCI` | GEIH | Ocupados | Indicador de Ocupación | Binario | 1 = Ocupado, NA = No ocupado | Persona | Filtro y numerador | 1.2, 1.3, 2.1 | Numerador de TO; base de formalidad |
 | `RAMA2D_R4` | GEIH | Ocupados | Rama de actividad económica CIIU Rev. 4 A.C. a 2 dígitos | Categórico | Códigos 01 a 99 | Empleo | Sector económico | 1.3, 2.3 | Define formalidad en ramas 84 y 99 |
-| `P6430` | GEIH | Ocupados | Posición ocupacional en el empleo principal | Categórico | 1=Obrero particular, 2=Obrero gobierno, 3=Empleado doméstico, 4=Cuenta propia, 5=Patrón, 6=Familiar sin remun., 7=Jornalero, 8=Otro | Persona | Clasificación ocupacional | 1.3, 1.4, 2.4 | Eje central del árbol de formalidad |
-| `INGLABO` | GEIH | Ocupados | Ingreso laboral monetario mensual | Numérico | Valor en pesos colombianos | Persona | Variable socioeconómica | 1.3, 4.1, 4.3 | Base de medianas y curvas de Lorenz |
+| `P6430` | GEIH | Ocupados | Posición ocupacional en el empleo principal | Categórico | 1=Obrero particular, 2=Obrero gobierno, 3=Empleado doméstico, 4=Cuenta propia, 5=Patrón, 6=Familiar sin remun., 7=Sin remun. en otras empresas, 8=Jornalero o peón, 9=Otro | Persona | Clasificación ocupacional | 1.3, 1.4, 2.4, 4.3 | Eje central del árbol de formalidad y del cruce 4.3 |
+| `INGLABO` | GEIH | Ocupados | Ingreso laboral monetario mensual | Numérico | Valor en pesos colombianos | Persona | Variable socioeconómica | 1.3, 4.1 | Base de medianas departamentales (4.1) |
 | `DSI` | GEIH | No ocupados | Indicador de Desocupación | Binario | 1 = Desocupado, NA = No desocupado | Persona | Numerador laboral | 1.2, 1.3, 2.1 | Numerador de la Tasa de Desempleo |
 
 ### Tabla 2: Variables Auxiliares Indispensables para la Formalidad DANE (Numeral 2.3)
-Variables del capítulo de Ocupados necesarias para replicar el algoritmo oficial del DANE:
+Variables del capítulo de Ocupados necesarias para replicar la sintaxis oficial del DANE (`Código_SAS`):
 
 | Variable | Encuesta | Módulo | Descripción | Tipo | Codificación | Unidad | Función | Apartado | Tratamiento |
 |---|---|---|---|---|---|---|---|---|---|
-| `P6100` | GEIH | Ocupados | Afiliación a seguridad social en salud como cotizante | Categórico | 1 = Cotizante, 2 = Beneficiario, 3 = No afiliado, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Define variable `SALUD` |
-| `P6110` | GEIH | Ocupados | Entidad a la que cotiza en salud | Categórico | 1 = EPS, 2 = Régimen especial, 4 = Fondo pasivo, etc. | Empleo | Formalidad asalariados | 2.3 | Condición conjunta con `P6100` |
-| `P6450` | GEIH | Ocupados | ¿Tiene contrato laboral firmado? | Categórico | 1 = Sí, 2 = No | Empleo | Formalidad asalariados | 2.3 | Desempata cotizaciones dudosas |
-| `P6920` | GEIH | Ocupados | ¿Cotiza actualmente a un fondo de pensiones? | Categórico | 1 = Sí cotiza, 2 = Pensionado, 3 = Aporta pensionado, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Define variable `PENSION` |
-| `P6930` | GEIH | Ocupados | Fondo al que cotiza en pensión | Categórico | 1 = Colpensiones, 2 = Fondo privado, 3 = Régimen especial | Empleo | Formalidad asalariados | 2.3 | Validación institucional de pensión |
-| `P6940` | GEIH | Ocupados | ¿El empleador o empresa paga la pensión? | Categórico | 1 = Empleador paga todo/parte, 3 = Descuento de nómina | Empleo | Formalidad asalariados | 2.3 | Valida aporte contributivo |
-| `P6765` | GEIH | Ocupados | Lugar o tipo de establecimiento donde realiza la actividad | Categórico | 1 a 6 = Fuera de vivienda, 7 = En la vivienda, 8 = Ambulante | Empleo | Filtro de localización | 2.3 | Bifurca el árbol fuera/dentro de vivienda |
-| `P3065` | GEIH | Ocupados | ¿El negocio o empresa cuenta con personería jurídica? | Categórico | 1 = Sí tiene, 2 = No tiene, 9 = No sabe | Empresa | Registro institucional | 2.3 | Clasifica formalidad fuera de vivienda |
-| `P3066` | GEIH | Ocupados | ¿Lleva registros contables o libros de comercio? | Categórico | 1 = Balance general/libro tributario, 2 = Cuaderno de notas, 9 = Ninguno | Empresa | Contabilidad comercial | 2.3 | Formalidad de independientes y patronos |
-| `P3067` | GEIH | Ocupados | ¿El negocio funciona en un local o establecimiento? | Categórico | 1 = Sí, 2 = No | Establecimiento | Localización en vivienda | 2.3 | Árbol de actividad en vivienda |
-| `P3067S1` | GEIH | Ocupados | ¿El local está totalmente independizado de la vivienda? | Categórico | 1 = Sí independiente, 2 = No independiente | Establecimiento | Independencia física | 2.3 | Agrupado en `en_viv_no_indep` |
-| `P3067S2` | GEIH | Ocupados | Año desde el cual funciona el establecimiento | Numérico | Año de inicio (ej. 2018) | Establecimiento | Antigüedad del negocio | 2.3 | Comparado contra `ANIOS` (2023) |
-| `P6775` | GEIH | Ocupados | ¿Cuenta con RUT, personería jurídica o contabilidad? | Categórico | 1 = Persona jurídica, 2 = Cuaderno notas, 3 = Ninguno, 9 = No sabe | Empresa | Formalidad en vivienda | 2.3 | Condición clave de actividad en casa |
-| `P3068` | GEIH | Ocupados | ¿Tiene registro mercantil ante Cámara de Comercio? | Categórico | 1 = Sí tiene, 2 = No tiene, 3 = No sabe | Empresa | Formalidad comercial | 2.3 | Desempata actividad en vivienda sin local |
-| `P3069` | GEIH | Ocupados | Número total de trabajadores en la empresa o negocio | Numérico | 1 = 1 persona, 2 = 2 a 3, 3 = 4 a 5, 4 = 6 a 10, 5 = 11 o más | Empresa | Escala de la unidad productiva | 2.3 | Umbral de tamaño para patronos ($\ge 4$ formal) |
+| `P6100` | GEIH | Ocupados | Régimen de seguridad social en salud | Categórico | 1 = Contributivo (EPS), 2 = Especial, 3 = Subsidiado, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Define variable `SALUD` |
+| `P6110` | GEIH | Ocupados | ¿Quién paga la afiliación a salud? | Categórico | 1 = Descuento nómina/empresa, 2 = Paga totalmente, 3 = Beneficiario, 4 = Pensionado, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Condición conjunta con `P6100` |
+| `P6450` | GEIH | Ocupados | Tipo de contrato laboral | Categórico | 1 = Verbal, 2 = Escrito, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Desempata cotizaciones con no sabe/no informa |
+| `P6920` | GEIH | Ocupados | ¿Cotiza actualmente a un fondo de pensiones? | Categórico | 1 = Sí cotiza, 2 = No cotiza, 3 = Ya es pensionado | Empleo | Formalidad asalariados | 2.3 | Define variable `PENSION` |
+| `P6930` | GEIH | Ocupados | Fondo al que cotiza en pensión | Categórico | 1 = Fondo privado, 2 = Colpensiones, 3 = Régimen especial, 4 = Subsidiado, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Validación institucional de pensión |
+| `P6940` | GEIH | Ocupados | ¿Cómo realiza el pago de la cotización a pensión? | Categórico | 1 = Descuento nómina/empresa, 2 = Paga totalmente, 3 = No paga, 9 = No sabe | Empleo | Formalidad asalariados | 2.3 | Valida aporte contributivo |
+| `P6765` | GEIH | Ocupados | Lugar o tipo de establecimiento donde realiza la actividad | Categórico | 1 a 6 y 8 a 11 = Fuera de vivienda / ambulante / obra / campo, 7 = En esta vivienda | Empleo | Filtro de localización | 2.3 | Bifurca el árbol según lugar de trabajo |
+| `P3065` | GEIH | Ocupados | ¿El negocio tiene registro ante Cámara de Comercio? | Categórico | 1 = Sí tiene, 2 = No tiene, 9 = No sabe | Empresa | Registro institucional | 2.3 | Clasifica formalidad en `P6765 %in% c(4, 5, 6, 8, 9)` |
+| `P3066` | GEIH | Ocupados | ¿Lleva contabilidad formal en el negocio? | Categórico | 1 = Balance general/libro contable, 2 = Otro registro, 3 = No lleva, 9 = No sabe | Empresa | Contabilidad comercial | 2.3 | Formalidad de independientes y patronos |
+| `P3067` | GEIH | Ocupados | ¿En esta vivienda cuentan con un local para el negocio? | Categórico | 1 = Sí, 2 = No | Establecimiento | Localización en vivienda | 2.3 | Árbol de actividad en vivienda (`P6765 == 7`) |
+| `P3067S1` | GEIH | Ocupados | ¿El local está independiente de la vivienda? | Categórico | 1 = Sí independiente, 2 = No independiente | Establecimiento | Independencia física | 2.3 | Condiciones explícitas de `Código_SAS` |
+| `P3067S2` | GEIH | Ocupados | Año desde el cual funciona el local en la vivienda | Numérico | Año de inicio (ej. 2018) | Establecimiento | Antigüedad del negocio | 2.3 | Comparado contra `ANIOS = ANIO - 1` |
+| `P6775` | GEIH | Ocupados | ¿Cuenta con registro mercantil en vivienda? | Categórico | 1 = Sí tiene, 2 = No tiene, 9 = No sabe | Empresa | Formalidad en vivienda | 2.3 | Condición clave de actividad en vivienda |
+| `P3068` | GEIH | Ocupados | ¿Lleva contabilidad en la actividad realizada en vivienda? | Categórico | 1 = Balance/libros, 2 = Otro registro, 3 = No lleva, 9 = No sabe | Empresa | Formalidad comercial | 2.3 | Desempata actividad en vivienda sin registro |
+| `P3069` | GEIH | Ocupados | Tamaño de la empresa según número de trabajadores | Numérico | 1 = Solo, 2 = 2 a 3, 3 = 4 a 5, 4 = 6 a 10, 5 = 11 y más | Empresa | Escala de la unidad productiva | 2.3 | Umbral de tamaño ($\ge 4$ formal; $\le 3$ informal) |
 | `OFICIO_C8` | GEIH | Ocupados | Clasificación Internacional Uniforme de Ocupaciones (CIUO-08) | Categórico | Código ocupacional de 4 dígitos | Ocupación | Calificación profesional | 2.3 | Se extraen 2 dígitos (`OFICIO_C8_2D`) |
 
-### Tabla 3: Variables de la EMICRON 2024 (Numerales 1.4 y 3)
+### Tabla 3: Variables de la EMICRON 2024 (Numerales 1.4, 3 y 4.2)
 Variables provenientes de los cuatro módulos de la Encuesta de Micronegocios:
 
 | Variable | Encuesta | Módulo | Descripción | Tipo | Codificación | Unidad | Función | Apartado | Tratamiento |
@@ -169,31 +169,31 @@ Variables provenientes de los cuatro módulos de la Encuesta de Micronegocios:
 | `SECUENCIA_P` | EMICRON | Identificación | Identificador del hogar en la vivienda | Carácter | Consecutivo numérico (1, 2, ...) | Hogar | Llave relacional | 1.4, 3 | Estandarizado con `as.character()` |
 | `SECUENCIA_ENCUESTA` | EMICRON | Identificación | Orden del propietario del micronegocio en el hogar | Carácter | Consecutivo numérico (1, 2, ...) | Persona | Llave relacional | 1.4, 3 | Equivale a `ORDEN` de la GEIH |
 | `P35` | EMICRON | Identificación | Sexo del propietario del micronegocio | Categórico | 1 = Hombre, 2 = Mujer | Persona | Caracterización y control | 1.4, 3.1 | Contrastado con `P3271` de la GEIH |
-| `P241` | EMICRON | Identificación | Edad en años cumplidos del propietario | Numérico | 18 a 99 años | Persona | Caracterización y control | 1.4, 3.1 | Contrastado con `P6040` de la GEIH |
-| `MES_REF` | EMICRON | Identificación | Mes de referencia contable de la encuesta | Carácter | Nombre del mes en mayúsculas | Micronegocio | Control temporal | 1.4 | Desfase: $\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$ |
-| `COD_DEPTO` | EMICRON | Identificación | Código DANE del departamento | Categórico | Códigos DIVIPOLA de 2 dígitos | Departamento | Cobertura geográfica | 1.4, 3 | Excluye 8 departamentos de Amazonía |
+| `P241` | EMICRON | Identificación | Edad en años cumplidos del propietario | Numérico | 15 a 99 años | Persona | Caracterización y control | 1.4, 3.1 | Contrastado con `P6040` de la GEIH |
+| `MES_REF` | EMICRON | Identificación | Mes de referencia de la entrevista EMICRON | Carácter | Nombre del mes en mayúsculas | Micronegocio | Control temporal | 1.4 | Desfase: $\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$ |
+| `COD_DEPTO` | EMICRON | Identificación | Código DANE del departamento | Categórico | Códigos DIVIPOLA de 2 dígitos | Departamento | Cobertura geográfica | 1.4, 3 | Cubre 24 departamentos más Bogotá D.C. |
 | `CLASE_TE` | EMICRON | Identificación | Zona geográfica del micronegocio | Categórico | 1 = Cabecera, 2 = Centros poblados y rural disperso | Zona | Control geográfico | 1.4 | Contrastado con `CLASE` de la GEIH |
-| `GRUPOS4` | EMICRON | Identificación | Rama de actividad económica agregada a 4 ramas | Categórico | 1 = Agropecuario, 2 = Industria, 3 = Comercio, 4 = Servicios | Micronegocio | Agrupador sectorial | 3.2 | Base del análisis de inclusión financiera |
-| `GRUPOS12` | EMICRON | Identificación | Rama de actividad económica desagregada a 12 sectores | Categórico | Códigos 1 a 12 | Micronegocio | Distribución económica | 3.1 | Comparado contra boletín técnico DANE |
-| `F_EXP` | EMICRON | Identificación | Factor de expansión anual de micronegocios | Numérico | Ponderador anual continuo | Micronegocio | Ponderador de unidades | 3.1, 3.2, 3.3 | **Factor anual: no se divide entre 12** |
-| `P1633` | EMICRON | Características | ¿El micronegocio cuenta con Registro Único Tributario (RUT)? | Categórico | 1 = Sí cuenta, 2 = No cuenta, 9 = No sabe | Micronegocio | Formalidad tributaria | 3.1, 3.3 | Indicador de formalización básica |
-| `P1055` | EMICRON | Características | ¿Tiene registro mercantil vigente ante Cámara de Comercio? | Categórico | 1 = Sí tiene, 2 = No tiene, 9 = No sabe | Micronegocio | Formalidad mercantil | 3.1 | Indicador de formalización jurídica |
-| `P1764_1` | EMICRON | Inclusión financiera | Acepta pagos en efectivo | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Medio tradicional sin barrera |
-| `P1764_2` | EMICRON | Inclusión financiera | Acepta transferencias bancarias o tarjetas de débito/crédito | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Medio con infraestructura bancaria |
-| `P1764_3` | EMICRON | Inclusión financiera | Acepta billeteras digitales (Nequi, Daviplata, etc.) | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Medio digital de baja barrera |
-| `P1764_4` | EMICRON | Inclusión financiera | Acepta cheques | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Medio tradicional comercial |
-| `P1764_5` | EMICRON | Inclusión financiera | Acepta bonos, vales o pagos en especie | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Medio informal de intercambio |
-| `P1764_6` | EMICRON | Inclusión financiera | Acepta pagos a crédito directo o fiado | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Crédito informal de proveedor/cliente |
-| `P1764_7` | EMICRON | Inclusión financiera | Acepta otros medios de pago | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2 | Categoría residual de medios |
-| `P1765` | EMICRON | Inclusión financiera | ¿Ha solicitado préstamos o créditos para el micronegocio? | Categórico | 1 = Sí solicitó y obtuvo, 2 = Solicitó y no obtuvo, 3 = No solicitó | Micronegocio | Acceso a financiamiento | 3.2, 4.2 | Mide racionamiento crediticio |
-| `P3014` | EMICRON | Inclusión financiera | ¿El micronegocio acostumbra a ahorrar parte de sus ingresos? | Categórico | 1 = Sí ahorra, 2 = No ahorra | Micronegocio | Capacidad de ahorro | 3.2 | Mide excedente económico |
-| `VENTAS_MES_ANTERIOR` | EMICRON | Ventas o ingresos | Ventas o ingresos totales del mes anterior a la entrevista | Numérico | Valor en pesos colombianos | Micronegocio | Escala productiva | 3.3, 4.2 | Flujo de ingresos mensuales del negocio |
+| `GRUPOS4` | EMICRON | Identificación | Rama de actividad económica agregada a 4 ramas | Categórico | 1 = Agricultura, 2 = Industria manufacturera, 3 = Comercio, 4 = Servicios | Micronegocio | Agrupador sectorial | 3.2 | Base del análisis de inclusión financiera |
+| `GRUPOS12` | EMICRON | Identificación | Rama de actividad económica desagregada a 12 sectores | Categórico | Códigos 1 a 12 (y 13 = No informa, 4 registros) | Micronegocio | Distribución económica | 3.1 | Comparado contra boletín técnico DANE |
+| `F_EXP` | EMICRON | Identificación | Factor de expansión anual de micronegocios | Numérico | Ponderador anual continuo | Micronegocio | Ponderador de unidades | 3.1, 3.2, 3.3, 4.2 | **Factor anual: no se divide entre 12** |
+| `P1633` | EMICRON | Características | ¿El micronegocio cuenta con Registro Único Tributario (RUT)? | Categórico | 1 = Sí cuenta, 2 = No cuenta | Micronegocio | Formalidad tributaria | 3.1, 3.3 | Indicador de formalización tributaria |
+| `P1055` | EMICRON | Características | ¿Tiene registro mercantil ante Cámara de Comercio? | Categórico | 1 = Sí tiene, 2 = No tiene | Micronegocio | Formalidad mercantil | 3.1 | Indicador de formalización mercantil |
+| `P1764_1` | EMICRON | Inclusión financiera | Acepta pagos en efectivo | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Base del perfil "Solo efectivo" (exclusivo) |
+| `P1764_2` | EMICRON | Inclusión financiera | Acepta pagos en cheque | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Medio bancario tradicional |
+| `P1764_3` | EMICRON | Inclusión financiera | Acepta transferencias bancarias o por internet | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Incluye billeteras digitales (Nequi, Daviplata) |
+| `P1764_4` | EMICRON | Inclusión financiera | Acepta factura a crédito | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Medio comercial a plazo |
+| `P1764_5` | EMICRON | Inclusión financiera | Acepta tarjeta débito | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Medio electrónico con datáfono |
+| `P1764_6` | EMICRON | Inclusión financiera | Acepta tarjeta de crédito | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Medio electrónico con datáfono |
+| `P1764_7` | EMICRON | Inclusión financiera | Acepta otro medio de pago | Binario | 1 = Sí acepta, 2 = No acepta | Micronegocio | Medio de pago | 3.2, 4.2 | Categoría residual de medios |
+| `P1765` | EMICRON | Inclusión financiera | ¿Solicitó un préstamo o crédito para el negocio en el año anterior? | Categórico | 1 = Sí solicitó, 2 = No solicitó, NA = No informa (5.376 registros en total; 5.202 con ventas > 0) | Micronegocio | Solicitud de crédito | 3.2, 4.2 | Mide demanda revelada de crédito |
+| `P3014` | EMICRON | Inclusión financiera | ¿El micronegocio ahorró parte de sus ingresos? | Categórico | 1 = Sí ahorró, 2 = No ahorró, NA = No informa | Micronegocio | Capacidad de ahorro | 3.2 | Mide excedente económico |
+| `VENTAS_MES_ANTERIOR` | EMICRON | Ventas o ingresos | Ventas o ingresos brutos del mes anterior a la entrevista | Numérico | Valor en pesos colombianos | Micronegocio | Escala productiva | 4.2 | Flujo de ingresos mensuales del negocio |
 
 ### Diferencia Conceptual entre `DPTO`, `AREA` y `CLASE`
 En la GEIH, estas tres variables delimitan dimensiones geográficas distintas y no son intercambiables:
-1. `DPTO`: Representa la división político-administrativa de primer nivel (32 departamentos más Bogotá D.C.). Permite agregar información regional o departamental completa (cabeceras más zonas rurales).
-2. `AREA`: Identifica dominios urbanos y metropolitanos específicos. En la GEIH, los códigos del 1 al 23 corresponden a las principales áreas metropolitanas del país (donde las 13 ciudades del seguimiento laboral clásico son Bogotá, Medellín A.M., Cali A.M., Barranquilla A.M., Bucaramanga A.M., Manizales A.M., Pereira A.M., Cúcuta A.M., Pasto, Ibagué, Montería, Cartagena y Villavicencio). No cubre áreas rurales.
-3. `CLASE`: Diferencia la morfología del asentamiento humano dentro de un municipio: `1 = Cabecera municipal` (casco urbano consolidado) y `2 = Centros poblados y rural disperso`. Permite el análisis de dualismo urbano-rural.
+1. `DPTO`: Representa la división político-administrativa de primer nivel (24 departamentos más Bogotá D.C. en los microdatos estándar). Permite agregar información regional o departamental completa (cabeceras más zonas rurales).
+2. `AREA`: Identifica dominios urbanos y metropolitanos específicos. En la GEIH, las 13 ciudades y áreas metropolitanas principales corresponden a los códigos `c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)` (Medellín A.M., Barranquilla A.M., Bogotá D.C., Cartagena, Manizales A.M., Montería, Villavicencio, Pasto, Cúcuta A.M., Pereira A.M., Bucaramanga A.M., Ibagué y Cali A.M.). No cubre áreas rurales.
+3. `CLASE`: Diferencia la morfología del asentamiento humano dentro de un municipio: `1 = Cabecera municipal` (casco urbano consolidado) y `2 = Centros poblados y rural disperso`. Permite el análisis urbano-rural.
 
 ---
 
@@ -206,8 +206,8 @@ La Encuesta de Micronegocios (EMICRON) no es una muestra aleatoria independiente
 
 ### Cobertura Geográfica Diferencial
 Existe una divergencia geográfica estructural entre ambas operaciones estadísticas:
-- La GEIH cubre las 32 entidades territoriales del país.
-- La EMICRON excluye explícitamente de su diseño muestral a ocho departamentos de la Amazonía y Orinoquía: Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada (documentado en la ficha metodológica y catálogo 875 de microdatos de ANDA/DANE). En consecuencia, un análisis departamental comparado en EMICRON solo puede representar a los 24 departamentos restantes.
+- La GEIH cubre 32 entidades territoriales en su marco general (y 25 dominios departamentales en los microdatos mensuales estándar).
+- La EMICRON excluye explícitamente de su diseño muestral a los ocho departamentos de la Amazonía y Orinoquía: Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada (documentado en la ficha metodológica y catálogo 875 de microdatos de ANDA/DANE).
 
 ### Metodología de Ponderación: `FEX_C18` vs. `F_EXP`
 Uno de los errores más graves en econometría aplicada es intercambiar o combinar factores de expansión con universos y períodos disímiles:
@@ -216,37 +216,32 @@ Uno de los errores más graves en econometría aplicada es intercambiar o combin
 
 ### Determinación Empírica de la Llave: `SECUENCIA_ENCUESTA` vs. `ORDEN`
 En los microdatos de la EMICRON no se publica la variable `ORDEN`, sino `SECUENCIA_ENCUESTA`. Al examinar empíricamente su distribución en los 78.501 registros de EMICRON (`1_4_secuencia_encuesta.csv` y `1_4_relacion_orden.csv`), se comprueba que:
-- El 96,52 % de los registros toma el valor `1`, correspondiente al jefe de hogar o primer perceptor económico.
-- En el 100 % de los casos comparables con la GEIH, el valor de `SECUENCIA_ENCUESTA` coincide unívocamente con el valor de `ORDEN` de la persona que declaró tener el micronegocio.
-Por lo tanto, la llave de persona para unir EMICRON con GEIH es `DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA` (renombrada como `ORDEN`).
+- El 99,3 % de los registros toma valores entre `1` y `3`, pero el valor máximo llega hasta `11` (exactamente el rango de miembros de un hogar).
+- En el 100 % de los casos emparejados con la GEIH, el valor de `SECUENCIA_ENCUESTA` coincide unívocamente con el valor de `ORDEN` de la persona propietaria del micronegocio.
+Por lo tanto, la llave de persona para unir EMICRON con GEIH es `DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA` (empatada con `ORDEN`).
 
 ### Desfase Temporal y Período de Referencia
 Al contrastar `MES_REF` (EMICRON) con `MES` (GEIH) sobre las observaciones enlazadas, se evaluaron tres hipótesis formales (`1_4_relacion_meses.csv`):
 1. **Mismo mes ($\text{MES\_REF} = \text{MES}_{\text{GEIH}}$):** 0 % de correspondencia.
 2. **Un mes atrás ($\text{MES\_REF} = \text{MES}_{\text{GEIH}} - 1$):** 0 % de correspondencia.
-3. **Un mes adelante ($\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$):** 100 % de correspondencia.
+3. **Un mes adelante ($\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$):** 100 % de correspondencia (71.754 de 71.754 casos).
 
-Este desfase responde al período de referencia contable de la encuesta: la EMICRON interroga sobre los ingresos y costos del mes calendario inmediatamente anterior a la fecha de la entrevista (`VENTAS_MES_ANTERIOR`). Debido a este desfase, el mes jamás debe incorporarse dentro de la llave de unión, pues destruiría el emparejamiento.
+Este desfase responde al operativo de campo: la entrevista de EMICRON se aplica el mes siguiente a la visita de la GEIH. Debido a este desfase, el mes jamás debe incorporarse dentro de la llave de unión, pues destruiría el emparejamiento.
 
 ### Auditoría del Enlace y Explicación de los Registros No Emparejados
 Al realizar el `left_join` de EMICRON 2024 con GEIH 2024:
 - De los 78.501 micronegocios, 71.754 (91,41 %) enlazan con la GEIH 2024 (`base_micro`).
-- Los 6.747 registros sin enlace (8,59 %) corresponden en su totalidad al mes de referencia de enero de 2024 (`1_4_auditoria_mensual.csv`).
-- **Causa estructural:** Dado el desfase de recolección de un mes, los informantes de enero de 2024 de EMICRON fueron encuestados en la GEIH en diciembre de 2023. Al cruzar estos 6.747 registros con la GEIH de 2023 (`1_4_fuera_2024.csv`), se encuentra al 100 % de ellos. Quedan fuera de `base_micro` por diseño temporal del ejercicio (que restringe el pegue a 2024) y no por un error en la llave de enlace.
+- Los 6.747 registros sin enlace (8,59 %) corresponden en su totalidad al mes de referencia `ENERO` de 2024 (`1_4_auditoria_mensual.csv`).
+- **Causa estructural:** Dado el desfase de recolección de un mes, los informantes de enero de 2024 de EMICRON fueron encuestados en la GEIH en diciembre de 2023. Al cruzar estos 6.747 registros con diciembre de 2023 de la GEIH (`1_4_fuera_2024.csv`), se encuentra al 100 % de ellos (6.747 de 6.747). Quedan fuera de `base_micro` por diseño temporal del ejercicio (que restringe el pegue a 2024) y no por un error en la llave de enlace.
 
 ### Validación de la Calidad del Enlace
-Para verificar que el pegue unió a la persona correcta, se contrastaron variables sociodemográficas medidas de forma independiente en ambas encuestas:
+Para verificar que el pegue unió a la persona correcta, se contrastaron variables sociodemográficas medidas de forma independiente en ambas encuestas (`1_4_consistencia_sociodemografica.csv`):
 - Coincidencia en sexo (`P35` vs. `P3271`): 100,0 %.
 - Coincidencia en edad (`P241` vs. `P6040`): 100,0 %.
 - Coincidencia en zona geográfica (`CLASE_TE` vs. `CLASE`): 100,0 %.
 
 ### Interpretación de la Posición Ocupacional en 1.4.g
-En la base enlazada (`1_4_posicion_ocupacional.csv`), el 88,53 % de los propietarios son cuenta propia y el 9,22 % patrones (97,75 % en conjunto). El 2,25 % restante reporta posiciones como obrero particular o trabajador familiar sin remuneración.
-
-Esta divergencia no constituye un error estadístico, sino que refleja tres dinámicas propias del mercado laboral:
-1. **Transiciones ocupacionales en el desfase temporal:** Entre el mes de la GEIH y la aplicación del cuestionario EMICRON transcurrieron varias semanas, tiempo en el cual algunos informantes cambiaron de empleo o cerraron transitoriamente su unidad productiva.
-2. **Pluriactividad y pluriempleo:** El informante declara en la GEIH su ocupación principal asalariada, pero es simultáneamente propietario de un micronegocio secundario captado por la EMICRON.
-3. **Implicación para la medición laboral:** Muestra que la posición ocupacional en encuestas de hogares mide el rol del individuo en su empleo principal, mientras que las encuestas de unidades económicas captan la titularidad de activos productivos, advirtiendo sobre las limitaciones de clasificar la informalidad exclusivamente a partir del contrato en la actividad principal.
+En la base enlazada (`1_4_posicion_ocupacional.csv`), el 88,53 % de los propietarios son trabajadores por cuenta propia (`64.479` registros) y el 9,22 % son patrones o empleadores (`6.019` registros), sumando el **97,75 %** en conjunto. El **2,25 %** restante reporta posiciones como obrero particular (1,54 %) o trabajador sin remuneración (0,33 %), lo que responde a transiciones ocupacionales ocurridas durante el desfase temporal entre encuestas o a situaciones de pluriactividad donde el micronegocio es secundario frente a un empleo asalariado principal.
 
 ---
 
@@ -264,88 +259,88 @@ El script genera y exporta las tablas `2_1_tasas_hombres.xlsx` y `2_1_tasas_muje
 ## Numeral 2.2: Descomposición del Desempleo y Brechas de Género {#sec-num-2-2}
 
 El gráfico `2_2_tasas_sexo.png` ilustra el comportamiento de las tres tasas en paneles separados por sexo entre 2023 y 2024:
-- **Evolución del desempleo:** La variación de la tasa de desempleo responde a la interacción dinámica entre la tasa de ocupación (demanda laboral) y la tasa global de participación (oferta laboral). En períodos de contracción económica, la caída en la ocupación impulsa el desempleo; sin embargo, este incremento puede verse atenuado por el fenómeno del trabajador desalentado, donde parte de la población inactiva deja de buscar empleo y sale de la fuerza de trabajo.
-- **Brechas estructurales de género:** La TGP de los hombres bordea el 76 %, mientras que la de las mujeres se sitúa cerca del 51 % (una brecha persistente de 25 puntos porcentuales). De manera análoga, la tasa de desempleo femenino supera sistemáticamente en más de 4 puntos porcentuales a la masculina, reflejando barreras estructurales de acceso asociadas a la carga desproporcionada de trabajo de cuidado no remunerado en el hogar.
+- **Evolución del desempleo:** La variación de la tasa de desempleo responde a la interacción dinámica entre la tasa de ocupación (demanda laboral) y la tasa global de participación (oferta laboral). Por ejemplo, entre el primer trimestre de 2024 (TD masculina de 9,57 % y femenina de 14,98 %) y el cuarto trimestre de 2024 (7,06 % en hombres y 11,15 % en mujeres), el descenso del desempleo obedeció a un aumento de la tasa de ocupación hacia fin de año.
+- **Brechas estructurales de género:** En todos los trimestres, los hombres superan a las mujeres en más de 24 puntos porcentuales en TGP (76,30 % vs. 52,66 % en O-D 2024) y en TO (70,92 % vs. 46,79 % en O-D 2024), mientras que las mujeres enfrentan una tasa de desempleo entre 4 y 5,4 puntos porcentuales superior.
 
 ## Numeral 2.3: Informalidad Laboral en 13 Ciudades (Diciembre 2024) {#sec-num-2-3}
 
-### Algoritmo Multidimensional del DANE
-La medición de formalidad del DANE para las 13 ciudades evalúa dos dimensiones institucionales complementarias:
-1. **Asalariados (empleados particulares, domésticos y obreros):** Son formales si cotizan obligatoriamente tanto a salud (`SALUD == 1`) como a pensión (`PENSION == 1`) a través de su empleo principal.
-2. **Independientes y patronos (cuenta propia y empleadores):** La formalidad depende de la escala y formalización jurídica de la empresa:
-   - Actividad fuera de vivienda con local y personería jurídica o contabilidad formal.
-   - Actividad en vivienda con local independiente o registro mercantil en Cámara de Comercio (`P3068 == 1`).
-   - En casos de registro no disponible, patronos en empresas de 4 o más trabajadores (`P3069 >= 4`) y cuenta propia en ocupaciones técnicas o profesionales (`OFICIO_C8_2D <= "20"`).
-3. **Empleados públicos y extraterritoriales:** Son formales por definición (`RAMA2D_R4 %in% c(84, 99)`).
-4. **Trabajadores familiares sin remuneración:** Son informales por definición (`EI = 0`).
+### Replicación Exacta del Algoritmo Multidimensional del DANE (`Código_SAS`)
+La medición de formalidad del DANE evalúa cuatro variables secuenciales (`FORMAL`, `SALUD`, `PENSION` y `EI`) mediante bloques `case_when` explícitos que replican íntegramente la sintaxis oficial `Código_SAS` del DANE:
+1. **`FORMAL` (formalidad de la unidad económica):**
+   - Administración pública y organizaciones extraterritoriales (`RAMA2D_R4 %in% c(84, 99)`) y empleados del gobierno (`P6430 == 2`) son formales (`1`).
+   - Empleados domésticos (`P6430 == 3`), trabajadores familiares sin remuneración (`P6430 == 6`) y jornaleros (`P6430 == 8`) reciben `FORMAL = 0` en el paso empresarial.
+   - Para asalariados particulares (`P6430 %in% c(1, 7)`), trabajadores por cuenta propia (`P6430 %in% c(4, 9)`) y patrones (`P6430 == 5`), el árbol evalúa el lugar de trabajo (`P6765`), el registro mercantil (`P3065` / `P6775`), la contabilidad (`P3066` / `P3068`), el local en vivienda (`P3067`, `P3067S1`, `P3067S2`), el tamaño de empresa (`P3069`) y el oficio (`OFICIO_C8_2D`).
+   - En los microdatos públicos GEIH 2024, `P3045S1` y `P3046` vienen en `NA`, por lo que las condiciones iniciales para `P6430 %in% c(1, 7)` evalúan como `FALSE` y recaen en las reglas generales por lugar de trabajo (`P6765`), exactamente igual que en la sintaxis oficial del DANE.
+2. **`SALUD` y `PENSION` (protección social contributiva):**
+   - Clasifican la cotización a salud (`P6100`, `P6110`, `P6450`) y pensión (`P6920`, `P6930`, `P6940`, `P6450`) de los asalariados (`P6430 %in% c(1, 2, 3, 8)`).
+3. **`EI` (empleo formal = 1, empleo informal = 0):**
+   - Ramas `84` y `99` y empleados del gobierno (`P6430 == 2`) son formales (`1`); trabajadores sin remuneración (`P6430 %in% c(6, 7)`) son informales (`0`); empleados domésticos (`P6430 == 3`) y jornaleros (`P6430 == 8`) dependen de `SALUD == 1 & PENSION == 1`; obreros particulares (`P6430 == 1`) exigen `SALUD == 1 & PENSION == 1` (o desempate con `FORMAL` cuando `SALUD == 9`); e independientes/patrones (`P6430 %in% c(4, 5, 9)`) toman el valor de `FORMAL`.
 
-### Simplificación Pedagógica Segura
-El script agrupa de manera compacta los casos homogéneos de actividad económica en vivienda sin local independiente:
-```r
-en_viv_no_indep = P6765 == 7 & ((P3067 == 1 & P3067S1 == 2) | P3067 == 2)
-```
-Esto reduce la estructura de 28 a 18 condiciones sin alterar un solo valor resultante. La tasa de informalidad calculada para el trimestre octubre-diciembre 2024 en las 13 ciudades es exactamente del **42,5 %**, con una diferencia de **0,0 puntos porcentuales** frente al boletín oficial del DANE (`2_3_control_ei_dane.csv`). El gráfico `2_3_formalidad_13ciudades.png` presenta la distribución por formalidad y sexo.
+Al replicar el cálculo para el trimestre octubre–diciembre de 2024 en las 13 ciudades y áreas metropolitanas, la proporción de ocupados informales es de **42,5 %**, mostrando una diferencia de **0,0 puntos porcentuales** frente al boletín oficial del DANE (`2_3_control_ei_dane.csv`). En el mes de diciembre de 2024 (`2_3_formalidad_13ciudades.png` y `2_3_tabla_formalidad_13ciudades.csv`), la informalidad en las 13 ciudades fue de **42,2 %** en hombres (57,8 % formal) y **42,3 %** en mujeres (57,7 % formal).
 
 ## Numeral 2.4: Posición Ocupacional Nacional (Enero 2023) {#sec-num-2-4}
 
-El gráfico `2_4_posicion_nacional.png` presenta la distribución de los ocupados según posición ocupacional para enero de 2023:
-- Los trabajadores por cuenta propia concentran el 42,8 % del empleo, y los patrones o empleadores el 3,9 %, sumando en conjunto el **46,7 %** de toda la fuerza laboral ocupada del país.
-- **Relevancia metodológica:** Este 46,7 % constituye precisamente la población objetivo y el marco muestral del cual el DANE selecciona a los informantes de la EMICRON, fundamentando la estrecha relación entre ambas encuestas.
+El gráfico `2_4_posicion_nacional.png` presenta la distribución de los ocupados según posición ocupacional y sexo para enero de 2023:
+- Los trabajadores por cuenta propia concentran el **40,6 %** del empleo nacional y los patrones o empleadores el **2,6 %**, sumando en conjunto el **43,2 %** de la población ocupada del país (alrededor de 9,6 millones de personas).
+- **Relevancia metodológica:** Este 43,2 % constituye precisamente la población objetivo a partir de la cual el DANE identifica y selecciona la muestra de la Encuesta de Micronegocios (EMICRON).
 
 ---
 
 # Caracterización de los Micronegocios en Colombia (Punto 3) {#sec-punto-3}
 
-## Numeral 3.1: Indicadores Estructurales (EMICRON 2024) {#sec-num-3-1}
+## Numeral 3.1: Indicadores Estructurales y Comparación con el Boletín DANE (EMICRON 2024) {#sec-num-3-1}
 
-Expandiendo con el factor anual `F_EXP`, el script genera el archivo `3_1_indicadores.xlsx`, reproduciendo con exactitud las cifras del boletín técnico oficial del DANE:
-- **Total nacional:** 5.297.252 micronegocios (coincidencia exacta al 100 % con el DANE).
-- **Composición por sexo (`P35`):** 55,2 % liderados por hombres y 44,8 % por mujeres.
-- **Registro Único Tributario (`P1633`):** Solo el 27,8 % cuenta con RUT, mientras que el 72,2 % carece de registro ante la DIAN.
-- **Cámara de Comercio (`P1055`):** Únicamente el 13,8 % posee matrícula mercantil vigente, evidenciando que la gran mayoría opera en informalidad comercial.
-- **Ramas de actividad (`GRUPOS12`):** Comercio y reparación de vehículos (34,1 %), servicios personales y otros (22,4 %), industria manufacturera (11,8 %) y agricultura (11,2 %).
+Los porcentajes de `3_1_indicadores.xlsx` se calcularon directamente con la suma de `F_EXP` **antes de redondear los totales expandidos** (`TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE)`):
+- **Total nacional:** 5.297.252 micronegocios (coincidencia exacta con el boletín técnico del DANE).
+- **Composición por sexo (`P35`):** 64,6 % liderados por hombres (3.421.325) y 35,4 % por mujeres (1.875.927).
+- **Ramas de actividad (`GRUPOS12`):** Comercio y reparación de vehículos (23,9 %; 1.263.754) y agricultura, ganadería, caza, silvicultura y pesca (21,5 %; 1.138.758) concentran el 45,4 % del total, seguidas por industrias manufactureras (10,0 %; 531.988) y alojamiento y servicios de comida (8,3 %; 440.223). Se documentan 4 registros con código `GRUPOS12 == 13` (*No informa*, 82 micronegocios expandidos, 0,0 %).
+- **Registro Único Tributario (`P1633`):** El 22,4 % cuenta con RUT (1.185.978) y el 77,6 % no cuenta con RUT (4.111.274), coincidiendo con el Gráfico 11 del boletín DANE.
+- **Cámara de Comercio (`P1055`) y explicación de la discrepancia de $-0,2$ pp:**
+  - Nuestro cálculo sobre los microdatos arroja **10,3 %** con registro mercantil (`P1055 == 1`) y **89,7 %** sin registro (`P1055 == 2`).
+  - El **Gráfico 9** del Boletín Técnico EMICRON 2024 publica **10,5 %** con registro y **89,5 %** sin registro, lo que representa una diferencia de **$-0,2$ puntos porcentuales** (`+0,2` pp en no registrados).
+  - Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín oficial del DANE, se verifica que las cantidades absolutas publicadas por el DANE son **547.581** micronegocios con registro mercantil (548 mil en el cuadro del boletín) y **4.749.671** sin registro sobre un total de **5.297.252**; su cociente exacto es $\frac{547.580,7}{5.297.252,1} = 10,337$ % (**10,3 %** a un decimal), lo que demuestra que los microdatos coinciden exactamente con las tablas absolutas del anexo oficial (`3_1_indicadores.xlsx` y objeto `verificacion_3_1_dane`).
 
 ## Numeral 3.2: Inclusión Financiera de Micronegocios {#sec-num-3-2}
 
 El módulo de inclusión financiera evalúa los medios de pago aceptados (`P1764_1` a `P1764_7`), la solicitud de crédito (`P1765`) y el ahorro (`P3014`):
-- **Automatización en el script:** El cálculo del porcentaje expandido para las 7 variables se resuelve vectorizadamente con funciones de agregación agrupadas por rama (`GRUPOS4`), evitando duplicar 7 veces el bloque de código.
+- **Automatización en el script:** El cálculo del porcentaje expandido para las 7 variables se resuelve mediante un ciclo sobre `1:7` agrupado por rama (`GRUPOS4`), ponderando con `F_EXP`.
 - **Resultados e interpretación (`3_2_formas_pago.png` y `3_2_credito_ahorro.csv`):**
-  - El efectivo (`P1764_1`) domina de manera casi absoluta, con tasas superiores al 98 % en todas las ramas.
-  - Las billeteras digitales (`P1764_3`, Nequi y Daviplata) alcanzan un 44 % en comercio y servicios, consolidándose como la principal puerta de entrada a la digitalización gracias a sus bajos costos de transacción y nulos requerimientos de infraestructura física.
-  - Los datáfonos y tarjetas (`P1764_2`) no superan el 12 %, debido a comisiones financieras y exigencias de formalización tributaria.
-  - Solo el 17,4 % de los micronegocios solicitó crédito formal, y apenas el 14,2 % logró obtenerlo, reflejando racionamiento crediticio por asimetrías de información y falta de colateral (Stiglitz y Weiss, 1981). El ahorro habitual se restringe al 16,1 %, confirmando que operan como unidades de subsistencia con mínimos márgenes de reinversión.
+  - El **efectivo** (`P1764_1`) es el medio predominante en todas las ramas: alcanza el 94,3 % en comercio, 89,7 % en servicios, 86,2 % en industria manufacturera y 85,1 % en agricultura.
+  - Las **transferencias bancarias o por internet** (`P1764_3`, que incluyen billeteras digitales como Nequi y Daviplata) presentan una marcada brecha sectorial: alcanzan el **51,9 %** en servicios, el **43,4 %** en comercio y el **36,1 %** en industria, pero apenas llegan al **6,7 %** en el sector agropecuario.
+  - Los medios electrónicos con datáfono (`P1764_5` tarjeta débito y `P1764_6` tarjeta de crédito) no superan el 7,2 % en comercio y el 6,3 % en servicios (y son inferiores al 0,4 % en el agro).
+  - Apenas el **14,2 %** de los micronegocios solicitó un préstamo o crédito (`P1765 == 1`) y solo el **18,1 %** ahorró parte de sus ingresos (`P3014 == 1`).
 
-## Numeral 3.3: Cruce Conjunto GEIH - EMICRON (`base_micro`) {#sec-num-3-3}
+## Numeral 3.3: Cruce Conjunto GEIH - EMICRON con Categorías Explícitas del DANE {#sec-num-3-3}
 
-El numeral formula una pregunta de investigación que solo puede resolverse enlazando las características educativas de la persona (GEIH) con la formalización tributaria del negocio (EMICRON): *¿Cómo incide el nivel educativo alcanzado por el propietario sobre la probabilidad de formalización tributaria mediante el RUT?*
-
-- **Población representada:** Micronegocios de propietarios entrevistados en la GEIH entre febrero y diciembre de 2024 en los 24 departamentos de cobertura de EMICRON.
-- **Ponderador utilizado:** Se utiliza exclusivamente `F_EXP`, ya que la unidad de análisis económica es el micronegocio. No se mezcla con `FEX_C18`.
+- **Pregunta de investigación:** *¿Se asocia el nivel educativo alcanzado por el propietario del micronegocio (GEIH: `P3042`) con la tenencia de RUT en la unidad económica (EMICRON: `P1633`)?*
+- **Universo y ponderador:** 71.754 propietarios emparejados entre febrero y diciembre de 2024, expandidos exclusivamente con `F_EXP` (4.864.444 micronegocios).
+- **Clasificación explícita del diccionario GEIH 2024 (`P3042`):** Se clasifican por separado los códigos `1` a `13` y `99`. La auditoría comprueba que el 100 % de los 71.754 propietarios emparejados tiene niveles conocidos en `1:13` (`0` en `99 = No sabe, no informa`, `0` en `NA` y `0` códigos inválidos; `0` faltantes en `P1633`).
 - **Hallazgos (`3_3_cruce.png` y `3_3_tabla_educacion_rut.csv`):**
-  - Propietarios con educación superior presentan una tasa de tenencia de RUT del 56,8 %.
-  - En propietarios con educación básica primaria, la tenencia de RUT desciende a solo 16,3 %.
-- **Factores explicativos no causales:** Esta fuerte correlación no debe interpretarse como causal directa debido a dos factores omitidos:
-  1. *Sesgo de dotación patrimonial y acceso a crédito:* Propietarios con más educación provienen de hogares con mayor riqueza y redes de contacto, lo que facilita costear trámites contables y formalizarse.
-  2. *Tipo de negocio y sector económico:* Los profesionales educados abren micronegocios de servicios calificados (consultorías, salud) que exigen facturación formal a empresas clientes, mientras que los informantes con primaria se concentran en comercio ambulante y agropecuario donde el cliente final opera exclusivamente en efectivo.
+  - La tenencia de RUT muestra un gradiente positivo continuo a lo largo de las 13 categorías del DANE: **0,0 %** en *Preescolar* ($n=6$), **2,8 %** en *Ninguno*, **11,7 %** en *Básica primaria (1o - 5o)*, **13,1 %** en *Normalista*, **14,5 %** en *Básica secundaria (6o - 9o)*, **22,3 %** en *Media académica* y **26,8 %** en *Media técnica*.
+  - En educación superior y posgrado la formalización se acelera: **34,0 %** en *Técnica profesional*, **43,9 %** en *Tecnológica*, **51,7 %** en *Universitaria*, **73,2 %** en *Especialización*, **78,7 %** en *Maestría* y **88,8 %** en *Doctorado*.
+- **Factores explicativos no causales:** La asociación estadística no implica causalidad directa, pues intervienen la escala del negocio (mayor capital inicial y ventas que superan topes regulatorios) y la especialización sectorial en servicios profesionales donde la facturación electrónica y el RUT son requisitos de contratación.
 
 ---
 
-# Análisis Socioeconómico y Geografía Económica (Punto 4) {#sec-punto-4}
+# Análisis Socioeconómico de la Población Colombiana (Punto 4) {#sec-punto-4}
 
 ## Numeral 4.1: Geografía de la Informalidad Laboral {#sec-num-4-1}
-El gráfico `4_1_geografia_informalidad.png` contrasta la tasa de informalidad departamental con el ingreso laboral mediano en 2024:
-- Muestra una correlación negativa pronunciada: departamentos con mayor informalidad (como Sucre, Chocó o La Guajira, donde la informalidad supera el 65 %) registran ingresos medianos por debajo del salario mínimo.
-- Por el contrario, Bogotá, Antioquia y Valle del Cauca combinan tasas de informalidad inferiores al 40 % con los ingresos medianos más altos del país, evidenciando un marcado dualismo regional centro-periferia.
+El gráfico `4_1_geografia_informalidad.png` contrasta la tasa de informalidad departamental con el ingreso laboral mediano (`INGLABO > 0`) en 2024:
+- Muestra una relación inversa pronunciada: en Bogotá D.C. la informalidad es de **34,6 %** con un ingreso mediano de **\$1,60 millones**, seguida de Cundinamarca (44,6 %) y Antioquia (44,9 %).
+- En contraste, Chocó (**80,8 %**), Sucre (**79,9 %**) y La Guajira (**79,5 %**) registran ingresos medianos de **\$0,60 millones**, reflejando el dualismo productivo centro-periferia.
 
-## Numeral 4.2: Inclusión Digital y Escala de Ventas {#sec-num-4-2}
-El diagrama de cajas `4_2_inclusion_ventas_micro.png` evalúa el ingreso mensual de los micronegocios (`VENTAS_MES_ANTERIOR`) según adopción de billeteras digitales y acceso a crédito formal:
-- Las unidades que combinan billeteras digitales con crédito aprobado registran una mediana de ventas que triplica a la de micronegocios que operan exclusivamente en efectivo y sin financiamiento.
-- La digitalización transaccional actúa como catalizador de productividad y volumen de ventas en el estrato microempresarial.
+## Numeral 4.2: Inclusión Digital, Solicitud de Crédito y Escala de Ventas {#sec-num-4-2}
+El gráfico `4_2_inclusion_ventas_micro.png` evalúa las ventas brutas mensuales (`VENTAS_MES_ANTERIOR > 0`) cruzando el perfil de medios de pago (**Transferencias bancarias / internet** con `P1764_3 == 1` frente a **Solo efectivo** definido como efectivo exclusivo `P1764_1 == 1` sin otros medios seleccionados en `P1764_2:7`) con la **solicitud de crédito** (`P1765`: `1 = Solicitó crédito`, `2 = No solicitó crédito`):
+- **Auditoría de no respuesta y exclusiones:** De los 75.671 micronegocios con ventas positivas, se contabilizan y documentan **5.202 registros sin respuesta (`NA`) en `P1765`** (338.120 expandidos; 5.376 en toda la EMICRON) y **645 registros en otros perfiles de pago** (23 de ellos también con `NA` en `P1765`), analizando **69.847 unidades válidas** (4.711.543 expandidas).
+- **Resultados (`4_2_tabla_inclusion_ventas.csv`):**
+  - En **Solo efectivo**, la mediana de ventas mensuales pasa de **\$1,20 millones** sin solicitud de crédito ($n=37.700$) a **\$1,70 millones** con solicitud de crédito ($n=5.804$).
+  - En **Transferencias bancarias / internet**, la mediana sube a **\$2,30 millones** sin solicitud de crédito ($n=21.061$) y alcanza **\$3,00 millones** con solicitud de crédito ($n=5.282$).
 
-## Numeral 4.3: Desigualdad Salarial y Curvas de Lorenz {#sec-num-4-3}
-El gráfico `4_3_desigualdad_lorenz.png` compara las curvas de Lorenz de ingreso laboral en los tres grandes dominios geográficos de la GEIH:
-- En las 13 ciudades principales, la curva muestra una mayor convexidad (mayor desigualdad salarial interna entre trabajadores profesionales y no calificados).
-- En centros poblados y rural disperso, la curva está más cercana a la diagonal pero desplazada hacia niveles absolutos de subsistencia, ilustrando la paradoja de una menor desigualdad estadística en contextos de pobreza generalizada.
+## Numeral 4.3: Emparejamiento Laboral entre Nivel Educativo y Posición Ocupacional {#sec-num-4-3}
+El gráfico `4_3_mismatch_educacion.png` cruza las **13 categorías educativas explícitas del DANE** (`P3042`: `1` a `13`) con las **9 posiciones ocupacionales** (`P6430`: `1` a `9`) sobre 353.668 ocupados de la GEIH 2024 (excluyendo y documentando los únicos 4 registros con `P3042 == 99`, equivalentes a 473 ocupados expandidos):
+- En *Ninguno* (62,5 %), *Básica primaria* (54,8 %) y *Básica secundaria* (48,6 %) predomina el trabajo por cuenta propia.
+- A partir de *Media académica* (47,8 % obrero particular vs. 39,9 % cuenta propia) y *Media técnica* (57,8 % vs. 32,7 %), y en toda la educación superior (*Técnica profesional* 61,5 %, *Tecnológica* 66,6 %, *Universitaria* 62,1 %) y posgrado (*Especialización* 58,4 %, *Maestría* 55,6 %, *Doctorado* 56,5 %), predomina el empleo asalariado particular junto con una participación creciente del empleo en el gobierno (hasta 28,2 % en *Doctorado*).
+- Sin embargo, se identifican **986.256 ocupados con educación superior o posgrado** (`P3042 %in% 8:13`) trabajando por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales), reflejando sobreeducación y refugio en el autoempleo.
 
 ---
 
@@ -362,7 +357,7 @@ Este banco organiza las preguntas de defensa individual directamente por los cua
 **Respuesta:** En R, las listas son objetos inmutables en memoria. Usar `append()` obliga al intérprete a duplicar y reasignar toda la lista en cada iteración ($O(N^2)$ en memoria). Inicializar `contador <- 1` permite indexar directamente por posición (`lista[[contador]] <- df`), asignando memoria en tiempo constante $O(1)$. Además, coordina la indexación global de 1 a 24 para las tablas de auditoría de los 2 años, mientras el índice local `i` corre de 1 a 12 para agrupar las bases mensuales de cada año antes de consolidarlas con `bind_rows()`.
 
 ### Pregunta 1.3: ¿Por qué 6.747 micronegocios de EMICRON 2024 no emparejan con la GEIH de 2024?
-**Respuesta:** Por el desfase de recolección temporal. EMICRON pregunta por las ventas del mes anterior (`VENTAS_MES_ANTERIOR`). En consecuencia, los informantes encuestados en enero de 2024 en EMICRON fueron entrevistados por la GEIH en diciembre de 2023. Al cruzar esos 6.747 registros contra los archivos de 2023 (`1_4_fuera_2024.csv`), se encuentra al 100 % de ellos. No es un error de llave, sino un límite temporal del ejercicio al restringir la base a 2024.
+**Respuesta:** Por el desfase de recolección temporal ($\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$). En consecuencia, los informantes encuestados en enero de 2024 en EMICRON fueron entrevistados por la GEIH en diciembre de 2023. Al cruzar esos 6.747 registros contra diciembre de 2023 de la GEIH (`1_4_fuera_2024.csv`), se encuentra al 100 % de ellos. No es un error de llave, sino un límite temporal del ejercicio al restringir la base a 2024.
 
 ### Pregunta 1.4: ¿Por qué no se puede usar indistintamente `FEX_C18` y `F_EXP`?
 **Respuesta:** Porque representan universos y períodos distintos. `FEX_C18` expande personas de la GEIH y está calibrado mensualmente; para calcular trimestres debe dividirse entre 3 y para años entre 12. `F_EXP` expande unidades productivas de micronegocios en EMICRON y es un ponderador anual calibrado para todo 2024. Si se dividiera `F_EXP` entre 12, se subestimaría el universo microempresarial a la doceava parte. Mezclarlos en un mismo cálculo destruye la validez de la inferencia.
@@ -374,8 +369,8 @@ Este banco organiza las preguntas de defensa individual directamente por los cua
 ### Pregunta 2.1: ¿Por qué para las tasas trimestrales del punto 2.1 se divide `FEX_C18` entre 3?
 **Respuesta:** Porque `FEX_C18` es un factor mensual. Al apilar los tres meses de un trimestre (ej. enero, febrero y marzo), la suma simple del factor triplicaría la población real de Colombia. Dividir entre 3 calcula la población promedio del trimestre, que es el estándar metodológico oficial del DANE para estimar poblaciones y tasas del mercado de trabajo.
 
-### Pregunta 2.2: ¿Cómo se simplificó el `case_when` de formalidad laboral sin alterar los resultados?
-**Respuesta:** En la sintaxis original del DANE, las condiciones para actividades en vivienda con local no independizado (`P3067 == 1 & P3067S1 == 2`) y sin local (`P3067 == 2`) se evaluaban por separado de forma redundante. Se creó la variable booleana auxiliar `en_viv_no_indep = P6765 == 7 & ((P3067 == 1 & P3067S1 == 2) | P3067 == 2)`, reduciendo 10 líneas de condiciones duplicadas. La prueba de igualdad binaria arrojó 100 % de coincidencia exacta y la tasa en las 13 ciudades se mantuvo idéntica en 42,5 %, con 0,0 pp de diferencia con el DANE.
+### Pregunta 2.2: ¿Cómo se construyó la clasificación de formalidad laboral (`EI`) en el punto 2.3?
+**Respuesta:** Se replicaron de forma explícita y completa las reglas secuenciales de la sintaxis oficial `Código_SAS` del DANE para las variables `FORMAL`, `SALUD`, `PENSION` y `EI`, respetando el orden de evaluación de cada condición. En los microdatos públicos GEIH 2024, `P3045S1` y `P3046` vienen en `NA`, por lo que las condiciones iniciales para `P6430 %in% c(1, 7)` evalúan como `FALSE` y recaen en el bloque general por lugar de trabajo (`P6765`), igual que en el programa oficial del DANE. La tasa de informalidad en las 13 ciudades para octubre–diciembre de 2024 es de 42,5 %, con 0,0 pp de diferencia frente al boletín del DANE.
 
 ### Pregunta 2.3: ¿Cómo se interpreta que baje la tasa de desempleo pero caiga la tasa de ocupación?
 **Respuesta:** Ocurre por el efecto del trabajador desalentado. Si la caída en la ocupación (pérdida de empleos) coincide con una caída aún mayor en la tasa de participación (personas que abandonan la fuerza de trabajo y pasan a inactividad), el denominador de la tasa de desempleo (fuerza de trabajo) se reduce más rápido que los desocupados, haciendo caer la tasa de desempleo a pesar de que el mercado laboral se está deteriorando.
@@ -384,21 +379,21 @@ Este banco organiza las preguntas de defensa individual directamente por los cua
 
 ## Bloque 3: Defensa del Punto 3 (Micronegocios e Inclusión Financiera)
 
-### Pregunta 3.1: ¿Por qué sus cifras de micronegocios reproducen con exactitud las del DANE?
-**Respuesta:** Porque se utilizó la llave relacional completa (`DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA`), se preservaron los 78.501 registros de EMICRON sin pérdidas por joins internos y se ponderó utilizando únicamente `F_EXP` sin ajustes temporales indebidos, arrojando exactamente los 5.297.252 micronegocios certificados por el DANE en su boletín técnico.
+### Pregunta 3.1: ¿Por qué en Cámara de Comercio (`P1055 == 1`) el cálculo da 10,3 % mientras el Gráfico 9 del boletín DANE muestra 10,5 %?
+**Respuesta:** Porque al calcular los porcentajes directamente con `F_EXP` antes de redondear los totales, los micronegocios con registro mercantil suman `547.580,7` sobre un total de `5.297.252,1`, cuyo cociente exacto es `10,337 %` (**10,3 %** a un decimal), es decir, **$-0,2$ puntos porcentuales** frente al **10,5 %** impreso en el Gráfico 9 del boletín. Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín técnico del DANE, las cifras publicadas por el DANE son exactamente `547.581` (548 mil) sobre `5.297.252`, las cuales producen `10,337 %`, confirmando la exactitud de nuestro cálculo.
 
-### Pregunta 3.2: ¿Por qué la gran adopción de billeteras digitales no se traduce en acceso a crédito bancario?
-**Respuesta:** Porque las billeteras digitales (Nequi, Daviplata) resuelven fricciones de pago transaccional con costos fijos nulos y sin requerir formalidad jurídica ni estados financieros. El crédito bancario formal, en contraste, exige colaterales, historial crediticio, matrícula mercantil y declaraciones tributarias, barreras que el 86 % de los micronegocios informales no puede superar, configurando un típico racionamiento crediticio por selección adversa.
+### Pregunta 3.2: ¿Por qué la mayor aceptación de transferencias (`P1764_3`) en comercio y servicios no se traduce en una alta solicitud de crédito (`P1765`)?
+**Respuesta:** Porque las transferencias bancarias o por internet (`P1764_3`, que alcanzan 51,9 % en servicios y 43,4 % en comercio) resuelven fricciones de cobro transaccional con costos fijos mínimos. El crédito formal, en cambio, exige historial financiero, garantías y formalidad tributaria/mercantil (solo 22,4 % tiene RUT y 10,3 % registro en Cámara de Comercio), por lo que apenas el 14,2 % de los micronegocios solicitó crédito.
 
-### Pregunta 3.3: En el cruce de educación y RUT del 3.3, ¿por qué no se puede afirmar que estudiar formaliza el negocio?
-**Respuesta:** Porque se trata de datos observacionales transversales. La correlación positiva entre educación superior y tenencia de RUT está afectada por variables omitidas, como la riqueza del hogar de origen y el sector de actividad. Un profesional suele fundar un negocio en servicios calificados que le vende a empresas formales (que exigen RUT para descontar costos), mientras que un comerciante informal sin estudios vende a consumidores finales en efectivo. No se puede inferir causalidad directa.
+### Pregunta 3.3: ¿Cómo se trataron las categorías de `P3042` en el cruce 3.3 y por qué la relación con el RUT no es causal?
+**Respuesta:** Se clasificaron explícitamente las 13 categorías de niveles conocidos del diccionario GEIH 2024 (`P3042 == 1` a `P3042 == 13`) y se auditaron el código `99` (*No sabe, no informa*), los `NA` y los códigos inválidos (verificando que los 71.754 propietarios emparejados tienen niveles conocidos en `1:13`). Aunque el porcentaje con RUT sube de 0,0 % en *Preescolar* y 2,8 % en *Ninguno* hasta 51,7 % en *Universitaria* y 88,8 % en *Doctorado*, esta asociación no es causal directa: está mediada por la mayor escala de ventas y por la inserción de los profesionales en sectores de servicios que exigen RUT para contratar con empresas formales.
 
 ---
 
-## Bloque 4: Defensa del Punto 4 (Análisis Libre y Rigor Gráfico)
+## Bloque 4: Defensa del Punto 4 (Análisis Socioeconómico y Rigor Gráfico)
 
-### Pregunta 4.1: ¿Por qué en las curvas de Lorenz las zonas rurales parecen "menos desiguales" que las 13 ciudades?
-**Respuesta:** Es una manifestación de la paradoja del subdesarrollo: en áreas rurales dispersas, la gran mayoría de la población percibe ingresos sumamente bajos y homogéneos alrededor de la subsistencia agraria. Esta uniformidad en la pobreza genera una curva de Lorenz estadísticamente más cercana a la igualdad perfecta, mientras que en las 13 ciudades conviven altos ejecutivos con trabajadores informales del salario mínimo, ampliando la dispersión salarial.
+### Pregunta 4.1: ¿Qué correcciones metodológicas se aplicaron en el análisis de inclusión financiera y ventas (4.2) y en el cruce educativo-ocupacional (4.3)?
+**Respuesta:** En 4.2 se identificaron las transferencias bancarias o por internet con `P1764_3 == 1` (ya que `P1764_2` es cheque), se definió *Solo efectivo* como efectivo exclusivo (`P1764_1 == 1` sin ningún otro medio seleccionado entre `P1764_2` y `P1764_7`), y se trató `P1765` como solicitud de crédito (`1 = Solicitó`, `2 = No solicitó`), auditando y documentando los 5.202 registros con `NA` en `P1765` y los 645 de otros medios antes de graficar los 69.847 registros válidos. En 4.3 se utilizaron las 13 categorías explícitas de `P3042` (`1:13`, excluyendo y documentando los 4 registros con código `99`) frente a las 9 posiciones ocupacionales de `P6430`, identificando 986.256 ocupados con educación superior o posgrado en trabajo por cuenta propia.
 
-### Pregunta 4.2: ¿Qué criterios garantizan que los gráficos exportados sean totalmente autocontenidos?
-**Respuesta:** Todo gráfico incluye título sustantivo, subtítulo metodológico con el dominio geográfico, etiquetas claras en los ejes con unidades de medida explícitas (porcentajes, millones de pesos), leyenda semántica sin códigos numéricos, pie de gráfico con la fuente oficial del DANE (`GEIH 2024` o `EMICRON 2024`) y factores de expansión utilizados, y paletas de color sobrias sin códigos hexadecimales arbitrarios.
+### Pregunta 4.2: ¿Qué criterios garantizan que todos los gráficos del taller estén completamente documentados y sean autocontenidos?
+**Respuesta:** Tanto en el script como en el cuaderno pedagógico, cada gráfico está documentado detallando datos y ponderador (`FEX_C18 / 3`, `FEX_C18 / 12` o `F_EXP`), mapeos estéticos (`aes`), capas geométricas (`geom_*`), ajustes de posición (`position_dodge`, `position_stack`), escalas (`scale_*`), sistema de coordenadas (`coord_flip`), facetas (`facet_wrap`), paleta de colores, etiquetas (`labs` con título, subtítulo, ejes, leyenda y fuente con universo y exclusiones), tema (`theme_bw` y `theme`) y parámetros de exportación (`ggsave` a 300 DPI).

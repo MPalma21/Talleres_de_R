@@ -1,5 +1,5 @@
 "ADOPCION_DIGITAL","ACCESO_CREDITO","N_MUESTRA","TOTAL_MICROS","VENTAS_MEDIANA"
-"Solo efectivo","Con crédito aprobado",10966,653299,2080000
-"Solo efectivo","Sin crédito formal",63131,4276837,1500000
-"Transferencias y billeteras","Con crédito aprobado",115,8018,6e+06
-"Transferencias y billeteras","Sin crédito formal",354,23944,3300000
+"Solo efectivo","No solicitó crédito",37700,2517248,1200000
+"Solo efectivo","Solicitó crédito",5804,337146,1700000
+"Transferencias bancarias / internet","No solicitó crédito",21061,1530224,2300000
+"Transferencias bancarias / internet","Solicitó crédito",5282,326925,3e+06
