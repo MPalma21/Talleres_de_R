@@ -2358,7 +2358,7 @@ window.Quarto = {
   <li><a href="#sec-num-2-2" id="toc-sec-num-2-2" class="nav-link" data-scroll-target="#sec-num-2-2"><span class="header-section-number">2.2</span> Numeral 2.2: Descomposición del Desempleo y Brechas de Género</a></li>
   <li><a href="#sec-num-2-3" id="toc-sec-num-2-3" class="nav-link" data-scroll-target="#sec-num-2-3"><span class="header-section-number">2.3</span> Numeral 2.3: Informalidad Laboral en 13 Ciudades (Diciembre 2024)</a>
   <ul class="collapse">
-  <li><a href="#replicación-exacta-del-algoritmo-multidimensional-del-dane-código_sas" id="toc-replicación-exacta-del-algoritmo-multidimensional-del-dane-código_sas" class="nav-link" data-scroll-target="#replicación-exacta-del-algoritmo-multidimensional-del-dane-código_sas"><span class="header-section-number">2.3.1</span> Replicación Exacta del Algoritmo Multidimensional del DANE (<code>Código_SAS</code>)</a></li>
+  <li><a href="#adaptación-y-validación-de-la-clasificación-del-dane-código_sas" id="toc-adaptación-y-validación-de-la-clasificación-del-dane-código_sas" class="nav-link" data-scroll-target="#adaptación-y-validación-de-la-clasificación-del-dane-código_sas"><span class="header-section-number">2.3.1</span> Adaptación y validación de la clasificación del DANE (<code>Código_SAS</code>)</a></li>
   </ul></li>
   <li><a href="#sec-num-2-4" id="toc-sec-num-2-4" class="nav-link" data-scroll-target="#sec-num-2-4"><span class="header-section-number">2.4</span> Numeral 2.4: Posición Ocupacional Nacional (Enero 2023)</a></li>
   </ul></li>
@@ -2402,7 +2402,7 @@ window.Quarto = {
   </ul></li>
   </ul></li>
   </ul>
-<div class="quarto-alternate-formats"><h2>Otros formatos</h2><ul><li><a href="../../../Guia_Maestra_Estudio_Taller2.pdf"><i class="bi bi-file-pdf"></i>Typst</a></li></ul></div></nav>
+<div class="quarto-alternate-formats"><h2>Otros formatos</h2><ul><li><a href="Guia_Maestra_Estudio_Taller2.pdf"><i class="bi bi-file-pdf"></i>Typst</a></li></ul></div></nav>
 </div>
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
@@ -2468,11 +2468,11 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;09_Septiembre&quot;</span>, <span class="st">&quot;10_Octubre&quot;</span>, <span class="st">&quot;11_Noviembre&quot;</span>, <span class="st">&quot;12_Diciembre&quot;</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>llave_geih <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;DIRECTORIO&quot;</span>, <span class="st">&quot;SECUENCIA_P&quot;</span>, <span class="st">&quot;ORDEN&quot;</span>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Para optimizar el uso de memoria RAM y el tiempo de ejecución, el script aplica tres estrategias concretas: 1. <strong>Selección temprana de columnas (<code>select</code> antes del join):</strong> El módulo de ocupados contiene cerca de doscientas variables. Leer y conservar todas las columnas multiplicaría el consumo de memoria a más de 8 GB. Al aplicar <code>select()</code> inmediatamente tras la importación, el ancho del módulo se reduce de 190 columnas a solo 23, registrando una ganancia de eficiencia superior al 85 % (documentada en <code>1_1_eficiencia.csv</code>). 2. <strong>Homogeneización forzada de tipos de datos:</strong> Las variables de identificación se convierten explícitamente a carácter (<code>as.character()</code>). Esto evita errores de pérdida de ceros a la izquierda y previene incompatibilidades de tipo entre meses o módulos. 3. <strong>Manejo de excepciones contractuales:</strong> En marzo de 2024, el archivo de no ocupados fue nombrado por el DANE como <code>&quot;No ocupado.CSV&quot;</code> en singular. El código detecta condicionalmente esta anomalía (<code>if (anio == &quot;GEIH_2024&quot; &amp;&amp; mes == &quot;03_Marzo&quot;) &quot;No ocupado.CSV&quot; else &quot;No ocupados.CSV&quot;</code>), permitiendo una ejecución continua sin intervención manual.</p>
+<p>Para optimizar el uso de memoria RAM y el tiempo de ejecución, el script aplica tres estrategias concretas: 1. <strong>Selección temprana de columnas (<code>select</code> antes del join):</strong> Ocupados pasa de 200 a 23 columnas, una reducción de 88,5 % documentada en <code>1_1_eficiencia.csv</code>. Las variables se seleccionan después de leer cada CSV y antes de unir los módulos. Este control no cuantifica directamente el ahorro de RAM. 2. <strong>Homogeneización forzada de tipos de datos:</strong> Las variables de identificación se convierten explícitamente a carácter (<code>as.character()</code>). Esto evita errores de pérdida de ceros a la izquierda y previene incompatibilidades de tipo entre meses o módulos. 3. <strong>Manejo de excepciones contractuales:</strong> En marzo de 2024, el archivo de no ocupados fue nombrado por el DANE como <code>&quot;No ocupado.CSV&quot;</code> en singular. El código detecta condicionalmente esta anomalía (<code>if (anio == &quot;GEIH_2024&quot; &amp;&amp; mes == &quot;03_Marzo&quot;) &quot;No ocupado.CSV&quot; else &quot;No ocupados.CSV&quot;</code>), permitiendo una ejecución continua sin intervención manual.</p>
 </section>
 <section id="documentación-del-contador-en-el-bucle-contador---1" class="level3" data-number="1.1.3">
 <h3 data-number="1.1.3" class="anchored" data-anchor-id="documentación-del-contador-en-el-bucle-contador---1"><span class="header-section-number">1.1.3</span> Documentación del Contador en el Bucle (<code>contador &lt;- 1</code>)</h3>
-<p>Antes de iniciar los bucles se inicializa la variable <code>contador &lt;- 1</code>. Al finalizar cada iteración mensual, se ejecuta <code>contador &lt;- contador + 1</code>. Esta decisión responde a fundamentos de eficiencia computacional en R: - <strong>Indexación posicional directa:</strong> En cada mes, las matrices de verificación mensual se asignan directamente a su posición: <code>r   conteos_modulos[[contador]]         &lt;- data.frame(...)   verificacion_eficiencia[[contador]] &lt;- data.frame(...)   verificacion_llaves[[contador]]     &lt;- data.frame(...)   verificacion_pegues[[contador]]     &lt;- data.frame(...)</code> - <strong>Ventaja frente a <code>append()</code> o <code>c()</code>:</strong> En R, modificar un objeto mediante <code>append()</code> o <code>c()</code> obliga al intérprete a copiar la estructura completa en una nueva dirección de memoria en cada iteración (<span class="math inline">\(O(N^2)\)</span> en reasignación). La asignación por índice entero preasigna el elemento en la lista en tiempo constante <span class="math inline">\(O(1)\)</span>. - <strong>Interacción entre índices:</strong> Mientras el índice <code>i</code> corre localmente de 1 a 12 para almacenar los data frames mensuales de cada año en <code>bases_mensuales_anio[[i]]</code>, el índice global <code>contador</code> avanza de 1 a 24, acumulando la auditoría ininterrumpida de los dos años evaluados. - <strong>Consolidación final:</strong> Al cerrar cada año, la lista de 12 data frames se une en un único paso vectorizado mediante <code>bind_rows(bases_mensuales_anio)</code>. Al finalizar los dos años, <code>bind_rows(GEIH_2023, GEIH_2024)</code> construye la base maestra de la GEIH.</p>
+<p>Antes de iniciar los bucles se inicializa la variable <code>contador &lt;- 1</code>. Al finalizar cada iteración mensual, se ejecuta <code>contador &lt;- contador + 1</code>. El contador permite organizar las auditorías mensuales: - <strong>Indexación posicional directa:</strong> En cada mes, las matrices de verificación mensual se asignan directamente a su posición: <code>r   conteos_modulos[[contador]]         &lt;- data.frame(...)   verificacion_eficiencia[[contador]] &lt;- data.frame(...)   verificacion_llaves[[contador]]     &lt;- data.frame(...)   verificacion_pegues[[contador]]     &lt;- data.frame(...)</code> - <strong>Almacenamiento en listas:</strong> Se acumulan los resultados mensuales y se consolidan al finalizar. Las listas empiezan vacías; la asignación por índice no preasigna memoria ni demuestra un costo constante. - <strong>Interacción entre índices:</strong> Mientras el índice <code>i</code> corre localmente de 1 a 12 para almacenar los data frames mensuales de cada año en <code>bases_mensuales_anio[[i]]</code>, el índice global <code>contador</code> avanza de 1 a 24, acumulando la auditoría ininterrumpida de los dos años evaluados. - <strong>Consolidación final:</strong> Al cerrar cada año, la lista de 12 data frames se une en un único paso vectorizado mediante <code>bind_rows(bases_mensuales_anio)</code>. Al finalizar los dos años, <code>bind_rows(GEIH_2023, GEIH_2024)</code> construye la base maestra de la GEIH.</p>
 </section>
 <section id="verificaciones-programáticas-de-integridad" class="level3" data-number="1.1.4">
 <h3 data-number="1.1.4" class="anchored" data-anchor-id="verificaciones-programáticas-de-integridad"><span class="header-section-number">1.1.4</span> Verificaciones Programáticas de Integridad</h3>
@@ -2495,7 +2495,7 @@ window.Quarto = {
 <section id="verificación-de-identidades-conceptuales" class="level3" data-number="1.2.2">
 <h3 data-number="1.2.2" class="anchored" data-anchor-id="verificación-de-identidades-conceptuales"><span class="header-section-number">1.2.2</span> Verificación de Identidades Conceptuales</h3>
 <p>El código comprueba programáticamente dos identidades laborales en cada uno de los 12 meses de 2024 (<code>1_2_consistencia_laboral_2024.csv</code>): <span class="math display">\[\text{PET} = \text{Fuerza de Trabajo (FT)} + \text{Fuera de la Fuerza de Trabajo (FFT)}\]</span> <span class="math display">\[\text{Fuerza de Trabajo (FT)} = \text{Ocupados (OCI)} + \text{Desocupados (DSI)}\]</span> <span class="math display">\[\text{Módulo Fuerza de Trabajo} = \text{Módulo Ocupados} + \text{Módulo No Ocupados}\]</span></p>
-<p>Ambas identidades se satisfacen en el 100 % de los casos, validando la coherencia interna de las clasificaciones del DANE.</p>
+<p>Las tres identidades se satisfacen en el 100 % de los casos, validando la coherencia interna de las clasificaciones del DANE.</p>
 <hr>
 </section>
 </section>
@@ -2534,7 +2534,7 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>DIRECTORIO</code></td>
+<td>DIRECTORIO</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Identificador de la edificación o vivienda</td>
@@ -2543,10 +2543,10 @@ window.Quarto = {
 <td>Vivienda</td>
 <td>Llave relacional</td>
 <td>1.1, 1.4</td>
-<td>Estandarizado con <code>as.character()</code></td>
+<td>Conversión a carácter</td>
 </tr>
 <tr class="even">
-<td><code>SECUENCIA_P</code></td>
+<td>SECUENCIA_​P</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Identificador del hogar dentro de la vivienda</td>
@@ -2555,10 +2555,10 @@ window.Quarto = {
 <td>Hogar</td>
 <td>Llave relacional</td>
 <td>1.1, 1.4</td>
-<td>Estandarizado con <code>as.character()</code></td>
+<td>Conversión a carácter</td>
 </tr>
 <tr class="odd">
-<td><code>ORDEN</code></td>
+<td>ORDEN</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Número de orden de la persona en el hogar</td>
@@ -2567,22 +2567,22 @@ window.Quarto = {
 <td>Persona</td>
 <td>Llave relacional</td>
 <td>1.1, 1.4</td>
-<td>Estandarizado con <code>as.character()</code></td>
+<td>Conversión a carácter</td>
 </tr>
 <tr class="even">
-<td><code>PERIODO</code></td>
+<td>PERIODO</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Período de recolección de la encuesta</td>
 <td>Numérico</td>
-<td>Formato YYYYMM (ej. 202401)</td>
+<td>Fecha: año, mes y día (ej. 20240101)</td>
 <td>Registro</td>
 <td>Filtro temporal</td>
 <td>1.1, 1.3</td>
-<td>Se extrae <code>ANIO</code> con <code>substr(1, 4)</code></td>
+<td>Año: primeros cuatro dígitos de PERIODO</td>
 </tr>
 <tr class="odd">
-<td><code>MES</code></td>
+<td>MES</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Mes de recolección de la encuesta</td>
@@ -2594,7 +2594,7 @@ window.Quarto = {
 <td>Numérico para agregaciones</td>
 </tr>
 <tr class="even">
-<td><code>P3271</code></td>
+<td>P3271</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Sexo al nacer del encuestado</td>
@@ -2606,7 +2606,7 @@ window.Quarto = {
 <td>Etiquetado en factores para gráficos</td>
 </tr>
 <tr class="odd">
-<td><code>P3042</code></td>
+<td>P3042</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Mayor nivel educativo alcanzado</td>
@@ -2615,10 +2615,10 @@ window.Quarto = {
 <td>Persona</td>
 <td>Indicador de capital humano</td>
 <td>1.3, 3.3, 4.3</td>
-<td>Clasificación explícita de los 13 niveles conocidos y auditoría de <code>99</code> y <code>NA</code></td>
+<td>Clasificación explícita de los 13 niveles conocidos y auditoría de 99 y NA</td>
 </tr>
 <tr class="even">
-<td><code>P6090</code></td>
+<td>P6090</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Afiliación al Sistema de Seguridad Social en Salud</td>
@@ -2630,19 +2630,19 @@ window.Quarto = {
 <td>Mantenido en base analítica</td>
 </tr>
 <tr class="odd">
-<td><code>P6040</code></td>
+<td>P6040</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Edad en años cumplidos</td>
 <td>Numérico</td>
-<td>0 a 110 años</td>
+<td>Años cumplidos</td>
 <td>Persona</td>
 <td>Filtro demográfico</td>
 <td>1.3, 1.4</td>
-<td>Validado contra edad EMICRON (<code>P241</code>)</td>
+<td>Validado contra edad EMICRON (P241)</td>
 </tr>
 <tr class="even">
-<td><code>P6160</code></td>
+<td>P6160</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>¿Sabe leer y escribir? (Alfabetismo)</td>
@@ -2654,7 +2654,7 @@ window.Quarto = {
 <td>Mantenido en base analítica</td>
 </tr>
 <tr class="odd">
-<td><code>DPTO</code></td>
+<td>DPTO</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Código DANE del departamento</td>
@@ -2666,7 +2666,7 @@ window.Quarto = {
 <td>Cruce espacial departamental</td>
 </tr>
 <tr class="even">
-<td><code>AREA</code></td>
+<td>AREA</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Dominio geográfico o área metropolitana</td>
@@ -2678,7 +2678,7 @@ window.Quarto = {
 <td>Filtro de las 13 ciudades principales</td>
 </tr>
 <tr class="odd">
-<td><code>CLASE</code></td>
+<td>CLASE</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Tipo de zona geográfica de la vivienda</td>
@@ -2687,10 +2687,10 @@ window.Quarto = {
 <td>Zona</td>
 <td>Dominio geográfico</td>
 <td>1.3, 1.4</td>
-<td>Contrastado con <code>CLASE_TE</code></td>
+<td>Contrastado con CLASE_​TE</td>
 </tr>
 <tr class="even">
-<td><code>FEX_C18</code></td>
+<td>FEX_​C18</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Factor de expansión mensual calibrado</td>
@@ -2702,7 +2702,7 @@ window.Quarto = {
 <td>Ajustado <span class="math inline">\(/ 3\)</span> en trimestres y <span class="math inline">\(/ 12\)</span> en año</td>
 </tr>
 <tr class="odd">
-<td><code>PT</code></td>
+<td>PT</td>
 <td>GEIH</td>
 <td>Características generales</td>
 <td>Indicador de Población Total</td>
@@ -2711,10 +2711,10 @@ window.Quarto = {
 <td>Persona</td>
 <td>Agregador poblacional</td>
 <td>1.3, 2.1</td>
-<td>Ponderado con <code>FEX_C18</code></td>
+<td>Ponderado con FEX_​C18</td>
 </tr>
 <tr class="even">
-<td><code>PET</code></td>
+<td>PET</td>
 <td>GEIH</td>
 <td>Fuerza de trabajo</td>
 <td>Indicador de Población en Edad de Trabajar</td>
@@ -2726,7 +2726,7 @@ window.Quarto = {
 <td>Denominador de TGP y TO</td>
 </tr>
 <tr class="odd">
-<td><code>FT</code></td>
+<td>FT</td>
 <td>GEIH</td>
 <td>Fuerza de trabajo</td>
 <td>Indicador de Fuerza de Trabajo (PEA)</td>
@@ -2738,7 +2738,7 @@ window.Quarto = {
 <td>Numerador de TGP; denom. de TD</td>
 </tr>
 <tr class="even">
-<td><code>FFT</code></td>
+<td>FFT</td>
 <td>GEIH</td>
 <td>Fuerza de trabajo</td>
 <td>Indicador de Población Fuera de la Fuerza de Trabajo</td>
@@ -2750,7 +2750,7 @@ window.Quarto = {
 <td>Verificación de consistencia</td>
 </tr>
 <tr class="odd">
-<td><code>P6240</code></td>
+<td>P6240</td>
 <td>GEIH</td>
 <td>Fuerza de trabajo</td>
 <td>Actividad principal realizada la semana anterior</td>
@@ -2762,7 +2762,7 @@ window.Quarto = {
 <td>Mantenido en base analítica</td>
 </tr>
 <tr class="even">
-<td><code>OCI</code></td>
+<td>OCI</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Indicador de Ocupación</td>
@@ -2774,7 +2774,7 @@ window.Quarto = {
 <td>Numerador de TO; base de formalidad</td>
 </tr>
 <tr class="odd">
-<td><code>RAMA2D_R4</code></td>
+<td>RAMA2D_​R4</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Rama de actividad económica CIIU Rev. 4 A.C. a 2 dígitos</td>
@@ -2786,7 +2786,7 @@ window.Quarto = {
 <td>Define formalidad en ramas 84 y 99</td>
 </tr>
 <tr class="even">
-<td><code>P6430</code></td>
+<td>P6430</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Posición ocupacional en el empleo principal</td>
@@ -2798,7 +2798,7 @@ window.Quarto = {
 <td>Eje central del árbol de formalidad y del cruce 4.3</td>
 </tr>
 <tr class="odd">
-<td><code>INGLABO</code></td>
+<td>INGLABO</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Ingreso laboral monetario mensual</td>
@@ -2810,7 +2810,7 @@ window.Quarto = {
 <td>Base de medianas departamentales (4.1)</td>
 </tr>
 <tr class="even">
-<td><code>DSI</code></td>
+<td>DSI</td>
 <td>GEIH</td>
 <td>No ocupados</td>
 <td>Indicador de Desocupación</td>
@@ -2826,7 +2826,7 @@ window.Quarto = {
 </section>
 <section id="tabla-2-variables-auxiliares-indispensables-para-la-formalidad-dane-numeral-2.3" class="level3" data-number="1.3.2">
 <h3 data-number="1.3.2" class="anchored" data-anchor-id="tabla-2-variables-auxiliares-indispensables-para-la-formalidad-dane-numeral-2.3"><span class="header-section-number">1.3.2</span> Tabla 2: Variables Auxiliares Indispensables para la Formalidad DANE (Numeral 2.3)</h3>
-<p>Variables del capítulo de Ocupados necesarias para replicar la sintaxis oficial del DANE (<code>Código_SAS</code>):</p>
+<p>Variables de Características generales y Ocupados utilizadas en la adaptación de <code>Código_SAS</code>. Se verificaron con el diccionario descargable del catálogo GEIH 2024; su archivo interno conserva el nombre GEIH 2023. Algunas etiquetas del catálogo web difieren del archivo, por ejemplo <code>P3066</code>; aquí se usa la descripción del diccionario descargable.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 10%">
@@ -2856,31 +2856,31 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>P6100</code></td>
+<td>P6100</td>
 <td>GEIH</td>
-<td>Ocupados</td>
+<td>Características generales</td>
 <td>Régimen de seguridad social en salud</td>
 <td>Categórico</td>
-<td>1 = Contributivo (EPS), 2 = Especial, 3 = Subsidiado, 9 = No sabe</td>
-<td>Empleo</td>
-<td>Formalidad asalariados</td>
+<td>1 = Contributivo, 2 = Especial, 3 = Subsidiado, 9 = No sabe</td>
+<td>Persona</td>
+<td>Régimen de salud</td>
 <td>2.3</td>
-<td>Define variable <code>SALUD</code></td>
+<td>Construcción de SALUD</td>
 </tr>
 <tr class="even">
-<td><code>P6110</code></td>
+<td>P6110</td>
 <td>GEIH</td>
-<td>Ocupados</td>
-<td>¿Quién paga la afiliación a salud?</td>
+<td>Características generales</td>
+<td>Quién paga la afiliación a salud</td>
 <td>Categórico</td>
-<td>1 = Descuento nómina/empresa, 2 = Paga totalmente, 3 = Beneficiario, 4 = Pensionado, 9 = No sabe</td>
-<td>Empleo</td>
-<td>Formalidad asalariados</td>
+<td>1 = Persona y empresa, 2 = Descuento de pensión, 3 = Persona paga todo, 4 = Empresa paga todo, 5 = Beneficiario, 9 = No sabe</td>
+<td>Persona</td>
+<td>Pago de salud</td>
 <td>2.3</td>
-<td>Condición conjunta con <code>P6100</code></td>
+<td>Construcción de SALUD</td>
 </tr>
 <tr class="odd">
-<td><code>P6450</code></td>
+<td>P6450</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Tipo de contrato laboral</td>
@@ -2892,7 +2892,7 @@ window.Quarto = {
 <td>Desempata cotizaciones con no sabe/no informa</td>
 </tr>
 <tr class="even">
-<td><code>P6920</code></td>
+<td>P6920</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>¿Cotiza actualmente a un fondo de pensiones?</td>
@@ -2901,10 +2901,10 @@ window.Quarto = {
 <td>Empleo</td>
 <td>Formalidad asalariados</td>
 <td>2.3</td>
-<td>Define variable <code>PENSION</code></td>
+<td>Define variable PENSION</td>
 </tr>
 <tr class="odd">
-<td><code>P6930</code></td>
+<td>P6930</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Fondo al que cotiza en pensión</td>
@@ -2916,31 +2916,31 @@ window.Quarto = {
 <td>Validación institucional de pensión</td>
 </tr>
 <tr class="even">
-<td><code>P6940</code></td>
+<td>P6940</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿Cómo realiza el pago de la cotización a pensión?</td>
+<td>Quién paga la afiliación al fondo de pensiones</td>
 <td>Categórico</td>
-<td>1 = Descuento nómina/empresa, 2 = Paga totalmente, 3 = No paga, 9 = No sabe</td>
-<td>Empleo</td>
-<td>Formalidad asalariados</td>
+<td>1 = Persona y empresa, 2 = Persona paga todo, 3 = Empresa paga todo, 4 = No paga</td>
+<td>Persona</td>
+<td>Pago de pensión</td>
 <td>2.3</td>
-<td>Valida aporte contributivo</td>
+<td>Construcción de PENSION</td>
 </tr>
 <tr class="odd">
-<td><code>P6765</code></td>
+<td>P6765</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>Lugar o tipo de establecimiento donde realiza la actividad</td>
+<td>Forma de trabajo independiente en la semana pasada</td>
 <td>Categórico</td>
-<td>1 a 6 y 8 a 11 = Fuera de vivienda / ambulante / obra / campo, 7 = En esta vivienda</td>
+<td>1 = Honorarios, 2 = Obra, 3 = Destajo, 4 = Comisión, 5 = Catálogo, 6 = Oficio, 7 = Negocio o finca, 8 = Otro</td>
 <td>Empleo</td>
-<td>Filtro de localización</td>
+<td>Forma de trabajo</td>
 <td>2.3</td>
-<td>Bifurca el árbol según lugar de trabajo</td>
+<td>Bifurca el árbol de FORMAL</td>
 </tr>
 <tr class="even">
-<td><code>P3065</code></td>
+<td>P3065</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>¿El negocio tiene registro ante Cámara de Comercio?</td>
@@ -2949,94 +2949,94 @@ window.Quarto = {
 <td>Empresa</td>
 <td>Registro institucional</td>
 <td>2.3</td>
-<td>Clasifica formalidad en <code>P6765 %in% c(4, 5, 6, 8, 9)</code></td>
+<td>Clasifica formalidad en P6765 %in% c(4, 5, 6, 8, 9)</td>
 </tr>
 <tr class="odd">
-<td><code>P3066</code></td>
+<td>P3066</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿Lleva contabilidad formal en el negocio?</td>
+<td>Oficina de contabilidad o servicios de contador en la empresa</td>
 <td>Categórico</td>
-<td>1 = Balance general/libro contable, 2 = Otro registro, 3 = No lleva, 9 = No sabe</td>
+<td>1 = Sí, 2 = No, 9 = No sabe</td>
 <td>Empresa</td>
-<td>Contabilidad comercial</td>
+<td>Organización contable</td>
 <td>2.3</td>
-<td>Formalidad de independientes y patronos</td>
+<td>Árbol de FORMAL</td>
 </tr>
 <tr class="even">
-<td><code>P3067</code></td>
+<td>P3067</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿En esta vivienda cuentan con un local para el negocio?</td>
+<td>Registro del negocio ante Cámara de Comercio</td>
 <td>Categórico</td>
 <td>1 = Sí, 2 = No</td>
-<td>Establecimiento</td>
-<td>Localización en vivienda</td>
+<td>Empresa</td>
+<td>Registro mercantil</td>
 <td>2.3</td>
-<td>Árbol de actividad en vivienda (<code>P6765 == 7</code>)</td>
+<td>Árbol de FORMAL cuando P6765 = 7</td>
 </tr>
 <tr class="odd">
-<td><code>P3067S1</code></td>
+<td>P3067S1</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿El local está independiente de la vivienda?</td>
+<td>Renovación del registro mercantil</td>
 <td>Categórico</td>
-<td>1 = Sí independiente, 2 = No independiente</td>
-<td>Establecimiento</td>
-<td>Independencia física</td>
+<td>1 = Sí, 2 = No</td>
+<td>Empresa</td>
+<td>Renovación del registro</td>
 <td>2.3</td>
-<td>Condiciones explícitas de <code>Código_SAS</code></td>
+<td>Árbol de FORMAL</td>
 </tr>
 <tr class="even">
-<td><code>P3067S2</code></td>
+<td>P3067S2</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>Año desde el cual funciona el local en la vivienda</td>
+<td>Último año de renovación del registro</td>
 <td>Numérico</td>
-<td>Año de inicio (ej. 2018)</td>
-<td>Establecimiento</td>
-<td>Antigüedad del negocio</td>
+<td>Año de renovación</td>
+<td>Empresa</td>
+<td>Vigencia del registro</td>
 <td>2.3</td>
-<td>Comparado contra <code>ANIOS = ANIO - 1</code></td>
+<td>Comparado con ANIOS = ANIO - 1</td>
 </tr>
 <tr class="odd">
-<td><code>P6775</code></td>
+<td>P6775</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿Cuenta con registro mercantil en vivienda?</td>
+<td>Contabilidad o libro de registro diario de operaciones</td>
 <td>Categórico</td>
-<td>1 = Sí tiene, 2 = No tiene, 9 = No sabe</td>
+<td>1 = Sí, 2 = No, 3 = No aplica, 9 = No sabe</td>
 <td>Empresa</td>
-<td>Formalidad en vivienda</td>
+<td>Contabilidad</td>
 <td>2.3</td>
-<td>Condición clave de actividad en vivienda</td>
+<td>Árbol de FORMAL</td>
 </tr>
 <tr class="even">
-<td><code>P3068</code></td>
+<td>P3068</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>¿Lleva contabilidad en la actividad realizada en vivienda?</td>
+<td>La contabilidad permite separar gastos del negocio y del hogar</td>
 <td>Categórico</td>
-<td>1 = Balance/libros, 2 = Otro registro, 3 = No lleva, 9 = No sabe</td>
+<td>1 = Sí, 2 = No, 9 = No sabe</td>
 <td>Empresa</td>
-<td>Formalidad comercial</td>
+<td>Separación de gastos</td>
 <td>2.3</td>
-<td>Desempata actividad en vivienda sin registro</td>
+<td>Árbol de FORMAL</td>
 </tr>
 <tr class="odd">
-<td><code>P3069</code></td>
+<td>P3069</td>
 <td>GEIH</td>
 <td>Ocupados</td>
-<td>Tamaño de la empresa según número de trabajadores</td>
-<td>Numérico</td>
-<td>1 = Solo, 2 = 2 a 3, 3 = 4 a 5, 4 = 6 a 10, 5 = 11 y más</td>
+<td>Personas que trabajan en la empresa o negocio</td>
+<td>Categórico</td>
+<td>1 = Solo, 2 = 2–3, 3 = 4–5, 4 = 6–10, 5 = 11–19, 6 = 20–30, 7 = 31–50, 8 = 51–100, 9 = 101–200, 10 = 201 o más</td>
 <td>Empresa</td>
-<td>Escala de la unidad productiva</td>
+<td>Tamaño de la unidad</td>
 <td>2.3</td>
-<td>Umbral de tamaño (<span class="math inline">\(\ge 4\)</span> formal; <span class="math inline">\(\le 3\)</span> informal)</td>
+<td>Código &gt;= 4 representa seis o más personas</td>
 </tr>
 <tr class="even">
-<td><code>OFICIO_C8</code></td>
+<td>OFICIO_​C8</td>
 <td>GEIH</td>
 <td>Ocupados</td>
 <td>Clasificación Internacional Uniforme de Ocupaciones (CIUO-08)</td>
@@ -3045,7 +3045,7 @@ window.Quarto = {
 <td>Ocupación</td>
 <td>Calificación profesional</td>
 <td>2.3</td>
-<td>Se extraen 2 dígitos (<code>OFICIO_C8_2D</code>)</td>
+<td>Primeros dos dígitos del código</td>
 </tr>
 </tbody>
 </table>
@@ -3082,7 +3082,7 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>DIRECTORIO</code></td>
+<td>DIRECTORIO</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Identificador de la edificación o vivienda</td>
@@ -3091,10 +3091,10 @@ window.Quarto = {
 <td>Vivienda</td>
 <td>Llave relacional</td>
 <td>1.4, 3</td>
-<td>Estandarizado con <code>as.character()</code></td>
+<td>Conversión a carácter</td>
 </tr>
 <tr class="even">
-<td><code>SECUENCIA_P</code></td>
+<td>SECUENCIA_​P</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Identificador del hogar en la vivienda</td>
@@ -3103,10 +3103,10 @@ window.Quarto = {
 <td>Hogar</td>
 <td>Llave relacional</td>
 <td>1.4, 3</td>
-<td>Estandarizado con <code>as.character()</code></td>
+<td>Conversión a carácter</td>
 </tr>
 <tr class="odd">
-<td><code>SECUENCIA_ENCUESTA</code></td>
+<td>SECUENCIA_​ENCUESTA</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Orden del propietario del micronegocio en el hogar</td>
@@ -3115,10 +3115,10 @@ window.Quarto = {
 <td>Persona</td>
 <td>Llave relacional</td>
 <td>1.4, 3</td>
-<td>Equivale a <code>ORDEN</code> de la GEIH</td>
+<td>Equivale a ORDEN de la GEIH</td>
 </tr>
 <tr class="even">
-<td><code>P35</code></td>
+<td>P35</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Sexo del propietario del micronegocio</td>
@@ -3127,22 +3127,22 @@ window.Quarto = {
 <td>Persona</td>
 <td>Caracterización y control</td>
 <td>1.4, 3.1</td>
-<td>Contrastado con <code>P3271</code> de la GEIH</td>
+<td>Contrastado con P3271 de la GEIH</td>
 </tr>
 <tr class="odd">
-<td><code>P241</code></td>
+<td>P241</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Edad en años cumplidos del propietario</td>
 <td>Numérico</td>
-<td>15 a 99 años</td>
+<td>Años cumplidos</td>
 <td>Persona</td>
 <td>Caracterización y control</td>
 <td>1.4, 3.1</td>
-<td>Contrastado con <code>P6040</code> de la GEIH</td>
+<td>Contrastado con P6040 de la GEIH</td>
 </tr>
 <tr class="even">
-<td><code>MES_REF</code></td>
+<td>MES_​REF</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Mes de referencia de la entrevista EMICRON</td>
@@ -3154,7 +3154,7 @@ window.Quarto = {
 <td>Desfase: <span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1\)</span></td>
 </tr>
 <tr class="odd">
-<td><code>COD_DEPTO</code></td>
+<td>COD_​DEPTO</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Código DANE del departamento</td>
@@ -3163,10 +3163,10 @@ window.Quarto = {
 <td>Departamento</td>
 <td>Cobertura geográfica</td>
 <td>1.4, 3</td>
-<td>Cubre 24 departamentos más Bogotá D.C.</td>
+<td>24 dominios: 23 departamentos y Bogotá D.C.</td>
 </tr>
 <tr class="even">
-<td><code>CLASE_TE</code></td>
+<td>CLASE_​TE</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Zona geográfica del micronegocio</td>
@@ -3175,10 +3175,10 @@ window.Quarto = {
 <td>Zona</td>
 <td>Control geográfico</td>
 <td>1.4</td>
-<td>Contrastado con <code>CLASE</code> de la GEIH</td>
+<td>Contrastado con CLASE de la GEIH</td>
 </tr>
 <tr class="odd">
-<td><code>GRUPOS4</code></td>
+<td>GRUPOS4</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Rama de actividad económica agregada a 4 ramas</td>
@@ -3190,7 +3190,7 @@ window.Quarto = {
 <td>Base del análisis de inclusión financiera</td>
 </tr>
 <tr class="even">
-<td><code>GRUPOS12</code></td>
+<td>GRUPOS12</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Rama de actividad económica desagregada a 12 sectores</td>
@@ -3202,7 +3202,7 @@ window.Quarto = {
 <td>Comparado contra boletín técnico DANE</td>
 </tr>
 <tr class="odd">
-<td><code>F_EXP</code></td>
+<td>F_​EXP</td>
 <td>EMICRON</td>
 <td>Identificación</td>
 <td>Factor de expansión anual de micronegocios</td>
@@ -3214,7 +3214,7 @@ window.Quarto = {
 <td><strong>Factor anual: no se divide entre 12</strong></td>
 </tr>
 <tr class="even">
-<td><code>P1633</code></td>
+<td>P1633</td>
 <td>EMICRON</td>
 <td>Características</td>
 <td>¿El micronegocio cuenta con Registro Único Tributario (RUT)?</td>
@@ -3226,7 +3226,7 @@ window.Quarto = {
 <td>Indicador de formalización tributaria</td>
 </tr>
 <tr class="odd">
-<td><code>P1055</code></td>
+<td>P1055</td>
 <td>EMICRON</td>
 <td>Características</td>
 <td>¿Tiene registro mercantil ante Cámara de Comercio?</td>
@@ -3238,7 +3238,7 @@ window.Quarto = {
 <td>Indicador de formalización mercantil</td>
 </tr>
 <tr class="even">
-<td><code>P1764_1</code></td>
+<td>P1764_​1</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta pagos en efectivo</td>
@@ -3250,7 +3250,7 @@ window.Quarto = {
 <td>Base del perfil “Solo efectivo” (exclusivo)</td>
 </tr>
 <tr class="odd">
-<td><code>P1764_2</code></td>
+<td>P1764_​2</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta pagos en cheque</td>
@@ -3262,7 +3262,7 @@ window.Quarto = {
 <td>Medio bancario tradicional</td>
 </tr>
 <tr class="even">
-<td><code>P1764_3</code></td>
+<td>P1764_​3</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta transferencias bancarias o por internet</td>
@@ -3271,10 +3271,10 @@ window.Quarto = {
 <td>Micronegocio</td>
 <td>Medio de pago</td>
 <td>3.2, 4.2</td>
-<td>Incluye billeteras digitales (Nequi, Daviplata)</td>
+<td>No distingue proveedores o billeteras específicas</td>
 </tr>
 <tr class="odd">
-<td><code>P1764_4</code></td>
+<td>P1764_​4</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta factura a crédito</td>
@@ -3286,7 +3286,7 @@ window.Quarto = {
 <td>Medio comercial a plazo</td>
 </tr>
 <tr class="even">
-<td><code>P1764_5</code></td>
+<td>P1764_​5</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta tarjeta débito</td>
@@ -3295,10 +3295,10 @@ window.Quarto = {
 <td>Micronegocio</td>
 <td>Medio de pago</td>
 <td>3.2, 4.2</td>
-<td>Medio electrónico con datáfono</td>
+<td>Medio de pago electrónico</td>
 </tr>
 <tr class="odd">
-<td><code>P1764_6</code></td>
+<td>P1764_​6</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta tarjeta de crédito</td>
@@ -3307,10 +3307,10 @@ window.Quarto = {
 <td>Micronegocio</td>
 <td>Medio de pago</td>
 <td>3.2, 4.2</td>
-<td>Medio electrónico con datáfono</td>
+<td>Medio de pago electrónico</td>
 </tr>
 <tr class="even">
-<td><code>P1764_7</code></td>
+<td>P1764_​7</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>Acepta otro medio de pago</td>
@@ -3322,7 +3322,7 @@ window.Quarto = {
 <td>Categoría residual de medios</td>
 </tr>
 <tr class="odd">
-<td><code>P1765</code></td>
+<td>P1765</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>¿Solicitó un préstamo o crédito para el negocio en el año anterior?</td>
@@ -3334,7 +3334,7 @@ window.Quarto = {
 <td>Mide demanda revelada de crédito</td>
 </tr>
 <tr class="even">
-<td><code>P3014</code></td>
+<td>P3014</td>
 <td>EMICRON</td>
 <td>Inclusión financiera</td>
 <td>¿El micronegocio ahorró parte de sus ingresos?</td>
@@ -3343,10 +3343,10 @@ window.Quarto = {
 <td>Micronegocio</td>
 <td>Capacidad de ahorro</td>
 <td>3.2</td>
-<td>Mide excedente económico</td>
+<td>Ahorro declarado durante el año anterior</td>
 </tr>
 <tr class="odd">
-<td><code>VENTAS_MES_ANTERIOR</code></td>
+<td>VENTAS_​MES_​ANTERIOR</td>
 <td>EMICRON</td>
 <td>Ventas o ingresos</td>
 <td>Ventas o ingresos brutos del mes anterior a la entrevista</td>
@@ -3362,7 +3362,7 @@ window.Quarto = {
 </section>
 <section id="diferencia-conceptual-entre-dpto-area-y-clase" class="level3" data-number="1.3.4">
 <h3 data-number="1.3.4" class="anchored" data-anchor-id="diferencia-conceptual-entre-dpto-area-y-clase"><span class="header-section-number">1.3.4</span> Diferencia Conceptual entre <code>DPTO</code>, <code>AREA</code> y <code>CLASE</code></h3>
-<p>En la GEIH, estas tres variables delimitan dimensiones geográficas distintas y no son intercambiables: 1. <code>DPTO</code>: Representa la división político-administrativa de primer nivel (24 departamentos más Bogotá D.C. en los microdatos estándar). Permite agregar información regional o departamental completa (cabeceras más zonas rurales). 2. <code>AREA</code>: Identifica dominios urbanos y metropolitanos específicos. En la GEIH, las 13 ciudades y áreas metropolitanas principales corresponden a los códigos <code>c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)</code> (Medellín A.M., Barranquilla A.M., Bogotá D.C., Cartagena, Manizales A.M., Montería, Villavicencio, Pasto, Cúcuta A.M., Pereira A.M., Bucaramanga A.M., Ibagué y Cali A.M.). No cubre áreas rurales. 3. <code>CLASE</code>: Diferencia la morfología del asentamiento humano dentro de un municipio: <code>1 = Cabecera municipal</code> (casco urbano consolidado) y <code>2 = Centros poblados y rural disperso</code>. Permite el análisis urbano-rural.</p>
+<p>En la GEIH, estas tres variables delimitan dimensiones geográficas distintas y no son intercambiables: 1. <code>DPTO</code>: Representa la división político-administrativa de primer nivel (23 departamentos y Bogotá D.C. en los archivos utilizados). Permite agregar información regional o departamental completa (cabeceras más zonas rurales). 2. <code>AREA</code>: Identifica dominios urbanos y metropolitanos específicos. En la GEIH, las 13 ciudades y áreas metropolitanas principales corresponden a los códigos <code>c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)</code> (Medellín A.M., Barranquilla A.M., Bogotá D.C., Cartagena, Manizales A.M., Montería, Villavicencio, Pasto, Cúcuta A.M., Pereira A.M., Bucaramanga A.M., Ibagué y Cali A.M.). No cubre áreas rurales. 3. <code>CLASE</code>: Diferencia la morfología del asentamiento humano dentro de un municipio: <code>1 = Cabecera municipal</code> (casco urbano consolidado) y <code>2 = Centros poblados y rural disperso</code>. Permite el análisis urbano-rural.</p>
 <hr>
 </section>
 </section>
@@ -3374,7 +3374,7 @@ window.Quarto = {
 </section>
 <section id="cobertura-geográfica-diferencial" class="level3" data-number="1.4.2">
 <h3 data-number="1.4.2" class="anchored" data-anchor-id="cobertura-geográfica-diferencial"><span class="header-section-number">1.4.2</span> Cobertura Geográfica Diferencial</h3>
-<p>Existe una divergencia geográfica estructural entre ambas operaciones estadísticas: - La GEIH cubre 32 entidades territoriales en su marco general (y 25 dominios departamentales en los microdatos mensuales estándar). - La EMICRON excluye explícitamente de su diseño muestral a los ocho departamentos de la Amazonía y Orinoquía: Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada (documentado en la ficha metodológica y catálogo 875 de microdatos de ANDA/DANE).</p>
+<p>Existe una divergencia geográfica estructural entre ambas operaciones estadísticas: - La GEIH tiene cobertura nacional; los archivos usados contienen 24 dominios departamentales (23 departamentos y Bogotá D.C.). Esta cobertura observada no equivale a enumerar todo el marco geográfico de la operación. - La EMICRON excluye explícitamente de su diseño muestral a los ocho departamentos de la Amazonía y Orinoquía: Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada (documentado en la ficha metodológica y catálogo 875 de microdatos de ANDA/DANE).</p>
 </section>
 <section id="metodología-de-ponderación-fex_c18-vs.-f_exp" class="level3" data-number="1.4.3">
 <h3 data-number="1.4.3" class="anchored" data-anchor-id="metodología-de-ponderación-fex_c18-vs.-f_exp"><span class="header-section-number">1.4.3</span> Metodología de Ponderación: <code>FEX_C18</code> vs. <code>F_EXP</code></h3>
@@ -3382,11 +3382,11 @@ window.Quarto = {
 </section>
 <section id="determinación-empírica-de-la-llave-secuencia_encuesta-vs.-orden" class="level3" data-number="1.4.4">
 <h3 data-number="1.4.4" class="anchored" data-anchor-id="determinación-empírica-de-la-llave-secuencia_encuesta-vs.-orden"><span class="header-section-number">1.4.4</span> Determinación Empírica de la Llave: <code>SECUENCIA_ENCUESTA</code> vs. <code>ORDEN</code></h3>
-<p>En los microdatos de la EMICRON no se publica la variable <code>ORDEN</code>, sino <code>SECUENCIA_ENCUESTA</code>. Al examinar empíricamente su distribución en los 78.501 registros de EMICRON (<code>1_4_secuencia_encuesta.csv</code> y <code>1_4_relacion_orden.csv</code>), se comprueba que: - El 99,3 % de los registros toma valores entre <code>1</code> y <code>3</code>, pero el valor máximo llega hasta <code>11</code> (exactamente el rango de miembros de un hogar). - En el 100 % de los casos emparejados con la GEIH, el valor de <code>SECUENCIA_ENCUESTA</code> coincide unívocamente con el valor de <code>ORDEN</code> de la persona propietaria del micronegocio. Por lo tanto, la llave de persona para unir EMICRON con GEIH es <code>DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA</code> (empatada con <code>ORDEN</code>).</p>
+<p>En los microdatos de la EMICRON no se publica la variable <code>ORDEN</code>, sino <code>SECUENCIA_ENCUESTA</code>. Al examinar empíricamente su distribución en los 78.501 registros de EMICRON (<code>1_4_relacion_orden.csv</code> y los controles del numeral 1.4.c), se comprueba que: - El 94,95 % de los registros toma valores entre <code>1</code> y <code>3</code>; el máximo es <code>16</code>. Hay hogares con uno a seis propietarios. La secuencia identifica la persona del hogar, no un consecutivo exclusivo de propietarios. - En el 100 % de los casos emparejados con la GEIH, el valor de <code>SECUENCIA_ENCUESTA</code> coincide unívocamente con el valor de <code>ORDEN</code> de la persona propietaria del micronegocio. Por lo tanto, la llave de persona para unir EMICRON con GEIH es <code>DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA</code> (empatada con <code>ORDEN</code>).</p>
 </section>
 <section id="desfase-temporal-y-período-de-referencia" class="level3" data-number="1.4.5">
 <h3 data-number="1.4.5" class="anchored" data-anchor-id="desfase-temporal-y-período-de-referencia"><span class="header-section-number">1.4.5</span> Desfase Temporal y Período de Referencia</h3>
-<p>Al contrastar <code>MES_REF</code> (EMICRON) con <code>MES</code> (GEIH) sobre las observaciones enlazadas, se evaluaron tres hipótesis formales (<code>1_4_relacion_meses.csv</code>): 1. <strong>Mismo mes (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}}\)</span>):</strong> 0 % de correspondencia. 2. <strong>Un mes atrás (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}} - 1\)</span>):</strong> 0 % de correspondencia. 3. <strong>Un mes adelante (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1\)</span>):</strong> 100 % de correspondencia (71.754 de 71.754 casos).</p>
+<p>Al contrastar <code>MES_REF</code> (EMICRON) con <code>MES</code> (GEIH) sobre las observaciones enlazadas, se evaluaron tres hipótesis formales (<code>1_4_relacion_meses.csv</code>): 1. <strong>Mismo mes (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}}\)</span>):</strong> 0 % de correspondencia. 2. <strong>Un mes atrás (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}} - 1\)</span>):</strong> 0 % de correspondencia. 3. <strong>Un mes adelante (<span class="math inline">\(\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1\)</span>):</strong> 100 % de correspondencia (78.501 de 78.501 casos, contrastando con GEIH 2023 y 2024).</p>
 <p>Este desfase responde al operativo de campo: la entrevista de EMICRON se aplica el mes siguiente a la visita de la GEIH. Debido a este desfase, el mes jamás debe incorporarse dentro de la llave de unión, pues destruiría el emparejamiento.</p>
 </section>
 <section id="auditoría-del-enlace-y-explicación-de-los-registros-no-emparejados" class="level3" data-number="1.4.6">
@@ -3395,11 +3395,11 @@ window.Quarto = {
 </section>
 <section id="validación-de-la-calidad-del-enlace" class="level3" data-number="1.4.7">
 <h3 data-number="1.4.7" class="anchored" data-anchor-id="validación-de-la-calidad-del-enlace"><span class="header-section-number">1.4.7</span> Validación de la Calidad del Enlace</h3>
-<p>Para verificar que el pegue unió a la persona correcta, se contrastaron variables sociodemográficas medidas de forma independiente en ambas encuestas (<code>1_4_consistencia_sociodemografica.csv</code>): - Coincidencia en sexo (<code>P35</code> vs. <code>P3271</code>): 100,0 %. - Coincidencia en edad (<code>P241</code> vs. <code>P6040</code>): 100,0 %. - Coincidencia en zona geográfica (<code>CLASE_TE</code> vs. <code>CLASE</code>): 100,0 %.</p>
+<p>Para verificar que el pegue unió a la persona correcta, se contrastaron variables sociodemográficas medidas de forma independiente en ambas encuestas (<code>1_4_validacion_pegue.csv</code>): - Coincidencia en sexo (<code>P35</code> vs. <code>P3271</code>): 100,0 %. - Coincidencia en edad (<code>P241</code> vs. <code>P6040</code>): 100,0 %. - Coincidencia en zona geográfica (<code>CLASE_TE</code> vs. <code>CLASE</code>): 100,0 %.</p>
 </section>
 <section id="interpretación-de-la-posición-ocupacional-en-1.4.g" class="level3" data-number="1.4.8">
 <h3 data-number="1.4.8" class="anchored" data-anchor-id="interpretación-de-la-posición-ocupacional-en-1.4.g"><span class="header-section-number">1.4.8</span> Interpretación de la Posición Ocupacional en 1.4.g</h3>
-<p>En la base enlazada (<code>1_4_posicion_ocupacional.csv</code>), el 88,53 % de los propietarios son trabajadores por cuenta propia (<code>64.479</code> registros) y el 9,22 % son patrones o empleadores (<code>6.019</code> registros), sumando el <strong>97,75 %</strong> en conjunto. El <strong>2,25 %</strong> restante reporta posiciones como obrero particular (1,54 %) o trabajador sin remuneración (0,33 %), lo que responde a transiciones ocupacionales ocurridas durante el desfase temporal entre encuestas o a situaciones de pluriactividad donde el micronegocio es secundario frente a un empleo asalariado principal.</p>
+<p>El 88,53 % de los propietarios enlazados declaró trabajo por cuenta propia y el 9,22 % ser patrón o empleador (97,75 % en conjunto). El 2,25 % restante incluye empleados particulares (1,54 %) y trabajadores sin remuneración en empresas de otros hogares (0,33 %). Podrían intervenir cambios ocupacionales, actividades secundarias o imprecisiones de reporte; el cruce no permite distinguir estas hipótesis. La identificación como propietario en EMICRON y la posición del empleo principal en GEIH describen aspectos distintos de la actividad económica. Los conteos muestrales son 64.479 por cuenta propia y 6.019 patrones; los porcentajes usan <code>F_EXP</code>.</p>
 <hr>
 </section>
 </section>
@@ -3413,19 +3413,25 @@ window.Quarto = {
 </section>
 <section id="sec-num-2-2" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="sec-num-2-2"><span class="header-section-number">2.2</span> Numeral 2.2: Descomposición del Desempleo y Brechas de Género</h2>
-<p>El gráfico <code>2_2_tasas_sexo.png</code> ilustra el comportamiento de las tres tasas en paneles separados por sexo entre 2023 y 2024: - <strong>Evolución del desempleo:</strong> La variación de la tasa de desempleo responde a la interacción dinámica entre la tasa de ocupación (demanda laboral) y la tasa global de participación (oferta laboral). Por ejemplo, entre el primer trimestre de 2024 (TD masculina de 9,57 % y femenina de 14,98 %) y el cuarto trimestre de 2024 (7,06 % en hombres y 11,15 % en mujeres), el descenso del desempleo obedeció a un aumento de la tasa de ocupación hacia fin de año. - <strong>Brechas estructurales de género:</strong> En todos los trimestres, los hombres superan a las mujeres en más de 24 puntos porcentuales en TGP (76,30 % vs. 52,66 % en O-D 2024) y en TO (70,92 % vs. 46,79 % en O-D 2024), mientras que las mujeres enfrentan una tasa de desempleo entre 4 y 5,4 puntos porcentuales superior.</p>
+<p>El gráfico <code>2_2_tasas_sexo.png</code> presenta paneles por tasa y distingue ambos sexos en los ocho trimestres de 2023 y 2024:</p>
+<ul>
+<li>En participación, la TGP de los hombres oscila entre 76,27 % y 76,84 %, frente a 52,02 % a 53,07 % en las mujeres. La brecha trimestral va de 23,64 a 24,37 puntos porcentuales. En ocupación, la TO masculina varía entre 68,97 % y 70,96 %, y la femenina entre 44,23 % y 46,88 %; la brecha es de 24,08 a 25,22 puntos.</li>
+<li>La TD femenina varía entre 11,15 % y 15,09 %, frente a 7,06 % a 9,57 % en hombres. La diferencia desfavorable para las mujeres se sitúa entre 3,84 y 5,91 puntos porcentuales.</li>
+<li>Entre julio-septiembre y octubre-diciembre de 2024, la TD cae de 7,67 % a 7,06 % en hombres y de 12,12 % a 11,15 % en mujeres. La TO aumenta de 70,51 % a 70,92 % y de 46,30 % a 46,79 %, respectivamente, mientras la TGP disminuye ligeramente (76,37 % a 76,30 % y 52,69 % a 52,66 %). La caída del desempleo coincide con una mayor ocupación relativa a la PET y una menor participación: <span class="math inline">\(\text{TD}=100(1-\text{TO}/\text{TGP})\)</span>. La serie no identifica causas sectoriales ni permite establecer un patrón estacional.</li>
+</ul>
 </section>
 <section id="sec-num-2-3" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="sec-num-2-3"><span class="header-section-number">2.3</span> Numeral 2.3: Informalidad Laboral en 13 Ciudades (Diciembre 2024)</h2>
-<section id="replicación-exacta-del-algoritmo-multidimensional-del-dane-código_sas" class="level3" data-number="2.3.1">
-<h3 data-number="2.3.1" class="anchored" data-anchor-id="replicación-exacta-del-algoritmo-multidimensional-del-dane-código_sas"><span class="header-section-number">2.3.1</span> Replicación Exacta del Algoritmo Multidimensional del DANE (<code>Código_SAS</code>)</h3>
-<p>La medición de formalidad del DANE evalúa cuatro variables secuenciales (<code>FORMAL</code>, <code>SALUD</code>, <code>PENSION</code> y <code>EI</code>) mediante bloques <code>case_when</code> explícitos que replican íntegramente la sintaxis oficial <code>Código_SAS</code> del DANE: 1. <strong><code>FORMAL</code> (formalidad de la unidad económica):</strong> - Administración pública y organizaciones extraterritoriales (<code>RAMA2D_R4 %in% c(84, 99)</code>) y empleados del gobierno (<code>P6430 == 2</code>) son formales (<code>1</code>). - Empleados domésticos (<code>P6430 == 3</code>), trabajadores familiares sin remuneración (<code>P6430 == 6</code>) y jornaleros (<code>P6430 == 8</code>) reciben <code>FORMAL = 0</code> en el paso empresarial. - Para asalariados particulares (<code>P6430 %in% c(1, 7)</code>), trabajadores por cuenta propia (<code>P6430 %in% c(4, 9)</code>) y patrones (<code>P6430 == 5</code>), el árbol evalúa el lugar de trabajo (<code>P6765</code>), el registro mercantil (<code>P3065</code> / <code>P6775</code>), la contabilidad (<code>P3066</code> / <code>P3068</code>), el local en vivienda (<code>P3067</code>, <code>P3067S1</code>, <code>P3067S2</code>), el tamaño de empresa (<code>P3069</code>) y el oficio (<code>OFICIO_C8_2D</code>). - En los microdatos públicos GEIH 2024, <code>P3045S1</code> y <code>P3046</code> vienen en <code>NA</code>, por lo que las condiciones iniciales para <code>P6430 %in% c(1, 7)</code> evalúan como <code>FALSE</code> y recaen en las reglas generales por lugar de trabajo (<code>P6765</code>), exactamente igual que en la sintaxis oficial del DANE. 2. <strong><code>SALUD</code> y <code>PENSION</code> (protección social contributiva):</strong> - Clasifican la cotización a salud (<code>P6100</code>, <code>P6110</code>, <code>P6450</code>) y pensión (<code>P6920</code>, <code>P6930</code>, <code>P6940</code>, <code>P6450</code>) de los asalariados (<code>P6430 %in% c(1, 2, 3, 8)</code>). 3. <strong><code>EI</code> (empleo formal = 1, empleo informal = 0):</strong> - Ramas <code>84</code> y <code>99</code> y empleados del gobierno (<code>P6430 == 2</code>) son formales (<code>1</code>); trabajadores sin remuneración (<code>P6430 %in% c(6, 7)</code>) son informales (<code>0</code>); empleados domésticos (<code>P6430 == 3</code>) y jornaleros (<code>P6430 == 8</code>) dependen de <code>SALUD == 1 &amp; PENSION == 1</code>; obreros particulares (<code>P6430 == 1</code>) exigen <code>SALUD == 1 &amp; PENSION == 1</code> (o desempate con <code>FORMAL</code> cuando <code>SALUD == 9</code>); e independientes/patrones (<code>P6430 %in% c(4, 5, 9)</code>) toman el valor de <code>FORMAL</code>.</p>
+<section id="adaptación-y-validación-de-la-clasificación-del-dane-código_sas" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="adaptación-y-validación-de-la-clasificación-del-dane-código_sas"><span class="header-section-number">2.3.1</span> Adaptación y validación de la clasificación del DANE (<code>Código_SAS</code>)</h3>
+<p>Se adapta la sintaxis oficial en SAS del DANE (<code>Código_SAS</code> del anexo <code>anex-GEIHEISS-oct-dic2024.xlsx</code>) para obtener <code>EI = 1</code> en empleo formal y <code>EI = 0</code> en informal. Se construyen <code>FORMAL</code>, <code>SALUD</code> y <code>PENSION</code> antes de <code>EI</code>. El contraste independiente coincide en <code>EI</code> para los 353.672 ocupados de 2024. <code>FORMAL</code> difiere en 11.911 empleados domésticos (0 en R y faltante en SAS), sin cambiar la clasificación final. Las variables de negocio describen forma de trabajo, registro y renovación, contabilidad, separación de gastos, tamaño y oficio.</p>
+<p>En el código, <code>SALUD</code> y <code>PENSION</code> se calculan para <code>P6430 %in% c(1, 3, 7)</code>; <code>EI</code> asigna 1 a empleados del gobierno, 0 a las posiciones 6 y 8, <code>FORMAL</code> a cuenta propia y patrones, y combina salud y pensión para las posiciones 1, 3 y 7. Esta descripción corresponde al código que se expondrá; la coincidencia final comprobada no implica identidad de todos los pasos intermedios.</p>
 <p>Al replicar el cálculo para el trimestre octubre–diciembre de 2024 en las 13 ciudades y áreas metropolitanas, la proporción de ocupados informales es de <strong>42,5 %</strong>, mostrando una diferencia de <strong>0,0 puntos porcentuales</strong> frente al boletín oficial del DANE (<code>2_3_control_ei_dane.csv</code>). En el mes de diciembre de 2024 (<code>2_3_formalidad_13ciudades.png</code> y <code>2_3_tabla_formalidad_13ciudades.csv</code>), la informalidad en las 13 ciudades fue de <strong>42,2 %</strong> en hombres (57,8 % formal) y <strong>42,3 %</strong> en mujeres (57,7 % formal).</p>
 </section>
 </section>
 <section id="sec-num-2-4" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="sec-num-2-4"><span class="header-section-number">2.4</span> Numeral 2.4: Posición Ocupacional Nacional (Enero 2023)</h2>
-<p>El gráfico <code>2_4_posicion_nacional.png</code> presenta la distribución de los ocupados según posición ocupacional y sexo para enero de 2023: - Los trabajadores por cuenta propia concentran el <strong>40,6 %</strong> del empleo nacional y los patrones o empleadores el <strong>2,6 %</strong>, sumando en conjunto el <strong>43,2 %</strong> de la población ocupada del país (alrededor de 9,6 millones de personas). - <strong>Relevancia metodológica:</strong> Este 43,2 % constituye precisamente la población objetivo a partir de la cual el DANE identifica y selecciona la muestra de la Encuesta de Micronegocios (EMICRON).</p>
+<p>El gráfico <code>2_4_posicion_nacional.png</code> presenta la distribución de los ocupados según posición ocupacional y sexo para enero de 2023: - Los trabajadores por cuenta propia concentran el <strong>40,6 %</strong> del empleo nacional y los patrones o empleadores el <strong>2,6 %</strong>, sumando en conjunto el <strong>43,2 %</strong> de la población ocupada del país (alrededor de 9,3 millones de personas). - <strong>Relevancia metodológica:</strong> De estas posiciones provienen los propietarios potenciales de EMICRON, sujetos también al criterio de unidades de hasta nueve personas ocupadas.</p>
 <hr>
 </section>
 </section>
@@ -3433,11 +3439,12 @@ window.Quarto = {
 <h1 data-number="3"><span class="header-section-number">3</span> Caracterización de los Micronegocios en Colombia (Punto 3)</h1>
 <section id="sec-num-3-1" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="sec-num-3-1"><span class="header-section-number">3.1</span> Numeral 3.1: Indicadores Estructurales y Comparación con el Boletín DANE (EMICRON 2024)</h2>
-<p>Los porcentajes de <code>3_1_indicadores.xlsx</code> se calcularon directamente con la suma de <code>F_EXP</code> <strong>antes de redondear los totales expandidos</strong> (<code>TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE)</code>): - <strong>Total nacional:</strong> 5.297.252 micronegocios (coincidencia exacta con el boletín técnico del DANE). - <strong>Composición por sexo (<code>P35</code>):</strong> 64,6 % liderados por hombres (3.421.325) y 35,4 % por mujeres (1.875.927). - <strong>Ramas de actividad (<code>GRUPOS12</code>):</strong> Comercio y reparación de vehículos (23,9 %; 1.263.754) y agricultura, ganadería, caza, silvicultura y pesca (21,5 %; 1.138.758) concentran el 45,4 % del total, seguidas por industrias manufactureras (10,0 %; 531.988) y alojamiento y servicios de comida (8,3 %; 440.223). Se documentan 4 registros con código <code>GRUPOS12 == 13</code> (<em>No informa</em>, 82 micronegocios expandidos, 0,0 %). - <strong>Registro Único Tributario (<code>P1633</code>):</strong> El 22,4 % cuenta con RUT (1.185.978) y el 77,6 % no cuenta con RUT (4.111.274), coincidiendo con el Gráfico 11 del boletín DANE. - <strong>Cámara de Comercio (<code>P1055</code>) y explicación de la discrepancia de <span class="math inline">\(-0,2\)</span> pp:</strong> - Nuestro cálculo sobre los microdatos arroja <strong>10,3 %</strong> con registro mercantil (<code>P1055 == 1</code>) y <strong>89,7 %</strong> sin registro (<code>P1055 == 2</code>). - El <strong>Gráfico 9</strong> del Boletín Técnico EMICRON 2024 publica <strong>10,5 %</strong> con registro y <strong>89,5 %</strong> sin registro, lo que representa una diferencia de <strong><span class="math inline">\(-0,2\)</span> puntos porcentuales</strong> (<code>+0,2</code> pp en no registrados). - Al contrastar la <strong>Tabla 8</strong> y el <strong>Anexo F.6</strong> del mismo boletín oficial del DANE, se verifica que las cantidades absolutas publicadas por el DANE son <strong>547.581</strong> micronegocios con registro mercantil (548 mil en el cuadro del boletín) y <strong>4.749.671</strong> sin registro sobre un total de <strong>5.297.252</strong>; su cociente exacto es <span class="math inline">\(\frac{547.580,7}{5.297.252,1} = 10,337\)</span> % (<strong>10,3 %</strong> a un decimal), lo que demuestra que los microdatos coinciden exactamente con las tablas absolutas del anexo oficial (<code>3_1_indicadores.xlsx</code> y objeto <code>verificacion_3_1_dane</code>).</p>
+<p>Los porcentajes de <code>3_1_indicadores.xlsx</code> se calcularon directamente con la suma de <code>F_EXP</code> <strong>antes de redondear los totales expandidos</strong> (<code>TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE)</code>): - <strong>Total nacional:</strong> 5.297.252 micronegocios (coincidencia exacta con el boletín técnico del DANE). - <strong>Composición por sexo (<code>P35</code>):</strong> 64,6 % liderados por hombres (3.421.325) y 35,4 % por mujeres (1.875.927). - <strong>Ramas de actividad (<code>GRUPOS12</code>):</strong> Comercio y reparación de vehículos (23,9 %; 1.263.754) y agricultura, ganadería, caza, silvicultura y pesca (21,5 %; 1.138.758) concentran el 45,4 % del total, seguidas por industrias manufactureras (10,0 %; 531.988) y alojamiento y servicios de comida (8,3 %; 440.223). Se documentan 4 registros con código <code>GRUPOS12 == 13</code> (<em>No informa</em>, 82 micronegocios expandidos, 0,0 %). - <strong>Registro Único Tributario (<code>P1633</code>):</strong> El 22,4 % cuenta con RUT (1.185.978) y el 77,6 % no cuenta con RUT (4.111.274), coincidiendo con el Gráfico 11 del boletín DANE. - <strong>Cámara de Comercio (<code>P1055</code>) y explicación de la discrepancia de <span class="math inline">\(-0,2\)</span> pp:</strong> - Nuestro cálculo sobre los microdatos arroja <strong>10,3 %</strong> con registro mercantil (<code>P1055 == 1</code>) y <strong>89,7 %</strong> sin registro (<code>P1055 == 2</code>). - El <strong>Gráfico 9</strong> del Boletín Técnico EMICRON 2024 publica <strong>10,5 %</strong> con registro y <strong>89,5 %</strong> sin registro, lo que representa una diferencia de <strong><span class="math inline">\(-0,2\)</span> puntos porcentuales</strong> (<code>+0,2</code> pp en no registrados). - Al contrastar la <strong>Tabla 8</strong> del mismo boletín oficial del DANE, se verifica que las cantidades absolutas publicadas por el DANE son <strong>547.581</strong> micronegocios con registro mercantil y <strong>4.749.671</strong> sin registro sobre un total de <strong>5.297.252</strong>; su cociente exacto es <span class="math inline">\(\frac{547.580,7}{5.297.252,1} = 10,337\)</span> % (<strong>10,3 %</strong> a un decimal), lo que demuestra que los microdatos coinciden exactamente con la Tabla 8 del boletín (<code>3_1_indicadores.xlsx</code> y objeto <code>verificacion_3_1_dane</code>).</p>
 </section>
 <section id="sec-num-3-2" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="sec-num-3-2"><span class="header-section-number">3.2</span> Numeral 3.2: Inclusión Financiera de Micronegocios</h2>
-<p>El módulo de inclusión financiera evalúa los medios de pago aceptados (<code>P1764_1</code> a <code>P1764_7</code>), la solicitud de crédito (<code>P1765</code>) y el ahorro (<code>P3014</code>): - <strong>Automatización en el script:</strong> El cálculo del porcentaje expandido para las 7 variables se resuelve mediante un ciclo sobre <code>1:7</code> agrupado por rama (<code>GRUPOS4</code>), ponderando con <code>F_EXP</code>. - <strong>Resultados e interpretación (<code>3_2_formas_pago.png</code> y <code>3_2_credito_ahorro.csv</code>):</strong> - El <strong>efectivo</strong> (<code>P1764_1</code>) es el medio predominante en todas las ramas: alcanza el 94,3 % en comercio, 89,7 % en servicios, 86,2 % en industria manufacturera y 85,1 % en agricultura. - Las <strong>transferencias bancarias o por internet</strong> (<code>P1764_3</code>, que incluyen billeteras digitales como Nequi y Daviplata) presentan una marcada brecha sectorial: alcanzan el <strong>51,9 %</strong> en servicios, el <strong>43,4 %</strong> en comercio y el <strong>36,1 %</strong> en industria, pero apenas llegan al <strong>6,7 %</strong> en el sector agropecuario. - Los medios electrónicos con datáfono (<code>P1764_5</code> tarjeta débito y <code>P1764_6</code> tarjeta de crédito) no superan el 7,2 % en comercio y el 6,3 % en servicios (y son inferiores al 0,4 % en el agro). - Apenas el <strong>14,2 %</strong> de los micronegocios solicitó un préstamo o crédito (<code>P1765 == 1</code>) y solo el <strong>18,1 %</strong> ahorró parte de sus ingresos (<code>P3014 == 1</code>).</p>
+<p>El módulo de inclusión financiera evalúa siete medios de pago mediante un ciclo agrupado por <code>GRUPOS4</code> y ponderado con <code>F_EXP</code>.</p>
+<p>El efectivo se acepta en el 99,0 % de los micronegocios agropecuarios y de comercio, el 98,0 % de industria y el 95,7 % de servicios. Las transferencias bancarias o por internet alcanzan 6,7 %, 39,0 %, 43,4 % y 51,9 %, respectivamente. Los porcentajes son ponderados con <code>F_EXP</code> dentro de cada rama y las opciones son multirrespuesta. Entre micronegocios con rama clasificada y respuesta válida a cada pregunta, el 14,2 % solicitó crédito o préstamo y el 18,1 % ahorró dinero del negocio durante el año anterior. La solicitud no demuestra aprobación ni distingue crédito formal de otras fuentes.</p>
 </section>
 <section id="sec-num-3-3" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="sec-num-3-3"><span class="header-section-number">3.3</span> Numeral 3.3: Cruce Conjunto GEIH - EMICRON con Categorías Explícitas del DANE</h2>
@@ -3447,10 +3454,10 @@ window.Quarto = {
 <li><strong>Clasificación explícita del diccionario GEIH 2024 (<code>P3042</code>):</strong> Se clasifican por separado los códigos <code>1</code> a <code>13</code> y <code>99</code>. La auditoría comprueba que el 100 % de los 71.754 propietarios emparejados tiene niveles conocidos en <code>1:13</code> (<code>0</code> en <code>99 = No sabe, no informa</code>, <code>0</code> en <code>NA</code> y <code>0</code> códigos inválidos; <code>0</code> faltantes en <code>P1633</code>).</li>
 <li><strong>Hallazgos (<code>3_3_cruce.png</code> y <code>3_3_tabla_educacion_rut.csv</code>):</strong>
 <ul>
-<li>La tenencia de RUT muestra un gradiente positivo continuo a lo largo de las 13 categorías del DANE: <strong>0,0 %</strong> en <em>Preescolar</em> (<span class="math inline">\(n=6\)</span>), <strong>2,8 %</strong> en <em>Ninguno</em>, <strong>11,7 %</strong> en <em>Básica primaria (1o - 5o)</em>, <strong>13,1 %</strong> en <em>Normalista</em>, <strong>14,5 %</strong> en <em>Básica secundaria (6o - 9o)</em>, <strong>22,3 %</strong> en <em>Media académica</em> y <strong>26,8 %</strong> en <em>Media técnica</em>.</li>
+<li>La tenencia de RUT muestra una asociación positiva general con la educación, sin aumentar en todas las categorías sucesivas: <strong>0,0 %</strong> en <em>Preescolar</em> (<span class="math inline">\(n=6\)</span>), <strong>2,8 %</strong> en <em>Ninguno</em>, <strong>11,7 %</strong> en <em>Básica primaria (1o - 5o)</em>, <strong>13,1 %</strong> en <em>Normalista</em>, <strong>14,5 %</strong> en <em>Básica secundaria (6o - 9o)</em>, <strong>22,3 %</strong> en <em>Media académica</em> y <strong>26,8 %</strong> en <em>Media técnica</em>.</li>
 <li>En educación superior y posgrado la formalización se acelera: <strong>34,0 %</strong> en <em>Técnica profesional</em>, <strong>43,9 %</strong> en <em>Tecnológica</em>, <strong>51,7 %</strong> en <em>Universitaria</em>, <strong>73,2 %</strong> en <em>Especialización</em>, <strong>78,7 %</strong> en <em>Maestría</em> y <strong>88,8 %</strong> en <em>Doctorado</em>.</li>
 </ul></li>
-<li><strong>Factores explicativos no causales:</strong> La asociación estadística no implica causalidad directa, pues intervienen la escala del negocio (mayor capital inicial y ventas que superan topes regulatorios) y la especialización sectorial en servicios profesionales donde la facturación electrónica y el RUT son requisitos de contratación.</li>
+<li><strong>Hipótesis no causales:</strong> La escala del negocio y su rama podrían relacionarse con educación y registro tributario. El cruce no prueba esos mecanismos ni controla por capital inicial, ventas o sector.</li>
 </ul>
 <hr>
 </section>
@@ -3459,21 +3466,21 @@ window.Quarto = {
 <h1 data-number="4"><span class="header-section-number">4</span> Análisis Socioeconómico de la Población Colombiana (Punto 4)</h1>
 <section id="sec-num-4-1" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="sec-num-4-1"><span class="header-section-number">4.1</span> Numeral 4.1: Geografía de la Informalidad Laboral</h2>
-<p>El gráfico <code>4_1_geografia_informalidad.png</code> contrasta la tasa de informalidad departamental con el ingreso laboral mediano (<code>INGLABO &gt; 0</code>) en 2024: - Muestra una relación inversa pronunciada: en Bogotá D.C. la informalidad es de <strong>34,6 %</strong> con un ingreso mediano de <strong>$1,60 millones</strong>, seguida de Cundinamarca (44,6 %) y Antioquia (44,9 %). - En contraste, Chocó (<strong>80,8 %</strong>), Sucre (<strong>79,9 %</strong>) y La Guajira (<strong>79,5 %</strong>) registran ingresos medianos de <strong>$0,60 millones</strong>, reflejando el dualismo productivo centro-periferia.</p>
+<p>El gráfico <code>4_1_geografia_informalidad.png</code> relaciona tasas ponderadas de informalidad (<code>FEX_C18 / 12</code>) con medianas muestrales sin ponderar de ingresos positivos. Bogotá registra 34,6 % y $1,5 millones; Cundinamarca, 42,8 % y $1,3 millones; Antioquia, 48,1 % y $1,4 millones. Chocó registra 79,2 % y $1,2 millones; Sucre, 82,1 % y $800.000; La Guajira, 79,4 % y $800.000. La comparación describe diferencias territoriales y no identifica sus causas.</p>
 </section>
 <section id="sec-num-4-2" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="sec-num-4-2"><span class="header-section-number">4.2</span> Numeral 4.2: Inclusión Digital, Solicitud de Crédito y Escala de Ventas</h2>
-<p>El gráfico <code>4_2_inclusion_ventas_micro.png</code> evalúa las ventas brutas mensuales (<code>VENTAS_MES_ANTERIOR &gt; 0</code>) cruzando el perfil de medios de pago (<strong>Transferencias bancarias / internet</strong> con <code>P1764_3 == 1</code> frente a <strong>Solo efectivo</strong> definido como efectivo exclusivo <code>P1764_1 == 1</code> sin otros medios seleccionados en <code>P1764_2:7</code>) con la <strong>solicitud de crédito</strong> (<code>P1765</code>: <code>1 = Solicitó crédito</code>, <code>2 = No solicitó crédito</code>): - <strong>Auditoría de no respuesta y exclusiones:</strong> De los 75.671 micronegocios con ventas positivas, se contabilizan y documentan <strong>5.202 registros sin respuesta (<code>NA</code>) en <code>P1765</code></strong> (338.120 expandidos; 5.376 en toda la EMICRON) y <strong>645 registros en otros perfiles de pago</strong> (23 de ellos también con <code>NA</code> en <code>P1765</code>), analizando <strong>69.847 unidades válidas</strong> (4.711.543 expandidas). - <strong>Resultados (<code>4_2_tabla_inclusion_ventas.csv</code>):</strong> - En <strong>Solo efectivo</strong>, la mediana de ventas mensuales pasa de <strong>$1,20 millones</strong> sin solicitud de crédito (<span class="math inline">\(n=37.700\)</span>) a <strong>$1,70 millones</strong> con solicitud de crédito (<span class="math inline">\(n=5.804\)</span>). - En <strong>Transferencias bancarias / internet</strong>, la mediana sube a <strong>$2,30 millones</strong> sin solicitud de crédito (<span class="math inline">\(n=21.061\)</span>) y alcanza <strong>$3,00 millones</strong> con solicitud de crédito (<span class="math inline">\(n=5.282\)</span>).</p>
+<p>El gráfico <code>4_2_inclusion_ventas_micro.png</code> evalúa las ventas brutas mensuales (<code>VENTAS_MES_ANTERIOR &gt; 0</code>) cruzando el perfil de medios de pago (<strong>Transferencias bancarias / internet</strong> con <code>P1764_3 == 1</code> frente a <strong>Solo efectivo</strong> definido como efectivo exclusivo <code>P1764_1 == 1</code> sin otros medios seleccionados en <code>P1764_2:7</code>) con la <strong>solicitud de crédito</strong> (<code>P1765</code>: <code>1 = Solicitó crédito</code>, <code>2 = No solicitó crédito</code>): - <strong>Auditoría de no respuesta y exclusiones:</strong> De los 75.671 micronegocios con ventas positivas, se contabilizan y documentan <strong>5.202 registros sin respuesta (<code>NA</code>) en <code>P1765</code></strong> (338.120 expandidos; 5.376 en toda la EMICRON) y <strong>645 registros en otros perfiles de pago</strong> (23 de ellos también con <code>NA</code> en <code>P1765</code>), analizando <strong>69.847 unidades válidas</strong> (4.711.543 expandidas). - <strong>Resultados (<code>4_2_tabla_inclusion_ventas.csv</code>):</strong> Las medianas siguientes son muestrales, sin ponderar. El gráfico pondera densidades y cajas con <code>F_EXP</code>; la escala logarítmica y el zoom entre $0,1 y $100 millones no excluyen registros del cálculo. La asociación no demuestra efectos del medio de pago o del crédito sobre las ventas. - En <strong>Solo efectivo</strong>, la mediana de ventas mensuales pasa de <strong>$1,20 millones</strong> sin solicitud de crédito (<span class="math inline">\(n=37.700\)</span>) a <strong>$1,70 millones</strong> con solicitud de crédito (<span class="math inline">\(n=5.804\)</span>). - En <strong>Transferencias bancarias / internet</strong>, la mediana sube a <strong>$2,30 millones</strong> sin solicitud de crédito (<span class="math inline">\(n=21.061\)</span>) y alcanza <strong>$3,00 millones</strong> con solicitud de crédito (<span class="math inline">\(n=5.282\)</span>).</p>
 </section>
 <section id="sec-num-4-3" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="sec-num-4-3"><span class="header-section-number">4.3</span> Numeral 4.3: Emparejamiento Laboral entre Nivel Educativo y Posición Ocupacional</h2>
-<p>El gráfico <code>4_3_mismatch_educacion.png</code> cruza las <strong>13 categorías educativas explícitas del DANE</strong> (<code>P3042</code>: <code>1</code> a <code>13</code>) con las <strong>9 posiciones ocupacionales</strong> (<code>P6430</code>: <code>1</code> a <code>9</code>) sobre 353.668 ocupados de la GEIH 2024 (excluyendo y documentando los únicos 4 registros con <code>P3042 == 99</code>, equivalentes a 473 ocupados expandidos): - En <em>Ninguno</em> (62,5 %), <em>Básica primaria</em> (54,8 %) y <em>Básica secundaria</em> (48,6 %) predomina el trabajo por cuenta propia. - A partir de <em>Media académica</em> (47,8 % obrero particular vs. 39,9 % cuenta propia) y <em>Media técnica</em> (57,8 % vs. 32,7 %), y en toda la educación superior (<em>Técnica profesional</em> 61,5 %, <em>Tecnológica</em> 66,6 %, <em>Universitaria</em> 62,1 %) y posgrado (<em>Especialización</em> 58,4 %, <em>Maestría</em> 55,6 %, <em>Doctorado</em> 56,5 %), predomina el empleo asalariado particular junto con una participación creciente del empleo en el gobierno (hasta 28,2 % en <em>Doctorado</em>). - Sin embargo, se identifican <strong>986.256 ocupados con educación superior o posgrado</strong> (<code>P3042 %in% 8:13</code>) trabajando por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales), reflejando sobreeducación y refugio en el autoempleo.</p>
+<p>El gráfico <code>4_3_mismatch_educacion.png</code> cruza las <strong>13 categorías educativas explícitas del DANE</strong> (<code>P3042</code>: <code>1</code> a <code>13</code>) con las <strong>9 posiciones ocupacionales</strong> (<code>P6430</code>: <code>1</code> a <code>9</code>) sobre 353.668 ocupados de la GEIH 2024; el gráfico muestra frecuencias muestrales y la tabla porcentajes ponderados con <code>FEX_C18 / 12</code> (excluyendo y documentando los únicos 4 registros con <code>P3042 == 99</code>, equivalentes a 473 ocupados expandidos): - En <em>Ninguno</em> (62,5 %), <em>Básica primaria</em> (54,8 %) y <em>Básica secundaria</em> (48,6 %) predomina el trabajo por cuenta propia. - A partir de <em>Media académica</em> (47,8 % obrero particular vs. 39,9 % cuenta propia) y <em>Media técnica</em> (57,8 % vs. 32,7 %), y en toda la educación superior (<em>Técnica profesional</em> 61,5 %, <em>Tecnológica</em> 66,6 %, <em>Universitaria</em> 62,1 %) y posgrado (<em>Especialización</em> 58,4 %, <em>Maestría</em> 55,6 %, <em>Doctorado</em> 56,5 %), predomina el empleo asalariado particular junto con una participación creciente del empleo en el gobierno (hasta 28,2 % en <em>Doctorado</em>). - Sin embargo, se identifican <strong>986.256 ocupados con educación superior o posgrado</strong> (<code>P3042 %in% 8:13</code>) trabajando por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales); estos datos no permiten establecer sobreeducación ni las razones para trabajar por cuenta propia. Para ello se necesitarían los requisitos educativos del puesto y evidencia adicional.</p>
 <hr>
 </section>
 </section>
 <section id="sec-sustentacion" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Banco de Preguntas y Argumentación para la Sustentación Oral (Punto 5)</h1>
-<p>Este banco organiza las preguntas de defensa individual directamente por los cuatro numerales del taller, vinculando cada respuesta a las líneas exactas del script oficial y a la evidencia empírica.</p>
+<p>Este banco organiza las preguntas de defensa individual directamente por los cuatro numerales del taller, vinculando las respuestas con los numerales del script oficial y a la evidencia empírica.</p>
 <section id="bloque-1-defensa-del-punto-1-conformación-de-bases-y-enlace-relacional" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="bloque-1-defensa-del-punto-1-conformación-de-bases-y-enlace-relacional"><span class="header-section-number">5.1</span> Bloque 1: Defensa del Punto 1 (Conformación de Bases y Enlace Relacional)</h2>
 <section id="pregunta-1.1-por-qué-la-llave-relacional-de-la-geih-exige-tres-variables-y-qué-riesgo-existe-al-omitir-una" class="level3" data-number="5.1.1">
@@ -3482,7 +3489,7 @@ window.Quarto = {
 </section>
 <section id="pregunta-1.2-por-qué-se-utilizó-contador---1-en-el-bucle-1.1-en-lugar-de-append" class="level3" data-number="5.1.2">
 <h3 data-number="5.1.2" class="anchored" data-anchor-id="pregunta-1.2-por-qué-se-utilizó-contador---1-en-el-bucle-1.1-en-lugar-de-append"><span class="header-section-number">5.1.2</span> Pregunta 1.2: ¿Por qué se utilizó <code>contador &lt;- 1</code> en el bucle 1.1 en lugar de <code>append()</code>?</h3>
-<p><strong>Respuesta:</strong> En R, las listas son objetos inmutables en memoria. Usar <code>append()</code> obliga al intérprete a duplicar y reasignar toda la lista en cada iteración (<span class="math inline">\(O(N^2)\)</span> en memoria). Inicializar <code>contador &lt;- 1</code> permite indexar directamente por posición (<code>lista[[contador]] &lt;- df</code>), asignando memoria en tiempo constante <span class="math inline">\(O(1)\)</span>. Además, coordina la indexación global de 1 a 24 para las tablas de auditoría de los 2 años, mientras el índice local <code>i</code> corre de 1 a 12 para agrupar las bases mensuales de cada año antes de consolidarlas con <code>bind_rows()</code>.</p>
+<p><strong>Respuesta:</strong> El contador organiza las 24 auditorías mensuales en posiciones consecutivas de las listas. El índice local <code>i</code> recorre los doce meses de cada año y <code>contador</code> continúa de 1 a 24. Los resultados se consolidan con <code>bind_rows()</code> al finalizar. Como las listas se inicializan vacías, no se trata de una preasignación de memoria; tampoco se midió el rendimiento frente a <code>append()</code>.</p>
 </section>
 <section id="pregunta-1.3-por-qué-6.747-micronegocios-de-emicron-2024-no-emparejan-con-la-geih-de-2024" class="level3" data-number="5.1.3">
 <h3 data-number="5.1.3" class="anchored" data-anchor-id="pregunta-1.3-por-qué-6.747-micronegocios-de-emicron-2024-no-emparejan-con-la-geih-de-2024"><span class="header-section-number">5.1.3</span> Pregunta 1.3: ¿Por qué 6.747 micronegocios de EMICRON 2024 no emparejan con la GEIH de 2024?</h3>
@@ -3502,11 +3509,11 @@ window.Quarto = {
 </section>
 <section id="pregunta-2.2-cómo-se-construyó-la-clasificación-de-formalidad-laboral-ei-en-el-punto-2.3" class="level3" data-number="5.2.2">
 <h3 data-number="5.2.2" class="anchored" data-anchor-id="pregunta-2.2-cómo-se-construyó-la-clasificación-de-formalidad-laboral-ei-en-el-punto-2.3"><span class="header-section-number">5.2.2</span> Pregunta 2.2: ¿Cómo se construyó la clasificación de formalidad laboral (<code>EI</code>) en el punto 2.3?</h3>
-<p><strong>Respuesta:</strong> Se replicaron de forma explícita y completa las reglas secuenciales de la sintaxis oficial <code>Código_SAS</code> del DANE para las variables <code>FORMAL</code>, <code>SALUD</code>, <code>PENSION</code> y <code>EI</code>, respetando el orden de evaluación de cada condición. En los microdatos públicos GEIH 2024, <code>P3045S1</code> y <code>P3046</code> vienen en <code>NA</code>, por lo que las condiciones iniciales para <code>P6430 %in% c(1, 7)</code> evalúan como <code>FALSE</code> y recaen en el bloque general por lugar de trabajo (<code>P6765</code>), igual que en el programa oficial del DANE. La tasa de informalidad en las 13 ciudades para octubre–diciembre de 2024 es de 42,5 %, con 0,0 pp de diferencia frente al boletín del DANE.</p>
+<p><strong>Respuesta:</strong> Se adapta la sintaxis oficial en SAS del DANE (<code>Código_SAS</code> del anexo <code>anex-GEIHEISS-oct-dic2024.xlsx</code>) para obtener <code>EI = 1</code> en empleo formal y <code>EI = 0</code> en informal. Se construyen <code>FORMAL</code>, <code>SALUD</code> y <code>PENSION</code> antes de <code>EI</code>. El contraste independiente coincide en <code>EI</code> para los 353.672 ocupados de 2024. <code>FORMAL</code> difiere en 11.911 empleados domésticos (0 en R y faltante en SAS), sin cambiar la clasificación final. Las variables de negocio describen forma de trabajo, registro y renovación, contabilidad, separación de gastos, tamaño y oficio. La informalidad en las 13 ciudades durante octubre–diciembre de 2024 es 42,5 %, coincidente a un decimal con el anexo oficial.</p>
 </section>
 <section id="pregunta-2.3-cómo-se-interpreta-que-baje-la-tasa-de-desempleo-pero-caiga-la-tasa-de-ocupación" class="level3" data-number="5.2.3">
 <h3 data-number="5.2.3" class="anchored" data-anchor-id="pregunta-2.3-cómo-se-interpreta-que-baje-la-tasa-de-desempleo-pero-caiga-la-tasa-de-ocupación"><span class="header-section-number">5.2.3</span> Pregunta 2.3: ¿Cómo se interpreta que baje la tasa de desempleo pero caiga la tasa de ocupación?</h3>
-<p><strong>Respuesta:</strong> Ocurre por el efecto del trabajador desalentado. Si la caída en la ocupación (pérdida de empleos) coincide con una caída aún mayor en la tasa de participación (personas que abandonan la fuerza de trabajo y pasan a inactividad), el denominador de la tasa de desempleo (fuerza de trabajo) se reduce más rápido que los desocupados, haciendo caer la tasa de desempleo a pesar de que el mercado laboral se está deteriorando.</p>
+<p><strong>Respuesta:</strong> La identidad <code>TD = 100(1 - TO/TGP)</code> permite que TD disminuya aunque baje TO, si la participación cae proporcionalmente más y aumenta la razón TO/TGP. Esto no demuestra desaliento laboral: las tasas agregadas no identifican por qué una persona sale de la fuerza de trabajo. En el último trimestre de 2024 observado aquí, TO aumenta y TGP baja ligeramente para ambos sexos.</p>
 <hr>
 </section>
 </section>
@@ -3514,15 +3521,15 @@ window.Quarto = {
 <h2 data-number="5.3" class="anchored" data-anchor-id="bloque-3-defensa-del-punto-3-micronegocios-e-inclusión-financiera"><span class="header-section-number">5.3</span> Bloque 3: Defensa del Punto 3 (Micronegocios e Inclusión Financiera)</h2>
 <section id="pregunta-3.1-por-qué-en-cámara-de-comercio-p1055-1-el-cálculo-da-103-mientras-el-gráfico-9-del-boletín-dane-muestra-105" class="level3" data-number="5.3.1">
 <h3 data-number="5.3.1" class="anchored" data-anchor-id="pregunta-3.1-por-qué-en-cámara-de-comercio-p1055-1-el-cálculo-da-103-mientras-el-gráfico-9-del-boletín-dane-muestra-105"><span class="header-section-number">5.3.1</span> Pregunta 3.1: ¿Por qué en Cámara de Comercio (<code>P1055 == 1</code>) el cálculo da 10,3 % mientras el Gráfico 9 del boletín DANE muestra 10,5 %?</h3>
-<p><strong>Respuesta:</strong> Porque al calcular los porcentajes directamente con <code>F_EXP</code> antes de redondear los totales, los micronegocios con registro mercantil suman <code>547.580,7</code> sobre un total de <code>5.297.252,1</code>, cuyo cociente exacto es <code>10,337 %</code> (<strong>10,3 %</strong> a un decimal), es decir, <strong><span class="math inline">\(-0,2\)</span> puntos porcentuales</strong> frente al <strong>10,5 %</strong> impreso en el Gráfico 9 del boletín. Al contrastar la <strong>Tabla 8</strong> y el <strong>Anexo F.6</strong> del mismo boletín técnico del DANE, las cifras publicadas por el DANE son exactamente <code>547.581</code> (548 mil) sobre <code>5.297.252</code>, las cuales producen <code>10,337 %</code>, confirmando la exactitud de nuestro cálculo.</p>
+<p><strong>Respuesta:</strong> Los totales publicados en la Tabla 8 son 547.581 registrados sobre 5.297.252 micronegocios: 10,337 %, o 10,3 % a un decimal. El Gráfico 9 presenta 10,5 %. Los microdatos coinciden con la Tabla 8; la diferencia de -0,2 puntos con el gráfico no se explica por redondear. No se identificó documentalmente la causa de esa discrepancia.</p>
 </section>
 <section id="pregunta-3.2-por-qué-la-mayor-aceptación-de-transferencias-p1764_3-en-comercio-y-servicios-no-se-traduce-en-una-alta-solicitud-de-crédito-p1765" class="level3" data-number="5.3.2">
 <h3 data-number="5.3.2" class="anchored" data-anchor-id="pregunta-3.2-por-qué-la-mayor-aceptación-de-transferencias-p1764_3-en-comercio-y-servicios-no-se-traduce-en-una-alta-solicitud-de-crédito-p1765"><span class="header-section-number">5.3.2</span> Pregunta 3.2: ¿Por qué la mayor aceptación de transferencias (<code>P1764_3</code>) en comercio y servicios no se traduce en una alta solicitud de crédito (<code>P1765</code>)?</h3>
-<p><strong>Respuesta:</strong> Porque las transferencias bancarias o por internet (<code>P1764_3</code>, que alcanzan 51,9 % en servicios y 43,4 % en comercio) resuelven fricciones de cobro transaccional con costos fijos mínimos. El crédito formal, en cambio, exige historial financiero, garantías y formalidad tributaria/mercantil (solo 22,4 % tiene RUT y 10,3 % registro en Cámara de Comercio), por lo que apenas el 14,2 % de los micronegocios solicitó crédito.</p>
+<p><strong>Respuesta:</strong> La aceptación de transferencias y la solicitud de crédito miden decisiones distintas. El 14,2 % solicitó un préstamo o crédito durante el año anterior, pero <code>P1765</code> no indica aprobación ni distingue fuentes formales. La necesidad de financiamiento y las condiciones de acceso podrían influir; esos mecanismos no se comprueban con los porcentajes por rama.</p>
 </section>
 <section id="pregunta-3.3-cómo-se-trataron-las-categorías-de-p3042-en-el-cruce-3.3-y-por-qué-la-relación-con-el-rut-no-es-causal" class="level3" data-number="5.3.3">
 <h3 data-number="5.3.3" class="anchored" data-anchor-id="pregunta-3.3-cómo-se-trataron-las-categorías-de-p3042-en-el-cruce-3.3-y-por-qué-la-relación-con-el-rut-no-es-causal"><span class="header-section-number">5.3.3</span> Pregunta 3.3: ¿Cómo se trataron las categorías de <code>P3042</code> en el cruce 3.3 y por qué la relación con el RUT no es causal?</h3>
-<p><strong>Respuesta:</strong> Se clasificaron explícitamente las 13 categorías de niveles conocidos del diccionario GEIH 2024 (<code>P3042 == 1</code> a <code>P3042 == 13</code>) y se auditaron el código <code>99</code> (<em>No sabe, no informa</em>), los <code>NA</code> y los códigos inválidos (verificando que los 71.754 propietarios emparejados tienen niveles conocidos en <code>1:13</code>). Aunque el porcentaje con RUT sube de 0,0 % en <em>Preescolar</em> y 2,8 % en <em>Ninguno</em> hasta 51,7 % en <em>Universitaria</em> y 88,8 % en <em>Doctorado</em>, esta asociación no es causal directa: está mediada por la mayor escala de ventas y por la inserción de los profesionales en sectores de servicios que exigen RUT para contratar con empresas formales.</p>
+<p><strong>Respuesta:</strong> Se utilizaron las 13 categorías conocidas de <code>P3042</code> y se auditaron 99, faltantes y códigos inválidos. Los 71.754 propietarios tienen educación conocida. La proporción con RUT es 51,7 % en universitaria y 88,8 % en doctorado; el patrón general no aumenta en cada categoría sucesiva. La escala y la rama del negocio son posibles explicaciones, sin que este cruce demuestre causalidad ni mediación.</p>
 <hr>
 </section>
 </section>

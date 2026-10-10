@@ -116,7 +116,7 @@ La Gran Encuesta Integrada de Hogares (GEIH) es la fuente oficial del DANE para 
 
 Para armar las bases anuales, se utilizaron dos ciclos `for`: uno para recorrer los años 2023 y 2024, y otro para iterar sobre los doce meses de cada año. En cada mes se leen los cuatro módulos de la encuesta mediante `read.csv(sep = ";")`, usando codificación UTF-8 para leer correctamente los nombres de archivo con tildes y caracteres especiales. El código contempla la variación del archivo de marzo de 2024, nombrado en singular como `"No ocupado.CSV"`.
 
-La unión mensual se construyó con un `left_join` tomando como base el módulo de *Características generales*, pues contiene a todas las personas encuestadas sin importar edad ni condición de ocupación. Para reducir el consumo de memoria, se seleccionaron las variables necesarias con `select()` inmediatamente después de leer cada archivo, bajando de unas 200 columnas a cerca de 25 por módulo antes de hacer las uniones y apilar los meses (`1_1_eficiencia.csv`).
+La unión mensual se construyó con un `left_join` tomando como base el módulo de *Características generales*, pues contiene a todas las personas encuestadas sin importar edad ni condición de ocupación. Para reducir el consumo de memoria, se seleccionaron las variables necesarias con `select()` inmediatamente después de leer cada archivo: General pasó de entre 67 y 74 columnas a 17; Fuerza, de 43 a 7; Ocupados, de 200 a 23; y No ocupados, de entre 37 y 38 a 4, antes de unir y apilar los meses (`1_1_eficiencia.csv`).
 
 La integridad de las uniones se comprobó con dos controles en el código:
 1. Unicidad de llaves: la combinación `DIRECTORIO + SECUENCIA_P + ORDEN` no presentó registros duplicados en ningún módulo de los 24 meses analizados (`1_1_verificacion_llaves.csv`).
@@ -161,16 +161,37 @@ d[[2]] <- sub("Fuerza de trabajo", "Fuerza", d[[2]])
 tabla_latex(d, 0.80)
 ```
 
+*Categorías:* `P3042`: 1 ninguno, 2 preescolar, 3 primaria, 4 secundaria, 5 media académica, 6 media técnica, 7 normalista, 8 técnica profesional, 9 tecnológica, 10 universitaria, 11 especialización, 12 maestría, 13 doctorado y 99 no sabe/no informa. `P6240`: 1 trabajando, 2 buscando trabajo, 3 estudiando, 4 oficios del hogar, 5 incapacitado permanente y 6 otra actividad. `P6430`: 1 empleado particular, 2 empleado del gobierno, 3 doméstico, 4 cuenta propia, 5 patrón, 6 familiar sin remuneración, 7 sin remuneración en otros hogares, 8 jornalero y 9 otro.
+
 Las variables `DPTO`, `AREA` y `CLASE` miden dimensiones territoriales diferentes y no son intercambiables:
-* `DPTO` corresponde a la división político-administrativa departamental (32 departamentos y Bogotá D.C.).
-* `AREA` identifica los dominios de ciudades y áreas metropolitanas donde el DANE garantiza representatividad estadística.
-* `CLASE` distingue la cabecera municipal (valor 1) de los centros poblados y la zona rural dispersa (valores 2 y 3). Un departamento contiene varias clases geográficas y no necesariamente coincide con un área metropolitana.
+* `DPTO` corresponde a la división político-administrativa departamental.
+* `AREA` identifica los dominios de ciudades y áreas metropolitanas.
+* `CLASE` distingue la cabecera municipal (valor 1) de los centros poblados y la zona rural dispersa, agrupados en el valor 2 de estos microdatos. Un departamento contiene distintas clases geográficas y no necesariamente coincide con un área metropolitana.
 
 ## 1.4. Integración GEIH y EMICRON 2024
 
 La muestra de la Encuesta de Micronegocios (EMICRON) se toma de la GEIH: selecciona a ocupados clasificados como trabajadores por cuenta propia o empleadores en unidades de hasta nueve personas [2]. Esto genera una relación asimétrica entre las fuentes: todo micronegocio de EMICRON proviene de un hogar encuestado en la GEIH, pero solo una pequeña parte de los encuestados de la GEIH administra un micronegocio. En cobertura geográfica, la GEIH abarca el total nacional, mientras que EMICRON excluye de su marco a ocho departamentos de la Amazonía y Orinoquía (Amazonas, Arauca, Casanare, Guainía, Guaviare, Putumayo, Vaupés y Vichada). Los factores de expansión también difieren: `F_EXP` expande unidades económicas anuales, mientras que `FEX_C18` expande personas.
 
-Para definir la llave de enlace, se contrastaron los hogares comunes y se comprobó que `SECUENCIA_ENCUESTA` equivale a `ORDEN` en el 100 % de los 78.501 registros de EMICRON (`1_4_relacion_orden.csv`). La llave de persona es por tanto `DIRECTORIO + SECUENCIA_P + ORDEN`. Al comparar los meses de ambas encuestas, todos los registros comparables mostraron que $\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$ (`1_4_relacion_meses.csv`), debido a que EMICRON pregunta por las ventas del mes previo a la entrevista (`VENTAS_MES_ANTERIOR`). Por este desfase en el período de referencia, el mes no debe formar parte de la llave de unión, ya que eliminaría los emparejamientos válidos.
+Para definir la llave de enlace, se examinó `SECUENCIA_ENCUESTA`: toma valores de 1 a 16 y hay hogares con uno a seis propietarios. Se comprobó una coincidencia única con `ORDEN` para los 78.501 registros (`1_4_relacion_orden.csv`). La llave de persona es `DIRECTORIO + SECUENCIA_P + ORDEN`. El contraste temporal siguiente muestra que `MES_REF` está un mes adelante del mes GEIH, incluyendo diciembre de 2023 para enero de 2024. EMICRON se recolecta en una segunda etapa y sus ventas corresponden al mes previo a su entrevista; las preguntas de crédito y ahorro se refieren al año anterior [2]. La relación observada delimita los meses enlazables y no permite equiparar los meses de ambas encuestas.
+
+```{=latex}
+\begin{samepage}
+```
+
+Contraste de las tres hipótesis temporales (`1_4_relacion_meses.csv`).
+
+```{r}
+#| results: asis
+r <- leer_csv("1_4_relacion_meses.csv")
+names(r) <- c("MES_REF respecto a GEIH", "Coincidencias", "Porcentaje")
+r[[2]] <- fmt_entero(r[[2]])
+r[[3]] <- paste0(fmt_pct(r[[3]], 0), " %")
+tabla_latex(r, 0.50)
+```
+
+```{=latex}
+\end{samepage}
+```
 
 **Tabla 3.** Auditoría mensual del enlace entre EMICRON y GEIH 2024 (`base_micro`).
 
@@ -185,11 +206,11 @@ a[[5]] <- fmt_pct(a[[5]], 0)
 tabla_latex(a, 0.68)
 ```
 
-La base `base_micro` conserva los 78.501 micronegocios de la encuesta; 71.754 (91,41 %) enlazaron con la GEIH de 2024. La verificación con variables comunes mostró una coincidencia del 100 % en sexo (`P35` con `P3271`), edad (`P241` con `P6040`) y zona geográfica (`CLASE_TE` con `CLASE`).
+Los módulos de identificación, características, inclusión financiera y ventas se unieron con `left_join`, tomando identificación como base. La llave `DIRECTORIO + SECUENCIA_P + SECUENCIA_ENCUESTA` no tiene duplicados en ninguno de los cuatro módulos; la base `base_micro` conserva las 78.501 filas, de las cuales 71.754 (91,41 %) enlazaron con la GEIH de 2024. La verificación con variables comunes mostró una coincidencia del 100 % en sexo (`P35` con `P3271`), edad (`P241` con `P6040`) y zona geográfica (`CLASE_TE` con `CLASE`).
 
 Los 6.747 micronegocios sin enlace en la GEIH 2024 (8,59 %) corresponden a enero de 2024. Debido al desfase de un mes en la recolección, esos informantes fueron encuestados en la GEIH en diciembre de 2023. Al revisar los archivos de 2023, se confirmó que los 6.747 registros están en esa base (`1_4_fuera_2024.csv`). Por tanto, al limitar la unión a los archivos de 2024, este grupo queda fuera por diseño temporal y no por un error en la llave.
 
-Entre los propietarios enlazados, el 88,53 % declaró en la GEIH ser trabajador por cuenta propia y el 9,22 % patrón o empleador (97,75 % en conjunto). El 2,25 % restante reportó posiciones como obrero particular o trabajador familiar sin remuneración (`1_4_posicion_ocupacional.csv`). Esta discrepancia responde a transiciones ocupacionales ocurridas durante el desfase temporal entre encuestas, situaciones de pluriactividad donde el micronegocio es una actividad secundaria frente a un empleo asalariado principal, o pequeñas imprecisiones de reporte. En términos de medición, esto evidencia que las encuestas de hogares clasifican al individuo por su ocupación principal, mientras que la EMICRON registra la titularidad de activos productivos, advirtiendo que el autoempleo y la informalidad no pueden evaluarse únicamente a partir del contrato en la actividad principal.
+Entre los propietarios enlazados, el 88,53 % declaró en la GEIH ser trabajador por cuenta propia y el 9,22 % patrón o empleador (97,75 % en conjunto). El 2,25 % restante reportó otras posiciones, como obrero particular o trabajador sin remuneración en empresas de otros hogares (`1_4_posicion_ocupacional.csv`). Las diferencias podrían relacionarse con transiciones ocupacionales, actividades secundarias o imprecisiones de reporte; el cruce no permite distinguir estas explicaciones. Para la medición del empleo, la posición ocupacional declarada en la GEIH y la identificación como propietario en EMICRON describen aspectos distintos de la actividad económica de una persona.
 
 # 2. Indicadores de mercado laboral
 
@@ -218,11 +239,19 @@ tabla_tasas <- function(archivo) {
 }
 ```
 
+```{=latex}
+\begin{samepage}
+```
+
 **Tabla 4.** Tasas (%) y poblaciones de hombres, total nacional (2023 a 2024).
 
 ```{r}
 #| results: asis
 tabla_tasas("2_1_tasas_hombres.xlsx")
+```
+
+```{=latex}
+\end{samepage}
 ```
 
 **Tabla 5.** Tasas (%) y poblaciones de mujeres, total nacional (2023 a 2024).
@@ -242,9 +271,9 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
-* En participación y ocupación persiste una brecha estructural por sexo: los hombres registran una TGP entre 76,0 % y 77,3 % y una TO entre 69,1 % y 71,7 %, mientras que las mujeres presentan una TGP entre 51,6 % y 53,2 % y una TO entre 44,5 % y 46,8 %, lo que representa una diferencia de más de 24 puntos porcentuales en ambos indicadores.
-* En desempleo, las mujeres registran tasas entre 11,15 % y 14,98 %, frente a niveles de 7,06 % a 9,57 % en los hombres, manteniendo una brecha desfavorable para las mujeres de 4 a 5,4 puntos porcentuales.
-* En el último trimestre de 2024 se observa un patrón estacional: la TD disminuye tanto en hombres (de 9,12 % en J-S a 7,06 % en O-D) como en mujeres (de 13,20 % a 11,15 %). Esta caída respondió a un aumento de la ocupación hacia fin de año en actividades de comercio y servicios.
+* En participación, la TGP de los hombres oscila entre 76,27 % y 76,84 %, frente a 52,02 % a 53,07 % en las mujeres. La brecha trimestral va de 23,64 a 24,37 puntos porcentuales. En ocupación, la TO masculina varía entre 68,97 % y 70,96 %, y la femenina entre 44,23 % y 46,88 %; la brecha es de 24,08 a 25,22 puntos.
+* La TD femenina varía entre 11,15 % y 15,09 %, frente a 7,06 % a 9,57 % en hombres. La diferencia desfavorable para las mujeres se sitúa entre 3,84 y 5,91 puntos porcentuales.
+* Entre julio-septiembre y octubre-diciembre de 2024, la TD cae de 7,67 % a 7,06 % en hombres y de 12,12 % a 11,15 % en mujeres. La TO aumenta de 70,51 % a 70,92 % y de 46,30 % a 46,79 %, respectivamente, mientras la TGP disminuye ligeramente (76,37 % a 76,30 % y 52,69 % a 52,66 %). La caída del desempleo coincide con una mayor ocupación relativa a la PET y una menor participación: $\text{TD}=100(1-\text{TO}/\text{TGP})$. La serie no identifica causas sectoriales ni permite establecer un patrón estacional.
 
 ## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas 
 
@@ -254,9 +283,9 @@ figura_recortada("2_2_tasas_sexo.png")
 figura_recortada("2_3_formalidad_13ciudades.png")
 ```
 
-La condición de formalidad laboral (`EI`) se programó en R replicando íntegramente la sintaxis oficial en SAS publicada por el DANE en el anexo de empleo informal (`anex-GEIHEISS-oct-dic2024.xlsx`) [3]. La definición evalúa secuencialmente la rama de actividad (`RAMA2D_R4`), la posición ocupacional (`P6430`), el registro y contabilidad del negocio (`P3045S1`, `P3046`, `P3065`, `P3066`, `P6775`, `P3068`), la ubicación en vivienda (`P6765`, `P3067`, `P3067S1`, `P3067S2`), el tamaño de planta (`P3069`), el oficio (`OFICIO_C8`) y la cotización efectiva a salud (`SALUD`) y pensión (`PENSION`).
+La condición de formalidad laboral (`EI`) adapta las reglas de la sintaxis SAS del DANE [3]. Evalúa rama y posición ocupacional, registro mercantil y renovación (`P3065`, `P3067`, `P3067S1`, `P3067S2`), contabilidad (`P3046`, `P3066`, `P6775`), separación de gastos (`P3068`), forma de trabajo (`P6765`), tamaño (`P3069`), oficio y cotización a salud y pensión. El contraste independiente coincide en `EI` para los 353.672 ocupados. `FORMAL` difiere en 11.911 empleados domésticos (0 en R y faltante en SAS), sin afectar `EI`.
 
-Al replicar el cálculo para el trimestre octubre a diciembre de 2024 en las 13 ciudades (con el factor mensual dividido entre tres), la tasa de informalidad estimada fue de 42,5 %, exactamente igual a la cifra oficial del DANE (`2_3_control_ei_dane.csv`). Para el mes de diciembre de 2024, la informalidad en estas ciudades fue de 42,2 % en hombres y 42,3 % en mujeres (`2_3_tabla_formalidad_13ciudades.csv`), lo que indica proporciones similares entre ambos sexos en las áreas metropolitanas.
+Al replicar el cálculo para octubre a diciembre de 2024 en las 13 ciudades (factor mensual dividido entre tres), la informalidad estimada fue de 42,5 %, igual a la cifra oficial del DANE (`2_3_control_ei_dane.csv`). En diciembre fue de 42,2 % en hombres y 42,3 % en mujeres (`2_3_tabla_formalidad_13ciudades.csv`). Estas proporciones describen las 13 ciudades y áreas metropolitanas identificadas con `AREA`, sin incluir todo el territorio nacional ni su población rural.
 
 ## 2.4. Posición ocupacional a nivel nacional 
 
@@ -266,7 +295,7 @@ Al replicar el cálculo para el trimestre octubre a diciembre de 2024 en las 13 
 figura_recortada("2_4_posicion_nacional.png")
 ```
 
-Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) suman el 43,2 % de la ocupación nacional (alrededor de 9,6 millones de personas). Este grupo constituye la población objetivo a partir de la cual el DANE selecciona la muestra de la encuesta de micronegocios.
+Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) suman el 43,2 % de la ocupación nacional (alrededor de 9,3 millones de personas). De estas posiciones ocupacionales provienen los propietarios potenciales de micronegocios, sujetos además al criterio de tamaño de hasta nueve personas ocupadas.
 
 # 3. Micronegocios en Colombia
 
@@ -274,7 +303,7 @@ Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (4
 
 Los porcentajes de `3_1_indicadores.xlsx` se calcularon directamente a partir de la suma de `F_EXP` antes de redondear los totales expandidos. El total nacional en 2024 asciende a 5.297.252 micronegocios, cifra que coincide con la publicada por el DANE [2]. El 64,6 % de las unidades está liderado por hombres y el 35,4 % por mujeres; por ramas (`GRUPOS12`), comercio y reparación de vehículos (23,9 %) y agricultura, ganadería, silvicultura y pesca (21,5 %) concentran el 45,4 % del total (mientras que 4 registros con código `GRUPOS12 = 13` suman 82 unidades expandidas, 0,0 %). En formalización tributaria, el 22,4 % cuenta con RUT (`P1633 == 1`) y el 77,6 % no lo posee.
 
-En el registro mercantil ante Cámara de Comercio (`P1055 == 1`), nuestro cálculo arroja **10,3 %** (y **89,7 %** sin registro), frente al **10,5 %** (y **89,5 %**) publicado en el **Gráfico 9** del Boletín Técnico EMICRON 2024 [2], lo que representa una diferencia de **$-0,2$ puntos porcentuales**. Al contrastar la **Tabla 8** y el **Anexo F.6** del mismo boletín oficial, se comprueba que las cantidades absolutas publicadas por el DANE (547.581 micronegocios registrados —548 mil en el cuadro del boletín— sobre 5.297.252 totales) producen un cociente exacto de $\frac{547.580,7}{5.297.252,1} = 10,337$ % (**10,3 %** a un decimal), explicando así la discrepancia frente al Gráfico 9.
+En el registro mercantil ante Cámara de Comercio (`P1055 == 1`), nuestro cálculo arroja 10,3 % (89,7 % sin registro), frente al 10,5 % (89,5 %) publicado en el Gráfico 9 del Boletín Técnico EMICRON 2024 [2]: una diferencia de $-0,2$ puntos porcentuales. La Tabla 8 publica 547.581 registrados sobre 5.297.252 micronegocios, equivalentes a 10,337 % (10,3 % a un decimal). Estos totales coinciden con nuestros cálculos sin redondear (547.580,7 y 5.297.252,1); la discrepancia con el gráfico no proviene del redondeo. El total, el sexo, el RUT y las participaciones por rama coinciden con las cifras oficiales al redondear a un decimal.
 
 **Tabla 6.** Indicadores básicos de micronegocios, total nacional 2024 [2].
 
@@ -310,13 +339,33 @@ figura_recortada("3_2_formas_pago.png")
 
 El cálculo de las siete opciones de medios de pago (`P1764_1` a `P1764_7`) se programó mediante un ciclo que recorre cada variable y rama (`GRUPOS4`), ponderando con `F_EXP` para evitar repeticiones de código.
 
-Los resultados muestran diferencias notorias según el tipo de medio de pago: el efectivo se mantiene como la forma de cobro más habitual en todas las ramas (superior al 85 % en agro e industria, y más de 94 % en comercio). En cambio, los medios electrónicos presentan brechas amplias entre sectores: las transferencias y billeteras digitales llegan al 51,9 % en servicios y al 43,4 % en comercio, pero apenas alcanzan el 6,7 % en el agro. Esta disparidad en el uso de canales transaccionales coincide con niveles bajos de inclusión en otros servicios: solo el 14,2 % de los micronegocios solicitó crédito formal y el 18,1 % reportó algún ahorro vinculado al negocio (`3_2_credito_ahorro.csv`).
+El efectivo es la forma de cobro más habitual: lo acepta el 99,0 % de los micronegocios agropecuarios y de comercio, el 98,0 % de industria y el 95,7 % de servicios. Los medios que requieren infraestructura presentan diferencias entre ramas: las transferencias bancarias o pagos por internet alcanzan el 51,9 % en servicios y el 43,4 % en comercio, frente al 6,7 % en el agro. Entre los micronegocios con rama clasificada y respuesta válida a cada pregunta, el 14,2 % solicitó crédito o préstamo y el 18,1 % ahorró dinero del negocio durante el año anterior (`3_2_credito_ahorro.csv`). La solicitud no implica aprobación ni permite distinguir crédito formal de otras fuentes [2].
 
 ## 3.3. Análisis conjunto GEIH y EMICRON: educación del propietario y tenencia de RUT 
 
-La pregunta planteada para el cruce es: *¿se asocia el nivel educativo del propietario (variable GEIH: `P3042`) con la tenencia de RUT en el micronegocio (variable EMICRON: `P1633`)?*
+Se pregunta: *¿se asocia la educación del propietario (GEIH: `P3042`) con la tenencia de RUT del micronegocio (EMICRON: `P1633`)?*
 
-El análisis se expandió exclusivamente con `F_EXP`, dado que la unidad de observación es el micronegocio, sobre los propietarios emparejados en la ventana efectiva febrero–diciembre de 2024. Se clasificaron explícitamente las **13 categorías educativas oficiales del diccionario GEIH 2024** (`P3042` de `1` a `13`). La auditoría sobre los 71.754 propietarios emparejados verificó que el 100 % registra niveles conocidos (`1:13`), con 0 registros en el código `99` (*No sabe, no informa*), 0 valores faltantes (`NA`) y 0 códigos inválidos (así como 0 faltantes en `P1633`), conformando un universo expandido de 4.864.444 micronegocios.
+El análisis usa exclusivamente `F_EXP`, porque la unidad analizada es el micronegocio. Comprende 71.754 propietarios enlazados en febrero a diciembre de 2024, equivalentes a 4.864.444 micronegocios expandidos. Todos tienen educación conocida (`P3042` de `1` a `13`), sin códigos `99`, faltantes ni códigos inválidos; tampoco hay faltantes en `P1633`. Los resultados describen esta ventana efectiva y no todo el año calendario.
+
+```{=latex}
+\begin{samepage}
+```
+
+Tabla de contingencia: micronegocios expandidos por educación y RUT.
+
+```{r}
+#| results: asis
+c <- leer_csv("3_3_tabla_educacion_rut.csv")
+c <- tidyr::pivot_wider(c[, c("NIVEL_EDUCATIVO", "TIENE_RUT", "TOTAL_EXPANDIDO")],
+                       names_from = TIENE_RUT, values_from = TOTAL_EXPANDIDO)
+names(c)[1] <- "Nivel educativo"
+for (j in 2:3) c[[j]] <- fmt_entero(c[[j]])
+tabla_latex(c, 0.45)
+```
+
+```{=latex}
+\end{samepage}
+```
 
 ```{r}
 #| fig-cap: "Tenencia de RUT según las 13 categorías educativas del DANE (P3042) en propietarios emparejados, 2024. Fuente: GEIH y EMICRON (DANE), ponderador: F_EXP."
@@ -324,7 +373,7 @@ El análisis se expandió exclusivamente con `F_EXP`, dado que la unidad de obse
 figura_recortada("3_3_cruce.png")
 ```
 
-La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) evidencia un gradiente positivo pronunciado a lo largo de la escala educativa oficial: la tenencia de RUT es de 0,0 % en *Preescolar* ($n=6$), 2,8 % en *Ninguno*, 11,7 % en *Básica primaria (1o - 5o)*, 13,1 % en *Normalista*, 14,5 % en *Básica secundaria (6o - 9o)*, 22,3 % en *Media académica* y 26,8 % en *Media técnica*. En educación superior y posgrado la formalización tributaria se acelera: alcanza 34,0 % en *Técnica profesional*, 43,9 % en *Tecnológica*, 51,7 % en *Universitaria*, 73,2 % en *Especialización*, 78,7 % en *Maestría* y 88,8 % en *Doctorado*. Esta asociación responde tanto a la mayor escala operativa de los negocios liderados por propietarios más escolarizados como a su inserción en servicios profesionales donde la facturación y el RUT son requisitos de contratación.
+La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra diferencias en la tenencia de RUT según educación: 0,0 % en *Preescolar* ($n=6$), 2,8 % en *Ninguno*, 11,7 % en *Básica primaria*, 13,1 % en *Normalista*, 14,5 % en *Básica secundaria*, 22,3 % en *Media académica* y 26,8 % en *Media técnica*. Las proporciones alcanzan 34,0 % en *Técnica profesional*, 43,9 % en *Tecnológica*, 51,7 % en *Universitaria*, 73,2 % en *Especialización*, 78,7 % en *Maestría* y 88,8 % en *Doctorado*. La escala del negocio y la concentración de propietarios más escolarizados en servicios profesionales podrían explicar parte de esta asociación sin una relación causal directa. El cruce no prueba esos mecanismos; el resultado de preescolar corresponde a solo seis observaciones.
 
 # 4. Análisis socioeconómico de la población colombiana
 
@@ -336,7 +385,7 @@ La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) evidencia un gradiente 
 figura_recortada("4_1_geografia_informalidad.png")
 ```
 
-Los datos departamentales muestran una relación inversa entre la informalidad laboral y los ingresos del trabajo (`4_1_tabla_departamental.csv`). En Bogotá la informalidad es de 34,6 % con un ingreso mediano de 1,6 millones de pesos, mientras que en Chocó, La Guajira y Sucre la tasa supera el 79 % y el ingreso mediano baja a 600.000 pesos, menos de la mitad del salario mínimo. Esta brecha refleja las disparidades regionales señaladas en la literatura aplicada (*Bonet-Morón et al., 2021*): en los departamentos con menor tejido empresarial e infraestructura limitada, el empleo informal absorbe a la mayor parte de la población trabajadora con remuneraciones muy por debajo del promedio nacional.
+Los datos departamentales muestran una relación inversa entre informalidad e ingreso laboral (`4_1_tabla_departamental.csv`). En Bogotá la informalidad es de 34,6 % y la mediana muestral del ingreso mensual positivo es de 1,5 millones de pesos; en Chocó, de 79,2 % y 1,2 millones; en La Guajira, de 79,4 % y 800.000 pesos; y en Sucre, de 82,1 % y 800.000 pesos. Las tasas se expanden con `FEX_C18 / 12`, mientras que las medianas son estadísticas muestrales sin ponderar de ocupados con ingreso positivo y `EI` conocido. La comparación describe diferencias territoriales y no identifica sus causas.
 
 ## 4.2. Pagos digitales y nivel de ventas en micronegocios 
 
@@ -346,7 +395,7 @@ Los datos departamentales muestran una relación inversa entre la informalidad l
 figura_recortada("4_2_inclusion_ventas_micro.png")
 ```
 
-De acuerdo con el diccionario oficial de EMICRON 2024, se contrastaron los micronegocios que aceptan **transferencias bancarias o por internet** (`P1764_3 == 1`) frente a aquellos que operan con **efectivo exclusivo** (`P1764_1 == 1` sin ningún otro medio seleccionado entre `P1764_2` y `P1764_7`), cruzados con la **solicitud de crédito** para el negocio (`P1765`: `1 = Solicitó crédito`, `2 = No solicitó crédito`). Sobre los 75.671 micronegocios con ventas positivas, se contabilizaron y excluyeron del gráfico 5.202 registros sin respuesta en `P1765` (`NA`, equivalentes a 338.120 unidades expandidas; 5.376 en toda la EMICRON) y 645 registros pertenecientes a otros perfiles de pago (23 de ellos también con `NA` en `P1765`), analizando 69.847 unidades válidas (4.711.543 expandidas en `4_2_tabla_inclusion_ventas.csv`). En el grupo de **Solo efectivo**, la mediana de ventas mensuales pasa de **\$1,20 millones** entre quienes no solicitaron crédito ($n=37.700$) a **\$1,70 millones** entre quienes sí lo solicitaron ($n=5.804$). En los negocios que aceptan **Transferencias bancarias / internet**, la mediana sube a **\$2,30 millones** sin solicitud de crédito ($n=21.061$) y alcanza **\$3,00 millones** cuando se combina con solicitud de crédito ($n=5.282$), respaldando que la trazabilidad transaccional mitiga asimetrías de información financiera (*Stiglitz y Weiss, 1981; Gómez-González et al., 2023*).
+Se comparan transferencias bancarias o por internet (`P1764_3`) y efectivo exclusivo según solicitud de crédito o préstamo (`P1765`, año anterior). De 75.671 registros con ventas positivas, se excluyen 5.202 sin respuesta en crédito (338.120 unidades expandidas; 5.376 faltantes en toda EMICRON) y 645 con otros perfiles de pago, con 23 registros en ambas exclusiones. Quedan 69.847 registros (4.711.543 expandidos). Las medianas muestrales, sin ponderar, son \$1,20 millones y \$1,70 millones para efectivo sin y con solicitud ($n=37.700$ y $n=5.804$); para transferencias son \$2,30 millones y \$3,00 millones ($n=21.061$ y $n=5.282$). El gráfico pondera las distribuciones con `F_EXP` y conserva todos los registros en el cálculo. Esta asociación no identifica efectos causales ni demuestra mecanismos de información financiera (Stiglitz y Weiss, 1981).
 
 ## 4.3. Nivel educativo y posición ocupacional
 
@@ -356,7 +405,7 @@ De acuerdo con el diccionario oficial de EMICRON 2024, se contrastaron los micro
 figura_recortada("4_3_mismatch_educacion.png")
 ```
 
-El cruce entre las **13 categorías educativas oficiales del DANE** (`P3042`) y las **9 posiciones ocupacionales** (`P6430`) abarca 353.668 ocupados de la GEIH 2024 con nivel educativo conocido, tras identificar y excluir únicamente 4 registros con código `99` (*No sabe, no informa*, equivalentes a 473 ocupados expandidos; 0 faltantes y 0 códigos inválidos) (`4_3_tabla_mismatch_educacion.csv`). En los niveles de *Ninguno* (62,5 %), *Básica primaria* (54,8 %) y *Básica secundaria* (48,6 %) predomina el trabajo por cuenta propia; a partir de *Media académica* (47,8 % obrero particular vs. 39,9 % cuenta propia) y *Media técnica* (57,8 % vs. 32,7 %) la inserción principal pasa a ser asalariada. En educación terciaria (*Técnica profesional* 61,5 %, *Tecnológica* 66,6 %, *Universitaria* 62,1 %) y posgrado (*Especialización* 58,4 %, *Maestría* 55,6 %, *Doctorado* 56,5 %) predomina la posición de empleado particular, acompañada por el empleo en el gobierno (que sube de 10,8 % en *Universitaria* a 28,2 % en *Doctorado*). Con todo, se identifican **986.256 ocupados con educación superior o posgrado** (códigos `8` a `13`) desempeñándose como trabajadores por cuenta propia (incluyendo 454.991 universitarios y 360.875 técnicos profesionales), reflejando fenómenos de sobreeducación y absorción en el autoempleo ante rigideces del sector formal (*Hartog, 2000*).
+El cruce comprende 353.668 ocupados con educación conocida; excluye cuatro registros con `P3042 == 99` (473 ocupados expandidos), sin faltantes ni códigos inválidos (`4_3_tabla_mismatch_educacion.csv`). El gráfico representa frecuencias muestrales; los porcentajes y poblaciones siguientes usan `FEX_C18 / 12`. Cuenta propia predomina en *Ninguno* (62,5 %), *Primaria* (54,8 %) y *Secundaria* (48,6 %). Desde *Media académica* (47,8 % empleado particular; 39,9 % cuenta propia) y *Media técnica* (57,8 %; 32,7 %) predomina el empleo particular. Sus proporciones son 61,5 % en técnica profesional, 66,6 % en tecnológica, 62,1 % en universitaria, 58,4 % en especialización, 55,6 % en maestría y 56,5 % en doctorado. El empleo público pasa de 10,8 % en universitaria a 28,2 % en doctorado. Hay 986.256 ocupados con educación superior por cuenta propia, incluidos 454.991 universitarios y 360.875 técnicos profesionales. Identificar sobreeducación requiere conocer la educación exigida por el puesto (Hartog, 2000).
 
 
 # Referencias
@@ -365,9 +414,7 @@ El cruce entre las **13 categorías educativas oficiales del DANE** (`P3042`) y 
 \item DANE. \textit{Gran Encuesta Integrada de Hogares (GEIH) 2023--2024}. Metodología, formulario y microdatos en ANDA.
 \item DANE. \textit{Boletín técnico: Encuesta de Micronegocios (EMICRON) 2024}. Bogotá: DANE.
 \item DANE. \textit{Empleo informal y seguridad social, octubre--diciembre 2024}. Boletín y anexo estadístico (\texttt{Código\_SAS}).
-\item Bonet-Morón, J., Hahn-De-Castro, L. W., \& Pérez-Valbuena, G. J. (2021). Regional economic disparities and regional policy in Colombia. \textit{Regional Studies}, 55(10-11), 1714--1727.
-\item Gómez-González, J. E., Mendoza, J. C., \& Rojas, M. A. (2023). Fintech payments, financial inclusion, and small firm revenues in Latin America. \textit{Borradores de Economía}, Banco de la República, No. 1242.
-\item Hartog, J. (2000). Over-education and earnings: where are we, where should we go? \textit{Empirical Economics}, 25(1), 1--23.
+\item Hartog, J. (2000). \href{https://doi.org/10.1016/S0272-7757(99)00050-3}{Over-education and earnings: where are we, where should we go?} \textit{Economics of Education Review}, 19(2), 131--147.
 \item Stiglitz, J. E., \& Weiss, A. (1981). Credit rationing in markets with imperfect information. \textit{American Economic Review}, 71(3), 393--410.
 \end{enumerate}
 

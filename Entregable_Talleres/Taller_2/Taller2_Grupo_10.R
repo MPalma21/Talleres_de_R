@@ -61,9 +61,9 @@ verificacion_eficiencia <- list()
 # Contador global para indexar las listas de auditoría y verificación mensual.
 # Se inicializa en 1 antes de los bucles y se incrementa en 1 en cada iteración mensual
 # (corriendo de 1 a 24 para los 24 meses analizados en 2023 y 2024).
-# Asignar directamente por posición (lista[[contador]] <- df) es computacionalmente
-# eficiente en R porque preasigna la posición en la lista y evita la continua copia
-# y reasignación de memoria que ocurriría al usar append() o c() repetidamente.
+# El contador asigna una posición a cada mes en las listas de auditoría.
+# Las listas se inicializan vacías y se consolidan al final con bind_rows();
+# esta indexación no constituye una preasignación de memoria.
 contador <- 1
 
 ### 1.1.3) Loop para construir las bases mensuales ----
@@ -519,34 +519,34 @@ diccionario_variables <- data.frame(
     "Población ocupada",
     "Rama de actividad económica",
     "Posición ocupacional",
-    "Ingreso laboral",
+    "Ingreso laboral monetario",
     "Población desocupada"
   ),
   CATEGORIA_UNIDAD = c(
-    "Identificador",
-    "Identificador",
-    "Identificador",
-    "Año y mes",
-    "Mes",
+    "Identificador alfanumérico",
+    "Secuencia",
+    "Secuencia persona",
+    "AAAAMMDD",
+    "Mes (1-12)",
     "1 Hombre; 2 Mujer",
-    "Categorías educativas",
-    "Categorías de afiliación",
-    "Años",
+    "Nivel educativo (1-13); 99 No sabe, no informa",
+    "1 Sí; 2 No; 9 No sabe, no informa",
+    "Años cumplidos",
     "1 Sí; 2 No",
-    "Código",
-    "Código",
-    "Categoría",
-    "Factor de expansión",
-    "Indicador",
-    "Indicador",
-    "Indicador",
-    "Indicador",
-    "Categorías",
-    "Indicador",
-    "Código CIIU Rev. 4",
-    "Categorías",
-    "Pesos colombianos",
-    "Indicador"
+    "Código DIVIPOLA departamental",
+    "Código de ciudad / área metropolitana",
+    "1 Cabecera; 2 Centros poblados y rural disperso",
+    "Ponderador muestral",
+    "Indicador = 1",
+    "PET = 1 (>= 15 años)",
+    "FT = 1 (Fuerza de trabajo)",
+    "FFT = 1 (Inactivos)",
+    "Actividad principal (1-6)",
+    "OCI = 1 (Ocupados)",
+    "CIIU Rev. 4 (2 dígitos)",
+    "Posición ocupacional (1-9)",
+    "COP mensuales",
+    "DSI = 1 (Desocupados)"
   )
 )
 
@@ -735,6 +735,7 @@ tabla_llaves_emicron <- data.frame(
   )
 )
 print(tabla_llaves_emicron)
+write.csv(tabla_llaves_emicron, file.path(ruta_outputs, "1_4_llaves_emicron.csv"), row.names = FALSE)
 
 #### 1.4.a.5) Construir la base EMICRON ----
 emicron <- emicron_identificacion %>%
@@ -899,6 +900,7 @@ resumen_pegue <- base_micro %>%
     PORCENTAJE_EMPAREJADO = round(mean(EMPAREJADO) * 100, 2)
   )
 print(resumen_pegue)
+write.csv(resumen_pegue, file.path(ruta_outputs, "1_4_resumen_pegue.csv"), row.names = FALSE)
 
 ### 1.4.e) Validación de la calidad del pegue ----
 validacion_pegue <- base_micro %>%
@@ -915,6 +917,7 @@ validacion_pegue <- base_micro %>%
     )
   )
 print(validacion_pegue)
+write.csv(validacion_pegue, file.path(ruta_outputs, "1_4_validacion_pegue.csv"), row.names = FALSE)
 
 ### 1.4.f) Auditoría del pegue ----
 #### 1.4.f.1) Auditoría mensual ----
@@ -1276,7 +1279,7 @@ ocupados_2024 <- GEIH_2024 %>%
     ANIOS = ANIO - 1,
 
     # 1. Clasificación de formalidad de la unidad económica (FORMAL: 1 = Formal, 0 = Informal)
-    # Replicación exacta de las reglas secuenciales de la sintaxis oficial DANE (Código_SAS)
+    # Adaptación de las reglas del DANE: EI final contrastado con Código_SAS
     FORMAL = case_when(
       # Rama institucional formal por definición: administración pública (84) y organizaciones extraterritoriales (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
@@ -1295,7 +1298,7 @@ ocupados_2024 <- GEIH_2024 %>%
       P6430 == 2 ~ 1,
       P6430 %in% c(3, 6, 8) ~ 0,
 
-      # C. Actividad fuera de la vivienda (P6765 != 7)
+      # C. Formas de trabajo distintas de negocio o finca (P6765 != 7)
       P6765 != 7 & P3065 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 1 ~ 1,
       P6765 != 7 & P3065 %in% c(2, 9) & P3066 == 2 ~ 0,
@@ -1320,11 +1323,11 @@ ocupados_2024 <- GEIH_2024 %>%
         P6430 == 4 &
         OFICIO_C8_2D >= "21" ~ 0,
 
-      # D. Actividad en vivienda con local independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 1)
+      # D. Negocio con registro mercantil renovado (P6765 == 7 & P3067 == 1 & P3067S1 == 1)
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 >= ANIOS ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 1 & P3067S2 < ANIOS ~ 0,
 
-      # E. Actividad en vivienda con local NO independiente (P6765 == 7 & P3067 == 1 & P3067S1 == 2)
+      # E. Negocio con registro mercantil no renovado (P6765 == 7 & P3067 == 1 & P3067S1 == 2)
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 1 ~ 1,
       P6765 == 7 & P3067 == 1 & P3067S1 == 2 & P6775 == 2 ~ 0,
       P6765 == 7 &
@@ -1362,7 +1365,7 @@ ocupados_2024 <- GEIH_2024 %>%
         P6775 == 3 &
         OFICIO_C8_2D >= "21" ~ 0,
 
-      # F. Actividad en vivienda sin local comercial (P6765 == 7 & P3067 == 2)
+      # F. Negocio sin registro mercantil (P6765 == 7 & P3067 == 2)
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 1 ~ 1,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 == 2 ~ 0,
       P6765 == 7 & P3067 == 2 & P6775 == 1 & P3068 %in% c(3, 9) ~ 0,
@@ -2464,6 +2467,7 @@ grafico_4_2 <- ggplot(
   # Capa de violín ponderada (weight = F_EXP) para visualizar la densidad completa de ventas por perfil
   geom_violin(
     aes(weight = F_EXP),
+    quantiles = NULL,
     position = position_dodge(0.8),
     trim = TRUE,
     alpha = 0.45,
@@ -2479,7 +2483,6 @@ grafico_4_2 <- ggplot(
   ) +
   # Escala logarítmica en base 10 sobre el eje Y para corregir la asimetría positiva extrema de las ventas
   scale_y_log10(
-    limits = c(0.1, 100),
     breaks = c(0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0),
     labels = paste0(
       "$",
@@ -2487,6 +2490,7 @@ grafico_4_2 <- ggplot(
       "M"
     )
   ) +
+  coord_cartesian(ylim = c(0.1, 100)) +
   # Escala manual de colores: gris claro para quienes no solicitaron crédito y azul acero para quienes sí solicitaron
   scale_fill_manual(
     values = c(
