@@ -242,13 +242,11 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
-La relación entre las tasas del mercado laboral se resume en la siguiente identidad:
-$$\text{TD} = \frac{\text{Desocupados}}{\text{FT}} = 1 - \frac{\text{Ocupados}}{\text{FT}} = 1 - \frac{\text{Ocupados} / \text{PET}}{\text{FT} / \text{PET}} = 1 - \frac{\text{TO}}{\text{TGP}}$$
+Lo primero que se debe resaltar es la importante brecha que hay entre las mujeres y los hombres en la participación en el mercado laboral: en la tasa global de participación, los hombres manejan tasas cercanas a 76,5 % mientras que las mujeres manejan tasas cercanas a 53 % (una brecha de ~13,5pp); con respecto a la tasa de ocupación, los hombres manejan tasas cercanas a 70 % mientras que las mujeres
 
-Esta relación indica que los cambios en la tasa de desempleo dependen a la vez de la oferta de trabajo (TGP) y de la demanda efectiva de empleo (TO). Por ello, observar solo el total de personas desocupadas no basta para explicar la tasa: la desocupación puede bajar porque se crean puestos de trabajo o porque una parte de las personas deja de buscar empleo y pasa a la inactividad.
 
-Los resultados muestran diferencias marcadas entre hombres y mujeres:
-* En participación y ocupación, los hombres se ubican en niveles de TGP cercanos al 76 o 77 % y de TO entre 70 y 72 %, mientras que las mujeres presentan una TGP en torno al 51 o 52 % y una TO cerca del 45 o 46 %, lo que deja una brecha de más de 24 puntos porcentuales en ambos indicadores.
+
+y de TO entre 70 y 72 %, mientras que las mujeres presentan una TGP en torno al 51 o 52 % y una TO cerca del 45 o 46 %, lo que deja una brecha de más de 24 puntos porcentuales en ambos indicadores.
 * En desempleo, las mujeres registran tasas entre 11 y 15 %, frente a niveles de 7 a 10 % en los hombres, con una diferencia desfavorable para las mujeres de 4 a 5 puntos porcentuales.
 * En el último trimestre de 2024 se observa un patrón estacional: la TD disminuye tanto en hombres (de 9,57 % a 7,06 %) como en mujeres (de 14,98 % a 11,15 %). Esta baja coincidió con un aumento de la ocupación (la TO subió 2,7 puntos porcentuales en ambos sexos) acompañado de una participación estable o en leve ascenso, lo que refleja la mayor contratación en comercio y servicios hacia fin de año.
 
