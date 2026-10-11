@@ -620,10 +620,7 @@ write.csv(
 
 #### 1.4.a.1) Leer los módulos de EMICRON y 1.4.a.2) Seleccionar variables ----
 # Cargar los 4 modulos de EMICRON 2024 con variables clave
-emicron_identificacion <- read.csv(file.path(
-  ruta_emicron,
-  "Módulo de identificación.csv"
-)) %>%
+emicron_identificacion <- read.csv(file.path(ruta_emicron,"Módulo de identificación.csv")) %>%
   select(
     DIRECTORIO,
     SECUENCIA_P,
@@ -636,19 +633,17 @@ emicron_identificacion <- read.csv(file.path(
     MES_REF,
     GRUPOS4,
     GRUPOS12,
-    F_EXP
-  )
+    F_EXP)
 
-emicron_caracteristicas <- read.csv(file.path(
-  ruta_emicron,
-  "Módulo de características del micronegocio.csv"
-)) %>%
-  select(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA, P1633, P1055)
+emicron_caracteristicas <- read.csv(file.path(ruta_emicron,"Módulo de características del micronegocio.csv")) %>%
+  select(
+    DIRECTORIO, 
+    SECUENCIA_P, 
+    SECUENCIA_ENCUESTA, 
+    P1633, 
+    P1055)
 
-emicron_inclusion <- read.csv(file.path(
-  ruta_emicron,
-  "Módulo de inclusión financiera.csv"
-)) %>%
+emicron_inclusion <- read.csv(file.path(ruta_emicron,"Módulo de inclusión financiera.csv")) %>%
   select(
     DIRECTORIO,
     SECUENCIA_P,
@@ -661,14 +656,14 @@ emicron_inclusion <- read.csv(file.path(
     P1764_6,
     P1764_7,
     P1765,
-    P3014
-  )
+    P3014)
 
-emicron_ventas <- read.csv(file.path(
-  ruta_emicron,
-  "Módulo de ventas o ingresos.csv"
-)) %>%
-  select(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA, VENTAS_MES_ANTERIOR)
+emicron_ventas <- read.csv(file.path(ruta_emicron,"Módulo de ventas o ingresos.csv")) %>%
+  select(
+    DIRECTORIO, 
+    SECUENCIA_P, 
+    SECUENCIA_ENCUESTA, 
+    VENTAS_MES_ANTERIOR)
 
 #### 1.4.a.3) Preparar la llave de EMICRON ----
 # Homogeneizar llaves compuestas de EMICRON a tipo caracter
@@ -680,18 +675,21 @@ emicron_identificacion <- emicron_identificacion %>%
     SECUENCIA_P = as.character(SECUENCIA_P),
     SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA)
   )
+
 emicron_caracteristicas <- emicron_caracteristicas %>%
   mutate(
     DIRECTORIO = as.character(DIRECTORIO),
     SECUENCIA_P = as.character(SECUENCIA_P),
     SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA)
   )
+
 emicron_inclusion <- emicron_inclusion %>%
   mutate(
     DIRECTORIO = as.character(DIRECTORIO),
     SECUENCIA_P = as.character(SECUENCIA_P),
     SECUENCIA_ENCUESTA = as.character(SECUENCIA_ENCUESTA)
   )
+
 emicron_ventas <- emicron_ventas %>%
   mutate(
     DIRECTORIO = as.character(DIRECTORIO),
@@ -727,6 +725,7 @@ tabla_na_llaves_emicron <- data.frame(
     sum(is.na(emicron_ventas$SECUENCIA_ENCUESTA))
   )
 )
+
 print(tabla_na_llaves_emicron)
 
 tabla_llaves_emicron <- data.frame(
@@ -775,6 +774,7 @@ tabla_secuencia_encuesta <- emicron %>%
   group_by(SECUENCIA_ENCUESTA) %>%
   summarise(REGISTROS = n(), .groups = "drop") %>%
   arrange(SECUENCIA_ENCUESTA)
+
 print(tabla_secuencia_encuesta)
 
 #### 1.4.c.2) SECUENCIA_ENCUESTA dentro de los hogares ----
@@ -785,11 +785,13 @@ tabla_propietarios_hogar <- emicron %>%
   group_by(PROPIETARIOS) %>%
   summarise(HOGARES = n(), .groups = "drop") %>%
   arrange(PROPIETARIOS)
+
 print(tabla_propietarios_hogar)
 
 #### 1.4.c.3) Comparación con ORDEN ----
 # Probar equivalencia empírica entre SECUENCIA_ENCUESTA y ORDEN
 geih_personas <- GEIH %>% select(DIRECTORIO, SECUENCIA_P, ORDEN)
+
 comparacion_orden <- emicron %>%
   select(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA) %>%
   left_join(
@@ -798,6 +800,7 @@ comparacion_orden <- emicron %>%
     relationship = "many-to-many"
   ) %>%
   mutate(COINCIDE_ORDEN = SECUENCIA_ENCUESTA == ORDEN)
+
 
 tabla_orden_persona <- comparacion_orden %>%
   group_by(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA) %>%
@@ -811,6 +814,7 @@ resumen_relacion_orden <- tabla_orden_persona %>%
     MAS_DE_UNA_COINCIDENCIA = sum(COINCIDENCIAS > 1),
     PORCENTAJE_UNA_COINCIDENCIA = round(mean(COINCIDENCIAS == 1) * 100, 2)
   )
+
 write.csv(
   resumen_relacion_orden,
   file.path(ruta_outputs, "1_4_relacion_orden.csv"),
@@ -844,6 +848,7 @@ meses_nombres_orden <- c(
   "NOVIEMBRE",
   "DICIEMBRE"
 )
+
 emicron_persona <- emicron_persona %>%
   mutate(
     MES_REF_NUM = as.numeric(factor(MES_REF, levels = meses_nombres_orden))
