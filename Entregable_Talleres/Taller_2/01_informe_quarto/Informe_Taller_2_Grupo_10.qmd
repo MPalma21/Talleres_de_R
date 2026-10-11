@@ -7,7 +7,7 @@ format:
     documentclass: article
     papersize: letter
     fontsize: 9pt
-    geometry: [top=1.55cm, bottom=1.55cm, left=1.65cm, right=1.65cm]
+    geometry: [top=1.45cm, bottom=1.45cm, left=1.60cm, right=1.60cm]
     colorlinks: false
     number-sections: false
     fig-pos: H
@@ -36,6 +36,8 @@ format:
         \titlespacing*{\subsection}{0pt}{2pt}{1pt}
         \setlength{\intextsep}{2pt}
         \setlength{\textfloatsep}{2pt}
+        \setlength{\abovecaptionskip}{2pt}
+        \setlength{\belowcaptionskip}{0pt}
 execute:
   echo: false
   warning: false
@@ -267,7 +269,7 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 
 ```{r}
 #| fig-cap: "Evolución trimestral de TGP, TO y TD por sexo, Colombia 2023 a 2024. Fuente: GEIH (DANE), procesamiento del Grupo 10."
-#| out-width: "48%"
+#| out-width: "60%"
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
@@ -279,7 +281,7 @@ figura_recortada("2_2_tasas_sexo.png")
 
 ```{r}
 #| fig-cap: "Distribución de ocupados según condición de formalidad y sexo, 13 ciudades (Diciembre 2024). Fuente: GEIH (DANE)."
-#| out-width: "42%"
+#| out-width: "50%"
 figura_recortada("2_3_formalidad_13ciudades.png")
 ```
 
@@ -291,7 +293,7 @@ Al replicar el cálculo para octubre a diciembre de 2024 en las 13 ciudades (fac
 
 ```{r}
 #| fig-cap: "Distribución de la población ocupada según posición ocupacional y sexo, total nacional (Enero 2023). Fuente: GEIH (DANE)."
-#| out-width: "42%"
+#| out-width: "50%"
 figura_recortada("2_4_posicion_nacional.png")
 ```
 
@@ -333,7 +335,7 @@ tabla_latex(i, 0.68)
 
 ```{r}
 #| fig-cap: "Medios de pago aceptados por micronegocios según rama económica, Colombia 2024. Fuente: EMICRON (DANE)."
-#| out-width: "44%"
+#| out-width: "65%"
 figura_recortada("3_2_formas_pago.png")
 ```
 
@@ -360,7 +362,7 @@ c <- tidyr::pivot_wider(c[, c("NIVEL_EDUCATIVO", "TIENE_RUT", "TOTAL_EXPANDIDO")
                        names_from = TIENE_RUT, values_from = TOTAL_EXPANDIDO)
 names(c)[1] <- "Nivel educativo"
 for (j in 2:3) c[[j]] <- fmt_entero(c[[j]])
-tabla_latex(c, 0.45)
+tabla_latex(c, 0.42)
 ```
 
 ```{=latex}
@@ -369,7 +371,7 @@ tabla_latex(c, 0.45)
 
 ```{r}
 #| fig-cap: "Tenencia de RUT según las 13 categorías educativas del DANE (P3042) en propietarios emparejados, 2024. Fuente: GEIH y EMICRON (DANE), ponderador: F_EXP."
-#| out-width: "46%"
+#| out-width: "49%"
 figura_recortada("3_3_cruce.png")
 ```
 
@@ -381,7 +383,7 @@ La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra diferencias en 
 
 ```{r}
 #| fig-cap: "Tasa de informalidad laboral departamental e ingreso laboral mediano, Colombia 2024. Fuente: GEIH 2024."
-#| out-width: "44%"
+#| out-width: "47%"
 figura_recortada("4_1_geografia_informalidad.png")
 ```
 
@@ -391,7 +393,7 @@ Los datos departamentales muestran una relación inversa entre informalidad e in
 
 ```{r}
 #| fig-cap: "Distribución de ventas brutas según medio de pago (P1764_3 vs. efectivo exclusivo) y solicitud de crédito (P1765), EMICRON 2024."
-#| out-width: "44%"
+#| out-width: "52%"
 figura_recortada("4_2_inclusion_ventas_micro.png")
 ```
 
@@ -401,7 +403,7 @@ Se comparan transferencias bancarias o por internet (`P1764_3`) y efectivo exclu
 
 ```{r}
 #| fig-cap: "Intersección entre las 13 categorías educativas (P3042) y las 9 posiciones ocupacionales (P6430), Colombia 2024. Fuente: GEIH 2024."
-#| out-width: "46%"
+#| out-width: "52%"
 figura_recortada("4_3_mismatch_educacion.png")
 ```
 
@@ -424,22 +426,47 @@ El cruce comprende 353.668 ocupados con educación conocida; excluye cuatro regi
 
 # Anexo. Declaración de uso de inteligencia artificial
 
-En cumplimiento de los lineamientos institucionales de la Universidad de los Andes (Nivel 3 de uso de Inteligencia Artificial Generativa - IAG) y de las normas establecidas en el enunciado del Taller 2, a continuación se declara de manera explícita y transparente el uso de herramientas de IAG durante el desarrollo del trabajo:
+En cumplimiento de los lineamientos institucionales de la Universidad de los Andes (*Lineamientos para el uso de inteligencia artificial generativa - IAG*, Octubre de 2024, Nivel 3: *Uso de IA para editar y refinar*) y de las normas establecidas en el enunciado del Taller 2, a continuación se declara de manera explícita y transparente el alcance del uso de herramientas de IAG durante el desarrollo del trabajo. Se enfatiza que las herramientas se emplearon exclusivamente como soporte técnico, instrumental y práctico, preservando la autoría intelectual, el razonamiento analítico y el dominio computacional en los integrantes del grupo:
 
 \begin{center}
-\begin{tabular}{p{0.22\textwidth}p{0.72\textwidth}}
+\begin{tabular}{p{0.24\textwidth}p{0.70\textwidth}}
 \toprule
-\textbf{Elemento} & \textbf{Declaración formal del Grupo 10} \\
+\textbf{Elemento} & \textbf{Declaración formal y alcance del Grupo 10} \\
 \midrule
-\textbf{Herramienta} & ChatGPT (OpenAI GPT-4o) y Claude (Anthropic). \\
+\textbf{Herramientas y Nivel} & ChatGPT (OpenAI GPT-4o) y Claude (Anthropic 3.5 Sonnet). Nivel 3 institucional (\textit{Editar, revisar y refinar}). \\
 \addlinespace
-\textbf{Propósito} & Apoyo en la edición de estilo y gramática del texto explicativo, asistencia técnica en la estructuración de la plantilla Quarto/LaTeX (XeLaTeX, tablas booktabs y recorte de figuras en PNG), y revisión cruzada de la consistencia sintáctica de los comandos de R. \\
+\textbf{Propósito y tareas prácticas asistidas} & 
+\textbf{1. Depuración sintáctica en R (Función 4 Uniandes):} Consulta puntual para resolución de errores de sintaxis en consola, advertencias de tipado y verificación de la estructura del outline jerárquico (\texttt{----}).\newline
+\textbf{2. Maquetación técnica en Quarto / XeLaTeX (Función 1 Uniandes):} Soporte técnico de sintaxis en tablas \texttt{booktabs}, dimensionamiento relativo de columnas (\texttt{p\{...\}}) y configuración de encabezados con \texttt{fancyhdr}.\newline
+\textbf{3. Revisión ortotipográfica y gramatical (Función 1 Uniandes):} Revisión de ortografía, puntuación y estilo gramatical sobre explicaciones elaboradas previamente por los integrantes, sin alterar el sentido analítico original. \\
 \addlinespace
-\textbf{Contenido tratado} & Revisión de redacción en los numerales 1.1 a 4.3; formateo de tablas en LaTeX para no desbordar márgenes; y verificación de la estructura del outline jerárquico del script maestro bajo el estándar del curso. \\
+\textbf{Límites y tareas no delegadas (Autoría humana)} & 
+\textbf{1. Lógica analítica y de pegues:} La demostración empírica de la llave común GEIH--EMICRON (\texttt{SECUENCIA\_ENCUESTA == ORDEN}) y el desfase temporal de recolección (\texttt{MES\_REF == MES\_GEIH + 1}) fue formulada y probada 100\% por el grupo.\newline
+\textbf{2. Algoritmo de formalidad laboral:} La traducción e implementación en \texttt{dplyr} del código oficial SAS del DANE (\texttt{EI}) fue programada y validada manualmente (0,0~pp de discrepancia frente al boletín oficial de 13 ciudades).\newline
+\textbf{3. Tasas e indicadores laborales:} La estimación ponderada con factores de expansión (\texttt{FEX\_C18 / 3}) y la comprobación de consistencia aditiva (\texttt{FT = Ocupados + Desocupados}) son desarrollo original del grupo. \\
 \addlinespace
-\textbf{Revisión y supervisión humana} & Los tres integrantes del grupo (Juan José Echeverry, Miguelangel Palma y Sergio López) contrastaron minuciosamente cada cifra reportada en el documento frente a las salidas numéricas generadas por el script maestro \texttt{Taller2\_Grupo\_10.R}, los microdatos del DANE y los boletines técnicos oficiales. Se ajustaron manualmente las interpretaciones económicas y se validaron las ecuaciones matemáticas. \\
-\addlinespace
-\textbf{Autoría y dominio} & El código, el análisis sustantivo y las decisiones metodológicas (adaptación de la clasificación \texttt{EI}, demostración empírica de la llave de EMICRON y los tres ejercicios socioeconómicos libres) son de autoría íntegra del Grupo 10. Todos los integrantes dominan la totalidad del código y están en capacidad de explicarlo y modificarlo en la sesión individual de entrevista oral. \\
+\textbf{Supervisión crítica y control de calidad} & 
+Se aplicó un flujo estructurado en tres fases (exploración sintáctica, depuración controlada y verificación empírica). Toda respuesta fue auditada críticamente frente a los microdatos oficiales del DANE y los scripts de clase, descartando proactivamente sugerencias erróneas de librerías ajenas (\texttt{data.table}) o supuestos inválidos sobre llaves y ponderadores. Ninguna cifra ni análisis sustantivo fue generado por IA. \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\subsection*{Flujo metodológico por fases y matriz de descarte crítico de alucinaciones}
+
+Conforme a las recomendaciones de las Secciones 3.1 y 3.2 de los lineamientos institucionales de la Universidad de los Andes, el proceso se estructuró en tres fases secuenciales: (1)~\textit{Exploración sintáctica y conceptual inicial} para consultas sobre documentación; (2)~\textit{Depuración técnica y maquetación controlada} para resolver errores de consola y formatear tablas; y (3)~\textit{Auditoría y validación humana estricta}, donde cada bloque fue ejecutado en una sesión limpia y contrastado frente a los boletines oficiales.
+
+\begin{center}
+\begin{tabular}{p{0.24\textwidth}p{0.70\textwidth}}
+\toprule
+\textbf{Dimensión técnica} & \textbf{Sugerencia errónea descartada (Alucinación) y acción correctiva humana} \\
+\midrule
+\textbf{Librerías del curso} & La IA sugirió optimizar lectura con \texttt{data.table::fread()}. \textit{Acción humana:} Se descartó por violar las restricciones del enunciado, implementando lectura modular con \texttt{read.csv()} y pre-filtrado con \texttt{dplyr::select()}. \\
+\addlinespace
+\textbf{Llaves de emparejamiento} & La IA asumió un pegue directo por \texttt{DIRECTORIO + ORDEN} dentro del mismo mes. \textit{Acción humana:} Se descartó al descubrir el desfase de recolección de EMICRON ($\text{MES\_REF} = \text{MES}_{\text{GEIH}} + 1$) y la equivalencia empírica $\text{SECUENCIA\_ENCUESTA} == \text{ORDEN}$. \\
+\addlinespace
+\textbf{Factores de expansión} & La IA sugirió ponderar el cruce GEIH--EMICRON combinando \texttt{FEX\_C18} y \texttt{F\_EXP}. \textit{Acción humana:} Se corrigió el error metodológico, aplicando exclusivamente \texttt{F\_EXP} al evaluar la unidad de micronegocios. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Privacidad y confidencialidad:} En estricto cumplimiento de las políticas de privacidad de la Universidad y de reserva estadística del DANE, ningún microdato individual, registro no anonimizado ni archivo de datos fue ingresado en las herramientas de IA generativa.
