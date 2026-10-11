@@ -4,11 +4,9 @@
 # 0) Configuración inicial ----
 
 ## 0.1) Limpiar ambiente ----
-# Elimina los objetos de sesiones anteriores para asegurar una ejecución limpia y reproducible.
 rm(list = ls())
 
 ## 0.2) Librerías ----
-# Carga las herramientas estándar de tidyverse y manipulación autorizadas en el curso.
 library(here)
 library(dplyr)
 library(tidyr)
@@ -16,7 +14,6 @@ library(ggplot2)
 library(openxlsx)
 
 ## 0.3) Rutas ----
-# Centraliza la derivación de rutas relativas mediante here().
 ruta <- here()
 ruta_datos <- file.path(ruta, "Datos")
 ruta_emicron <- file.path(ruta_datos, "EMICRON_2024")
@@ -32,7 +29,7 @@ if (!dir.exists(ruta_outputs)) {
 ## 1.1) Pegue de las bases de datos de la GEIH ----
 
 ### 1.1.1) Años, meses y llave de identificación ----
-# Define los 24 períodos mensuales (12 meses por año) y la llave compuesta de persona en GEIH.
+# Periodos y llave de persona de la GEIH
 anios <- c("GEIH_2023", "GEIH_2024")
 meses <- c(
   "01_Enero",
@@ -51,23 +48,18 @@ meses <- c(
 llave_geih <- c("DIRECTORIO", "SECUENCIA_P", "ORDEN")
 
 ### 1.1.2) Objetos para almacenar resultados ----
-# Listas para acumular las bases anuales e insumos de verificación mensual solicitados en 1.1.
+# Listas para guardar bases y chequeos mensuales
 bases_anuales <- list()
 conteos_modulos <- list()
 verificacion_llaves <- list()
 verificacion_pegues <- list()
 verificacion_eficiencia <- list()
 
-# Contador global para indexar las listas de auditoría y verificación mensual.
-# Se inicializa en 1 antes de los bucles y se incrementa en 1 en cada iteración mensual
-# (corriendo de 1 a 24 para los 24 meses analizados en 2023 y 2024).
-# El contador asigna una posición a cada mes en las listas de auditoría.
-# Las listas se inicializan vacías y se consolidan al final con bind_rows();
-# esta indexación no constituye una preasignación de memoria.
+# Indice mensual para las listas de chequeo (1 a 24)
 contador <- 1
 
 ### 1.1.3) Loop para construir las bases mensuales ----
-# Recorre cada año y mes leyendo los 4 módulos, seleccionando variables y uniendo secuencialmente.
+# Loop de lectura mensual y pegue de modulos
 for (anio in anios) {
   bases_mensuales_anio <- list()
 
@@ -300,18 +292,18 @@ for (anio in anios) {
   }
 
   ### 1.1.4) Construir las bases anuales ----
-  # Consolida los 12 meses del año en un único data frame anual mediante bind_rows
+  # Pegue de los 12 meses del anio
   bases_anuales[[anio]] <- bind_rows(bases_mensuales_anio)
 }
 
 ### 1.1.5) Construir la base GEIH final ----
-# Integra los dos años completos en el dataframe maestro GEIH.
+# Consolidado 2023-2024
 GEIH_2023 <- bases_anuales[["GEIH_2023"]]
 GEIH_2024 <- bases_anuales[["GEIH_2024"]]
 GEIH <- bind_rows(GEIH_2023, GEIH_2024)
 
 ### 1.1.6) Verificaciones solicitadas ----
-# Consolida las matrices mensuales de auditoría del pegue.
+# Tablas de chequeo
 tabla_llaves <- bind_rows(verificacion_llaves)
 tabla_pegues <- bind_rows(verificacion_pegues)
 tabla_eficiencia <- bind_rows(verificacion_eficiencia)
@@ -345,7 +337,7 @@ write.csv(
 tabla_modulos_2024 <- bind_rows(conteos_modulos) %>% filter(ANIO == "GEIH_2024")
 
 ### 1.2.2) Relación entre los módulos ----
-# Verifica que General >= Fuerza de Trabajo y que Ocupados + No Ocupados == Fuerza de Trabajo.
+# Chequeo de consistencia entre modulos
 tabla_modulos_2024 <- tabla_modulos_2024 %>%
   mutate(
     GENERAL_MAYOR_PET = GENERAL >= FUERZA_MODULO,
@@ -353,7 +345,7 @@ tabla_modulos_2024 <- tabla_modulos_2024 %>%
   )
 
 ### 1.2.3) Consistencia de las definiciones laborales ----
-# Comprueba las identidades conceptuales: PET = FT + FFT y FT = Ocupados + Desocupados.
+# Identidades laborales del DANE (PET y FT)
 tabla_consistencia_laboral_2024 <- GEIH_2024 %>%
   group_by(MES) %>%
   summarise(
@@ -406,7 +398,6 @@ write.csv(
 ### 1.3.c) Ocupados ----
 ### 1.3.d) No ocupados ----
 ### 1.3.e) Variables necesarias para formalidad ----
-# (Las variables fueron seleccionadas dentro del loop 1.1.3.4 con fines de eficiencia).
 
 variables_esperadas <- c(
   "DIRECTORIO",
@@ -750,7 +741,6 @@ if (nrow(emicron) != nrow(emicron_identificacion)) {
 }
 
 ### 1.4.b) Documentación de la relación entre las dos encuestas ----
-# (Documentada detalladamente en el cuerpo del informe técnico).
 
 ### 1.4.c) Determinación de la llave y análisis del período de referencia ----
 
@@ -877,7 +867,7 @@ write.csv(
 ### 1.4.d) Pegue de las dos encuestas ----
 geih_2024_micro <- GEIH %>% filter(ANIO == 2024)
 
-# Verifica unicidad de llave en GEIH 2024
+# Chequeo de duplicados en la llave de GEIH 2024
 if (anyDuplicated(geih_2024_micro[, llave_geih]) > 0) {
   stop("La llave de GEIH 2024 tiene registros duplicados.")
 }
@@ -991,7 +981,6 @@ write.csv(
 
 
 # Punto 2 ----
-# Construcción de los principales indicadores de mercado laboral
 
 ## 2.1) Tasas y poblaciones ----
 
@@ -1192,7 +1181,6 @@ datos_grafico_tasas <- tabla_indicadores_trim %>%
 
 ### 2.2.2) Construir el gráfico de series de tiempo y 2.2.3) Exportar ----
 # Datos y ponderador: serie trimestral 2023-2024 expandida con FEX_TRIM = FEX_C18 / 3.
-# Mapeo estético (aes): eje X = trimestre ordenado (PERIODO_TRIM), eje Y = valor porcentual (VALOR),
 # y triple codificación redundante por sexo (color, shape y linetype) para accesibilidad e impresión.
 grafico_tasas <- ggplot(
   datos_grafico_tasas,
@@ -1205,12 +1193,9 @@ grafico_tasas <- ggplot(
     linetype = SEXO
   )
 ) +
-  # Capas geométricas: líneas de trayectoria temporal (geom_line) y marcadores puntuales por trimestre (geom_point)
   geom_line(linewidth = 1.2) +
   geom_point(size = 3) +
-  # Facetas: paneles independientes por indicador (TGP, TO, TD) con escala libre en Y (free_y) debido a que TD tiene otro rango
   facet_wrap(~TASA, scales = "free_y", ncol = 3) +
-  # Escala discreta en X: etiquetas compactas en dos líneas (T1..T4 y año) para evitar solapamiento horizontal
   scale_x_discrete(
     labels = c(
       "T1\n2023",
@@ -1223,11 +1208,9 @@ grafico_tasas <- ggplot(
       "T4\n2024"
     )
   ) +
-  # Escala de color manual: paleta sobria de alto contraste (azul acero para hombres, rojo ladrillo para mujeres)
   scale_color_manual(
     values = c("Hombre" = "steelblue", "Mujer" = "firebrick")
   ) +
-  # Etiquetas del gráfico: título, subtítulo, ejes, leyenda unificada y fuente oficial
   labs(
     title = "Evolución de las tasas de mercado laboral según sexo en Colombia",
     subtitle = "Total nacional por trimestres (2023 - 2024)",
@@ -1238,7 +1221,6 @@ grafico_tasas <- ggplot(
     linetype = "Sexo al nacer",
     caption = "Fuente: DANE - Gran Encuesta Integrada de Hogares (GEIH) 2023-2024. Ponderador trimestral: FEX_C18 / 3."
   ) +
-  # Tema base y personalización tipográfica: fondo blanco con grilla suave (theme_bw) y leyenda inferior
   theme_bw() +
   theme(
     axis.text.x = element_text(hjust = 0.5, size = 10),
@@ -1252,7 +1234,7 @@ grafico_tasas <- ggplot(
     plot.subtitle = element_text(size = 12)
   )
 
-# Exportación en alta resolución (300 DPI, formato apaisado 12 x 6 pulgadas para los 3 paneles)
+# Guardar grafico 2.2
 ggsave(
   file.path(ruta_outputs, "2_2_tasas_sexo.png"),
   plot = grafico_tasas,
@@ -1265,7 +1247,7 @@ ggsave(
 ## 2.3) Población ocupada según formalidad ----
 
 ### 2.3.1) Construcción de la variable de formalidad (EI) ----
-# Clasificación de formalidad laboral según la sintaxis oficial del DANE (Código_SAS)
+# Replicacion de formalidad DANE (Codigo_SAS)
 areas_13ciudades <- c(5, 8, 11, 13, 17, 23, 50, 52, 54, 66, 68, 73, 76)
 
 ocupados_2024 <- GEIH_2024 %>%
@@ -1279,7 +1261,7 @@ ocupados_2024 <- GEIH_2024 %>%
     ANIOS = ANIO - 1,
 
     # 1. Clasificación de formalidad de la unidad económica (FORMAL: 1 = Formal, 0 = Informal)
-    # Adaptación de las reglas del DANE: EI final contrastado con Código_SAS
+    # Reglas de formalidad de la unidad economica segun DANE
     FORMAL = case_when(
       # Rama institucional formal por definición: administración pública (84) y organizaciones extraterritoriales (99)
       RAMA2D_R4 %in% c(84, 99) ~ 1,
@@ -1432,7 +1414,7 @@ GEIH_13ciudades_tri <- ocupados_2024 %>%
 
 GEIH_13ciudades_dic <- GEIH_13ciudades_tri %>% filter(MES == 12)
 
-# Verificación frente al boletín técnico DANE (42,5 % informalidad en 13 ciudades, Oct-Dic 2024)
+# Comparacion contra el boletin del DANE (42.5% Oct-Dic 2024)
 control_ei_dane <- GEIH_13ciudades_tri %>%
   summarise(
     N_OCUPADOS = n(),
@@ -1476,14 +1458,11 @@ write.csv(
 
 ### 2.3.3) Construir y exportar el gráfico de torta ----
 # Datos y ponderador: ocupados de las 13 ciudades y A.M. en diciembre de 2024 expandidos con FEX_C18.
-# Mapeo estético (aes): eje X vacío ("") para barra única, eje Y = porcentaje (PORCENTAJE), relleno (fill) = condición (CONDICION).
 grafico_formalidad <- ggplot(
   tabla_formalidad_sexo,
   aes(x = "", y = PORCENTAJE, fill = CONDICION)
 ) +
-  # Capa geométrica de barras apiladas al 100 % que sirve de base para la transformación polar
   geom_col(width = 1) +
-  # Coordenadas polares sobre el eje Y (theta = "y") para transformar la barra apilada en gráfico de torta
   coord_polar(theta = "y") +
   # Facetas por sexo para comparar lado a lado la composición porcentual de hombres y mujeres
   facet_wrap(~SEXO) +
@@ -1493,7 +1472,6 @@ grafico_formalidad <- ggplot(
     position = position_stack(vjust = 0.5),
     size = 5
   ) +
-  # Escala manual de relleno: azul acero para formalidad y gris claro para informalidad
   scale_fill_manual(values = c("Formal" = "steelblue", "Informal" = "grey75")) +
   # Títulos, subtítulo, leyenda y nota de fuente con el ponderador utilizado
   labs(
@@ -1502,7 +1480,6 @@ grafico_formalidad <- ggplot(
     fill = "Condición laboral",
     caption = "Fuente: DANE - GEIH (Diciembre 2024). Ponderador mensual: FEX_C18."
   ) +
-  # Tema vacío (theme_void) para eliminar ejes cartesianos innecesarios en coordenadas polares
   theme_void() +
   theme(
     legend.position = "bottom",
@@ -1514,7 +1491,7 @@ grafico_formalidad <- ggplot(
     plot.caption = element_text(size = 9.5, hjust = 0.5)
   )
 
-# Exportación del gráfico de torta en alta resolución (300 DPI)
+# Guardar grafico 2.3
 ggsave(
   file.path(ruta_outputs, "2_3_formalidad_13ciudades.png"),
   plot = grafico_formalidad,
@@ -1596,14 +1573,12 @@ cat(
 
 ### 2.4.5) Construir y exportar el gráfico de barras horizontales ----
 # Datos y ponderador: ocupados en enero de 2023 expandidos con FEX_C18 según las 9 categorías DANE de P6430.
-# Mapeo estético (aes): eje X = posición ocupacional ordenada por peso nacional, eje Y = proporción (%), fill = grupo.
 grafico_posicion <- ggplot(
   posicion_consolidada,
   aes(x = POSICION_OCUPACIONAL, y = PORCENTAJE, fill = GRUPO)
 ) +
   # Barras agrupadas (position_dodge) para contrastar Total nacional, Hombres y Mujeres en cada categoría
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
-  # Inversión de coordenadas (coord_flip) para lectura horizontal de las etiquetas completas del DANE
   coord_flip() +
   # Etiquetas de datos al extremo derecho de cada barra agrupada
   geom_text(
@@ -1616,7 +1591,6 @@ grafico_posicion <- ggplot(
   scale_y_continuous(
     limits = c(0, max(posicion_consolidada$PORCENTAJE) * 1.15)
   ) +
-  # Escala manual de colores coherente con el resto del taller
   scale_fill_manual(
     values = c(
       "Total nacional" = "grey50",
@@ -1624,7 +1598,6 @@ grafico_posicion <- ggplot(
       "Mujeres" = "firebrick"
     )
   ) +
-  # Etiquetas descriptivas y fuente oficial
   labs(
     title = "Distribución de personas ocupadas según posición ocupacional",
     subtitle = "Total nacional, hombres y mujeres - Enero de 2023",
@@ -1633,7 +1606,6 @@ grafico_posicion <- ggplot(
     fill = "Grupo de análisis",
     caption = "Fuente: DANE - GEIH (Enero 2023). Ponderador mensual: FEX_C18."
   ) +
-  # Tema limpio con grilla de referencia y leyenda inferior
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
@@ -1646,7 +1618,7 @@ grafico_posicion <- ggplot(
     legend.position = "bottom"
   )
 
-# Exportación en alta resolución (300 DPI)
+# Guardar grafico
 ggsave(
   file.path(ruta_outputs, "2_4_posicion_nacional.png"),
   plot = grafico_posicion,
@@ -1657,7 +1629,6 @@ ggsave(
 
 
 # Punto 3 ----
-# Caracterización de los micronegocios en Colombia
 
 ## 3.1) Indicadores básicos de los micronegocios ----
 # Nota metodológica: los porcentajes se calculan con la suma exacta de F_EXP sin redondeo previo
@@ -1931,32 +1902,25 @@ write.csv(
 
 ### 3.2.4) Construir y exportar el gráfico de barras agrupadas ----
 # Datos y ponderador: micronegocios clasificados en GRUPOS4 (1:4) expandidos con el factor anual F_EXP.
-# Mapeo estético (aes): eje X = forma de pago (FORMA_PAGO), eje Y = porcentaje de adopción dentro de la rama (PORCENTAJE),
 # y relleno (fill) = macrorrama de actividad económica (RAMA).
 grafico_formas_pago <- ggplot(
   tabla_formas_pago,
   aes(x = FORMA_PAGO, y = PORCENTAJE, fill = RAMA)
 ) +
-  # Capa geométrica de barras agrupadas lado a lado (position_dodge) para comparar las 4 ramas en cada medio de pago
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
-  # Capa de etiquetas de texto: muestra el porcentaje solo cuando es mayor a 0 % para evitar saturación visual
   geom_text(
     aes(label = ifelse(PORCENTAJE > 0, paste0(PORCENTAJE, "%"), "")),
     position = position_dodge(width = 0.8),
     hjust = -0.15,
     size = 3
   ) +
-  # Escala continua del eje Y: límites entre 0 y 112 % (margen para etiquetas) con marcas cada 20 puntos porcentuales
   scale_y_continuous(
     limits = c(0, 112),
     breaks = seq(0, 100, 20),
     labels = paste0(seq(0, 100, 20), "%")
   ) +
-  # Coordenadas volteadas (coord_flip) para desplegar las barras horizontalmente y facilitar la lectura de las categorías
   coord_flip() +
-  # Escala cromática cualitativa ColorBrewer "Set2" para diferenciar las cuatro ramas de actividad
   scale_fill_brewer(palette = "Set2") +
-  # Etiquetas descriptivas: título, subtítulo explicativo del denominador por rama, ejes, leyenda y nota técnica
   labs(
     title = "Formas de pago aceptadas por los micronegocios según rama de actividad",
     subtitle = "Total nacional - 2024 (Porcentaje de micronegocios dentro de cada rama)",
@@ -1965,7 +1929,6 @@ grafico_formas_pago <- ggplot(
     fill = "Rama de actividad (GRUPOS4)",
     caption = "Fuente: DANE - EMICRON (2024). Pregunta multirrespuesta (P1764_1 a P1764_7) expandida con F_EXP."
   ) +
-  # Tema base blanco y negro (theme_bw) y ajustes tipográficos de títulos, ejes y leyenda en la parte inferior
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 16),
@@ -1978,7 +1941,7 @@ grafico_formas_pago <- ggplot(
     legend.position = "bottom"
   )
 
-# Exportación en alta resolución (300 DPI, 11 x 6 pulgadas)
+# Guardar grafico 3.2
 ggsave(
   file.path(ruta_outputs, "3_2_formas_pago.png"),
   plot = grafico_formas_pago,
@@ -2103,7 +2066,6 @@ write.csv(
 ### 3.3.4) Construir y exportar el gráfico de barras apiladas horizontales ----
 # Datos y ponderador: 71.754 propietarios emparejados GEIH-EMICRON con nivel educativo conocido (1:13),
 # expandidos con F_EXP (4.864.444 micronegocios).
-# Mapeo estético (aes): se invierte el orden de los niveles en el eje vertical (rev(levels(...)))
 # para que, al aplicar coord_flip(), "Ninguno" aparezca arriba y "Doctorado" abajo.
 grafico_cruce <- ggplot(
   tabla_contingencia_cruce %>%
@@ -2115,7 +2077,6 @@ grafico_cruce <- ggplot(
     ),
   aes(x = NIVEL_EDUCATIVO_PLOT, y = PORCENTAJE, fill = TIENE_RUT)
 ) +
-  # Capa de barras apiladas al 100 % para comparar la composición tributaria dentro de cada nivel educativo
   geom_col(position = "stack", width = 0.72) +
   # Etiquetas de texto centradas en cada segmento; se ocultan valores iguales a 0 % (p. ej. Preescolar - Con RUT)
   geom_text(
@@ -2124,15 +2085,12 @@ grafico_cruce <- ggplot(
     fontface = "bold",
     size = 3.2
   ) +
-  # Inversión de coordenadas (coord_flip) para lectura horizontal íntegra de las 13 categorías del DANE
   coord_flip() +
-  # Escala continua del eje porcentual de 0 % a 100 % con marcas cada 20 puntos porcentuales
   scale_y_continuous(
     limits = c(0, 100.5),
     breaks = seq(0, 100, 20),
     labels = paste0(seq(0, 100, 20), "%")
   ) +
-  # Escala manual de colores: azul acero para micronegocios con RUT y gris claro para sin RUT
   scale_fill_manual(
     values = c("Con RUT" = "steelblue", "Sin RUT" = "grey75"),
     breaks = c("Con RUT", "Sin RUT")
@@ -2146,7 +2104,6 @@ grafico_cruce <- ggplot(
     fill = "Condición tributaria (EMICRON: P1633)",
     caption = "Fuente: GEIH y EMICRON 2024 (DANE). Universo: 71.754 propietarios emparejados con nivel conocido (1:13). Ponderador: F_EXP."
   ) +
-  # Tema blanco y negro con leyenda inferior y tipografía legible para las 13 categorías
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 14.5),
@@ -2159,7 +2116,7 @@ grafico_cruce <- ggplot(
     legend.position = "bottom"
   )
 
-# Exportación en alta resolución (300 DPI, 11 x 7 pulgadas para alojar las 13 barras horizontales)
+# Guardar grafico 3.3
 ggsave(
   file.path(ruta_outputs, "3_3_cruce.png"),
   plot = grafico_cruce,
@@ -2170,12 +2127,11 @@ ggsave(
 
 
 # Punto 4 ----
-# Análisis socioeconómico de la población colombiana
 
 ## 4.1) Informalidad laboral y divergencia salarial territorial ----
 
 ### 4.1.1) Agregación departamental de informalidad e ingreso mediano ----
-# Reutilizamos la base ocupados_2024 con la variable de formalidad (EI) ya clasificada en el numeral 2.3.1
+# Base ocupados con informalidad del punto 2.3
 ocupados_2024_analisis <- ocupados_2024
 
 dicc_deptos <- data.frame(
@@ -2279,7 +2235,6 @@ write.csv(
 )
 
 ### 4.1.2) Construcción y exportación del gráfico 4_1_geografia_informalidad.png ----
-# Selección de 10 departamentos representativos de los extremos y centros urbanos para etiquetado directo
 deptos_etiqueta <- datos_deptos %>%
   filter(
     NOMBRE_DPTO %in%
@@ -2299,12 +2254,10 @@ deptos_etiqueta <- datos_deptos %>%
 
 # Datos y ponderador: 24 dominios departamentales GEIH 2024 con tasa de informalidad expandida (FEX_C18 / 12)
 # y mediana muestral de ingresos laborales monetarios positivos (INGLABO > 0).
-# Mapeo estético (aes): eje X = tasa de informalidad (%), eje Y = ingreso mediano en millones de COP.
 grafico_4_1 <- ggplot(
   datos_deptos,
   aes(x = TASA_INFORMALIDAD, y = INGRESO_MEDIANO / 1e6)
 ) +
-  # Capa de suavizado no paramétrico (LOESS) con banda de confianza al 95 % para capturar la relación inversa
   geom_smooth(
     method = "loess",
     se = TRUE,
@@ -2313,7 +2266,6 @@ grafico_4_1 <- ggplot(
     color = "black",
     fill = "grey70"
   ) +
-  # Capa de burbujas (geom_point): tamaño proporcional al volumen de ocupados (millones) y color por macrorregión
   geom_point(aes(size = OCUPADOS_EXP / 1e6, color = REGION), alpha = 0.85) +
   # Etiquetas de texto para los 10 departamentos seleccionados con control de solapamiento (check_overlap = TRUE)
   geom_text(
@@ -2324,7 +2276,6 @@ grafico_4_1 <- ggplot(
     fontface = "bold",
     check_overlap = TRUE
   ) +
-  # Escala continua de tamaño de burbuja (entre 2,5 y 9 mm) y paleta cualitativa ColorBrewer "Dark2"
   scale_size_continuous(range = c(2.5, 9), breaks = c(0.5, 1, 2, 4)) +
   scale_color_brewer(palette = "Dark2") +
   # Escalas continuas en X (30 % a 90 %) e Y ($0,4M a $2,0M COP)
@@ -2352,7 +2303,6 @@ grafico_4_1 <- ggplot(
     color = "Región geográfica",
     caption = "Fuente: GEIH 2024 (DANE). Cálculos Grupo 10. Ponderador: FEX_C18 / 12. Mediana calculada sobre ocupados con INGLABO > 0."
   ) +
-  # Tema blanco y negro con leyenda lateral derecha
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 14),
@@ -2364,7 +2314,7 @@ grafico_4_1 <- ggplot(
     legend.text = element_text(size = 9)
   )
 
-# Exportación en alta resolución (300 DPI)
+# Guardar grafico
 ggsave(
   file.path(ruta_outputs, "4_1_geografia_informalidad.png"),
   plot = grafico_4_1,
@@ -2412,7 +2362,6 @@ datos_micros_todos <- base_micro %>%
     VENTAS_MILLONES = VENTAS_MES_ANTERIOR / 1e6
   )
 
-# Contabilización explícita de perfiles de pago y no respuesta en P1765 sobre micronegocios con ventas positivas
 auditoria_inclusion_4_2 <- datos_micros_todos %>%
   group_by(ADOPCION_DIGITAL, ACCESO_CREDITO) %>%
   summarise(
@@ -2422,7 +2371,6 @@ auditoria_inclusion_4_2 <- datos_micros_todos %>%
   )
 print(auditoria_inclusion_4_2)
 
-# Subconjunto analítico de los 4 perfiles válidos (excluyendo "Otro perfil de pago" y la no respuesta en P1765)
 datos_micros <- datos_micros_todos %>%
   filter(
     ADOPCION_DIGITAL %in%
@@ -2458,13 +2406,11 @@ write.csv(
 ### 4.2.2) Construcción y exportación del gráfico 4_2_inclusion_ventas_micro.png ----
 # Datos y ponderador: 69.847 micronegocios con ventas positivas y respuesta válida en medios de pago y solicitud
 # de crédito (4.711.543 micronegocios expandidos con F_EXP; se documentan 5.202 registros con NA en P1765 y 645 en otros medios).
-# Mapeo estético (aes): eje X = perfil de medio de pago (ADOPCION_DIGITAL), eje Y = ventas en millones (VENTAS_MILLONES),
 # relleno (fill) = solicitud de crédito (ACCESO_CREDITO), y peso muestral (weight = F_EXP).
 grafico_4_2 <- ggplot(
   datos_micros,
   aes(x = ADOPCION_DIGITAL, y = VENTAS_MILLONES, fill = ACCESO_CREDITO)
 ) +
-  # Capa de violín ponderada (weight = F_EXP) para visualizar la densidad completa de ventas por perfil
   geom_violin(
     aes(weight = F_EXP),
     quantiles = NULL,
@@ -2473,7 +2419,6 @@ grafico_4_2 <- ggplot(
     alpha = 0.45,
     scale = "width"
   ) +
-  # Capa de diagrama de caja ponderada (geom_boxplot) superpuesta para destacar mediana y rango intercuartílico
   geom_boxplot(
     aes(weight = F_EXP),
     position = position_dodge(0.8),
@@ -2491,7 +2436,6 @@ grafico_4_2 <- ggplot(
     )
   ) +
   coord_cartesian(ylim = c(0.1, 100)) +
-  # Escala manual de colores: gris claro para quienes no solicitaron crédito y azul acero para quienes sí solicitaron
   scale_fill_manual(
     values = c(
       "No solicitó crédito" = "grey75",
@@ -2507,7 +2451,6 @@ grafico_4_2 <- ggplot(
     fill = "Solicitud de crédito (P1765):",
     caption = "Fuente: EMICRON 2024 (DANE). Universo: 69.847 micronegocios con ventas > 0 (excluye 5.202 NA en P1765 y 645 otros medios). Ponderador: F_EXP."
   ) +
-  # Tema blanco y negro con leyenda inferior
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 14),
@@ -2520,7 +2463,7 @@ grafico_4_2 <- ggplot(
     plot.caption = element_text(size = 8.5)
   )
 
-# Exportación en alta resolución (300 DPI)
+# Guardar grafico
 ggsave(
   file.path(ruta_outputs, "4_2_inclusion_ventas_micro.png"),
   plot = grafico_4_2,
@@ -2621,19 +2564,15 @@ write.csv(
 ### 4.3.2) Construcción y exportación del gráfico 4_3_mismatch_educacion.png ----
 # Datos y ponderador: 353.668 ocupados de la GEIH 2024 con nivel educativo conocido (1:13) y posición ocupacional (1:9),
 # excluyendo 4 registros con P3042 == 99. El conteo muestral se representa mediante geom_count y la tabla exporta FEX_C18 / 12.
-# Mapeo estético (aes): eje X = posición ocupacional (POSICION, 9 categorías DANE) y eje Y = nivel educativo (NIVEL, 13 categorías DANE)
 # para garantizar la lectura horizontal completa de las 13 etiquetas educativas en el eje vertical.
 grafico_4_3 <- ggplot(datos_mismatch, aes(x = POSICION, y = NIVEL)) +
-  # Capa de conteo de intersecciones discretas (geom_count): área y color proporcionales a la frecuencia muestral after_stat(n)
   geom_count(aes(color = after_stat(n)), alpha = 0.85) +
   # Escalas discretas en X e Y conservando la totalidad de categorías oficiales del DANE (drop = FALSE)
   scale_x_discrete(drop = FALSE) +
   scale_y_discrete(drop = FALSE) +
   # Escala de área proporcional (cero corresponde a área cero) con diámetro máximo de 12 mm
   scale_size_area(max_size = 12) +
-  # Gradiente continuo de color desde azul claro hasta azul marino profundo para reforzar la densidad de la celda
   scale_color_gradient(low = "lightblue", high = "navy") +
-  # Etiquetas descriptivas de ambos ejes categóricos oficiales del DANE y nota metodológica
   labs(
     title = "Emparejamiento laboral: Nivel educativo y posición ocupacional en Colombia",
     subtitle = "Intersección entre las 13 categorías educativas (P3042) y las 9 posiciones ocupacionales (P6430) - GEIH 2024",
@@ -2643,7 +2582,6 @@ grafico_4_3 <- ggplot(datos_mismatch, aes(x = POSICION, y = NIVEL)) +
     color = "Frecuencia (n):",
     caption = "Fuente: GEIH 2024 (DANE). Universo: 353.668 ocupados con nivel conocido (excluye 4 registros con P3042 = 99)."
   ) +
-  # Tema blanco y negro con etiquetas del eje X inclinadas 25 grados para evitar solapamiento entre las 9 posiciones
   theme_bw() +
   theme(
     plot.title = element_text(face = "bold", size = 13.5),
@@ -2656,7 +2594,7 @@ grafico_4_3 <- ggplot(datos_mismatch, aes(x = POSICION, y = NIVEL)) +
     legend.text = element_text(size = 9)
   )
 
-# Exportación en alta resolución (300 DPI, 11.5 x 7 pulgadas para acomodar la matriz 13 x 9)
+# Guardar grafico 4.3
 ggsave(
   file.path(ruta_outputs, "4_3_mismatch_educacion.png"),
   plot = grafico_4_3,
