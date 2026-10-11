@@ -271,9 +271,9 @@ tabla_tasas("2_1_tasas_mujeres.xlsx")
 figura_recortada("2_2_tasas_sexo.png")
 ```
 
-* En participación, la TGP de los hombres oscila entre 76,27 % y 76,84 %, frente a 52,02 % a 53,07 % en las mujeres. La brecha trimestral va de 23,64 a 24,37 puntos porcentuales. En ocupación, la TO masculina varía entre 68,97 % y 70,96 %, y la femenina entre 44,23 % y 46,88 %; la brecha es de 24,08 a 25,22 puntos.
-* La TD femenina varía entre 11,15 % y 15,09 %, frente a 7,06 % a 9,57 % en hombres. La diferencia desfavorable para las mujeres se sitúa entre 3,84 y 5,91 puntos porcentuales.
-* Entre julio-septiembre y octubre-diciembre de 2024, la TD cae de 7,67 % a 7,06 % en hombres y de 12,12 % a 11,15 % en mujeres. La TO aumenta de 70,51 % a 70,92 % y de 46,30 % a 46,79 %, respectivamente, mientras la TGP disminuye ligeramente (76,37 % a 76,30 % y 52,69 % a 52,66 %). La caída del desempleo coincide con una mayor ocupación relativa a la PET y una menor participación: $\text{TD}=100(1-\text{TO}/\text{TGP})$. La serie no identifica causas sectoriales ni permite establecer un patrón estacional.
+* En participación, la TGP de los hombres se ubica cercano a ~76,5 %, frente a la de las mujeres que se ubica cercana a  ~52,5 % (la brecha de género es ~24pp en promedio). En ocupación, la TO masculina se encuentra en tasas cercanas a un ~69,5 %, y la femenina se encuentra en tasas cercanas al ~45 % (la brecha de género es de ~24,5 %pp en promedio).
+* La TD femenina varía entre 11,15 % y 15,09 %, frente a 7,06 % a 9,57 % en hombres. La diferencia desfavorable para las mujeres se sitúa entre 3,84 y 5,91 puntos porcentuales. Se puede ver claramente que las mujeres manejan una varianza mayor que los hombres además que tienen consistentemente una tasa mayor. 
+* En general, los cambios en el desempleo coinciden con cambios en la ocupación y la participación. En el caso de los hombres, debido a que manejan mayores niveles de participación en general y son bastante estables, los cambios en el desempleo provienen principalmente de cambios en la ocupación. Por otro lado, por la parte de las mujeres, su participación es bastante menor y presenta una mayor varianza, entonces, las variaciones en su desempleo obedece a una combinación entre cambios de la participación y cambios en la ocupación.
 
 ## 2.3. Formalidad laboral en las 13 ciudades y áreas metropolitanas 
 
@@ -295,7 +295,7 @@ Al replicar el cálculo para octubre a diciembre de 2024 en las 13 ciudades (fac
 figura_recortada("2_4_posicion_nacional.png")
 ```
 
-Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) suman el 43,2 % de la ocupación nacional (alrededor de 9,3 millones de personas). De estas posiciones ocupacionales provienen los propietarios potenciales de micronegocios, sujetos además al criterio de tamaño de hasta nueve personas ocupadas.
+Con los datos expandidos de enero de 2023, los trabajadores por cuenta propia (40,6 %) y los patrones o empleadores (2,6 %) suman el 43,2 % de la ocupación nacional (alrededor de 9,3 millones de personas). De estas posiciones ocupacionales provienen los propietarios potenciales de micronegocios,además que decisiones como el registro único tributario o el registro ante cámara de comercio son afectadas directamente por la situcación ocupacional de estos propietarios. Si el propietario es "por cuenta propia" es posible asumir que es más dfiícil que cuente con RUT o el registro ante Cámara de comercio. Esto concuerda con lo que vemos en el próximo punto, la mayoría de los micronegocios no cuentan con estos registros y  los trabajadores por cuenta propia también son una mayoría en estos posibles dueños de micronegocios.
 
 # 3. Micronegocios en Colombia
 
@@ -339,7 +339,7 @@ figura_recortada("3_2_formas_pago.png")
 
 El cálculo de las siete opciones de medios de pago (`P1764_1` a `P1764_7`) se programó mediante un ciclo que recorre cada variable y rama (`GRUPOS4`), ponderando con `F_EXP` para evitar repeticiones de código.
 
-El efectivo es la forma de cobro más habitual: lo acepta el 99,0 % de los micronegocios agropecuarios y de comercio, el 98,0 % de industria y el 95,7 % de servicios. Los medios que requieren infraestructura presentan diferencias entre ramas: las transferencias bancarias o pagos por internet alcanzan el 51,9 % en servicios y el 43,4 % en comercio, frente al 6,7 % en el agro. Entre los micronegocios con rama clasificada y respuesta válida a cada pregunta, el 14,2 % solicitó crédito o préstamo y el 18,1 % ahorró dinero del negocio durante el año anterior (`3_2_credito_ahorro.csv`). La solicitud no implica aprobación ni permite distinguir crédito formal de otras fuentes [2].
+El efectivo es la forma de cobro más habitual: lo acepta el 99,0 % de los micronegocios agropecuarios y de comercio, el 98,0 % de industria y el 95,7 % de servicios. Es impirtante resaltar que las transferencias bancarias o pagos por internet alcanzan el 51,9 % en servicios y el 43,4 % en comercio, frente al 6,7 % en el agro; se ve una clara relación entre las ramas que generalmente se ubican en lo urbano (servicios o comercio) y su adopción de medios electrónicos, a diferencia de el agro que suele estar en la zona rural y se usa sólo efectivo principalmente. Entre los micronegocios en general, el 14,2 % solicitó crédito o préstamo y el 18,1 % ahorró dinero del negocio durante el año anterior (`3_2_credito_ahorro.csv`). La solicitud no implica aprobación ni permite distinguir crédito formal de otras fuentes [2].
 
 ## 3.3. Análisis conjunto GEIH y EMICRON: educación del propietario y tenencia de RUT 
 
@@ -373,7 +373,7 @@ tabla_latex(c, 0.45)
 figura_recortada("3_3_cruce.png")
 ```
 
-La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra diferencias en la tenencia de RUT según educación: 0,0 % en *Preescolar* ($n=6$), 2,8 % en *Ninguno*, 11,7 % en *Básica primaria*, 13,1 % en *Normalista*, 14,5 % en *Básica secundaria*, 22,3 % en *Media académica* y 26,8 % en *Media técnica*. Las proporciones alcanzan 34,0 % en *Técnica profesional*, 43,9 % en *Tecnológica*, 51,7 % en *Universitaria*, 73,2 % en *Especialización*, 78,7 % en *Maestría* y 88,8 % en *Doctorado*. La escala del negocio y la concentración de propietarios más escolarizados en servicios profesionales podrían explicar parte de esta asociación sin una relación causal directa. El cruce no prueba esos mecanismos; el resultado de preescolar corresponde a solo seis observaciones.
+La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra diferencias en la tenencia de RUT según educación: 0,0 % en *Preescolar* ($n=6$), 2,8 % en *Ninguno*, 11,7 % en *Básica primaria*, 13,1 % en *Normalista*, 14,5 % en *Básica secundaria*, 22,3 % en *Media académica* y 26,8 % en *Media técnica*. Las proporciones alcanzan 34,0 % en *Técnica profesional*, 43,9 % en *Tecnológica*, 51,7 % en *Universitaria*, 73,2 % en *Especialización*, 78,7 % en *Maestría* y 88,8 % en *Doctorado*. La escala del negocio y la concentración de propietarios más escolarizados en servicios profesionales parecen tener una correlación inversa, a mayor escolaridad, aumenta la proporción de posesión de RUT.
 
 # 4. Análisis socioeconómico de la población colombiana
 
@@ -385,7 +385,7 @@ La tabla de contingencia (`3_3_tabla_educacion_rut.csv`) muestra diferencias en 
 figura_recortada("4_1_geografia_informalidad.png")
 ```
 
-Los datos departamentales muestran una relación inversa entre informalidad e ingreso laboral (`4_1_tabla_departamental.csv`). En Bogotá la informalidad es de 34,6 % y la mediana muestral del ingreso mensual positivo es de 1,5 millones de pesos; en Chocó, de 79,2 % y 1,2 millones; en La Guajira, de 79,4 % y 800.000 pesos; y en Sucre, de 82,1 % y 800.000 pesos. Las tasas se expanden con `FEX_C18 / 12`, mientras que las medianas son estadísticas muestrales sin ponderar de ocupados con ingreso positivo y `EI` conocido. La comparación describe diferencias territoriales y no identifica sus causas.
+Los datos departamentales muestran una relación inversa entre informalidad e ingreso laboral (`4_1_tabla_departamental.csv`). En Bogotá la informalidad es de 34,6 % y la mediana muestral del ingreso mensual positivo es de 1,5 millones de pesos; en Chocó, de 79,2 % y 1,2 millones; en La Guajira, de 79,4 % y 800.000 pesos; y en Sucre, de 82,1 % y 800.000 pesos. Las tasas se expanden con `FEX_C18 / 12`, mientras que las medianas son estadísticas muestrales sin ponderar de ocupados con ingreso positivo y `EI` conocido. 
 
 ## 4.2. Pagos digitales y nivel de ventas en micronegocios 
 
