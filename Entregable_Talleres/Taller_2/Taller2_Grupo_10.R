@@ -4,9 +4,11 @@
 # 0) Configuración inicial ----
 
 ## 0.1) Limpiar ambiente ----
+# Limpiar variables del espacio de trabajo
 rm(list = ls())
 
 ## 0.2) Librerías ----
+# Paquetes requeridos para el procesamiento y graficacion
 library(here)
 library(dplyr)
 library(tidyr)
@@ -14,6 +16,7 @@ library(ggplot2)
 library(openxlsx)
 
 ## 0.3) Rutas ----
+# Configuracion de carpetas de entrada y salida con here()
 ruta <- here()
 ruta_datos <- file.path(ruta, "Datos")
 ruta_emicron <- file.path(ruta_datos, "EMICRON_2024")
@@ -75,6 +78,7 @@ for (anio in anios) {
     }
 
     #### 1.1.3.1) Leer los cuatro módulos ----
+    # Importar los 4 archivos mensuales de la GEIH
     general <- read.csv(
       file.path(
         ruta_mes,
@@ -87,6 +91,7 @@ for (anio in anios) {
     no_ocupados <- read.csv(file.path(ruta_mes, archivo_no_ocupados), sep = ";")
 
     #### 1.1.3.2) Guardar número de observaciones (para 1.2) ----
+    # Conteo de registros por modulo para la tabla resumen 1.2
     conteos_modulos[[contador]] <- data.frame(
       ANIO = anio,
       MES = mes,
@@ -97,12 +102,14 @@ for (anio in anios) {
     )
 
     #### 1.1.3.3) Guardar columnas antes de select ----
+    # Columnas originales antes del filtro de variables
     col_gen_ant <- ncol(general)
     col_fuer_ant <- ncol(fuerza)
     col_ocup_ant <- ncol(ocupados)
     col_no_ocup_ant <- ncol(no_ocupados)
 
     #### 1.1.3.4) Seleccionar variables necesarias  (Reducir el uso de memoria)----
+    # Filtrar solo variables necesarias para no saturar memoria
     general <- general %>%
       select(
         DIRECTORIO,
@@ -171,6 +178,7 @@ for (anio in anios) {
       )
 
     #### 1.1.3.5) Evidencia de eficiencia ----
+    # Tabla comparativa de columnas antes y despues del select
     verificacion_eficiencia[[contador]] <- data.frame(
       ANIO = anio,
       MES = mes,
@@ -185,6 +193,7 @@ for (anio in anios) {
     )
 
     #### 1.1.3.6) Homogeneizar las llaves ----
+    # Convertir variables llave a texto para emparejamiento seguro
     general <- general %>%
       mutate(
         DIRECTORIO = as.character(DIRECTORIO),
@@ -211,6 +220,7 @@ for (anio in anios) {
       )
 
     #### 1.1.3.7) Verificar duplicados en la llave ----
+    # Chequear unicidad de la llave vivienda-hogar-persona
     dup_gen <- sum(duplicated(general[, llave_geih]))
     dup_fuer <- sum(duplicated(fuerza[, llave_geih]))
     dup_ocup <- sum(duplicated(ocupados[, llave_geih]))
@@ -314,6 +324,7 @@ print(head(tabla_pegues))
 print(head(tabla_eficiencia))
 
 ### 1.1.7) Exportar verificaciones ----
+# Guardar reportes de consistencia y eficiencia en disco
 write.csv(
   tabla_llaves,
   file.path(ruta_outputs, "1_1_verificacion_llaves.csv"),
@@ -334,6 +345,7 @@ write.csv(
 ## 1.2) Descripción general de los datos ----
 
 ### 1.2.1) Tamaño de los módulos por mes ----
+# Filas observadas por modulo a lo largo de los 24 meses
 tabla_modulos_2024 <- bind_rows(conteos_modulos) %>% filter(ANIO == "GEIH_2024")
 
 ### 1.2.2) Relación entre los módulos ----
@@ -362,6 +374,7 @@ tabla_consistencia_laboral_2024 <- GEIH_2024 %>%
   )
 
 ### 1.2.4) Total anual 2024 ----
+# Total acumulado de registros de 2024 para la tabla 1 del informe
 total_2024 <- data.frame(
   ANIO = "GEIH_2024",
   MES = "TOTAL_2024",
@@ -379,6 +392,7 @@ total_2024 <- data.frame(
 tabla_1_2 <- bind_rows(tabla_modulos_2024, total_2024)
 
 ### 1.2.5) Exportar tablas ----
+# Exportar resumen de observaciones por modulo
 write.csv(
   tabla_1_2,
   file.path(ruta_outputs, "1_2_descripcion_geih_2024.csv"),
@@ -398,6 +412,7 @@ write.csv(
 ### 1.3.c) Ocupados ----
 ### 1.3.d) No ocupados ----
 ### 1.3.e) Variables necesarias para formalidad ----
+# Seleccionar insumos de la GEIH para el algoritmo de formalidad
 
 variables_esperadas <- c(
   "DIRECTORIO",
@@ -446,6 +461,7 @@ variables_esperadas <- c(
 )
 
 ### 1.3.1) Verificación de la base analítica ----
+# Comprobar que solo queden las variables solicitadas y ANIO
 verificacion_variables_presentes <- all(variables_esperadas %in% names(GEIH))
 verificacion_variables_adicionales <- all(names(GEIH) %in% variables_esperadas)
 
@@ -454,6 +470,7 @@ if (!verificacion_variables_presentes | !verificacion_variables_adicionales) {
 }
 
 ### 1.3.2) Diccionario de variables ----
+# Definir nombres, modulo de origen y descripcion de variables
 diccionario_variables <- data.frame(
   VARIABLE = c(
     "DIRECTORIO",
@@ -543,12 +560,14 @@ diccionario_variables <- data.frame(
 
 ### 1.3.3) Etiquetas necesarias ----
 #### 1.3.3.1) Etiquetas para sexo ----
+# Homologacion de codigos de sexo a texto
 etiquetas_sexo <- data.frame(
   P3271 = c(1, 2),
   SEXO = c("Hombre", "Mujer")
 )
 
 #### 1.3.3.2) Etiquetas para posición ocupacional ----
+# Homologacion de codigos de posicion ocupacional a texto
 etiquetas_posicion <- data.frame(
   P6430 = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
   POSICION_OCUPACIONAL = c(
@@ -565,6 +584,7 @@ etiquetas_posicion <- data.frame(
 )
 
 #### 1.3.3.3) Etiquetas para nivel educativo (P3042) ----
+# Homologacion de las 13 categorias educativas del DANE
 etiquetas_educacion <- data.frame(
   P3042 = c(1:13, 99),
   NIVEL_EDUCATIVO = c(
@@ -586,6 +606,7 @@ etiquetas_educacion <- data.frame(
 )
 
 ### 1.3.4) Exportar diccionario ----
+# Guardar diccionario analitico en archivo csv
 write.csv(
   diccionario_variables,
   file.path(ruta_outputs, "1_3_diccionario_variables.csv"),
@@ -598,6 +619,7 @@ write.csv(
 ### 1.4.a) Construcción de la base de la EMICRON ----
 
 #### 1.4.a.1) Leer los módulos de EMICRON y 1.4.a.2) Seleccionar variables ----
+# Cargar los 4 modulos de EMICRON 2024 con variables clave
 emicron_identificacion <- read.csv(file.path(
   ruta_emicron,
   "Módulo de identificación.csv"
@@ -649,6 +671,7 @@ emicron_ventas <- read.csv(file.path(
   select(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA, VENTAS_MES_ANTERIOR)
 
 #### 1.4.a.3) Preparar la llave de EMICRON ----
+# Homogeneizar llaves compuestas de EMICRON a tipo caracter
 llave_emicron <- c("DIRECTORIO", "SECUENCIA_P", "SECUENCIA_ENCUESTA")
 
 emicron_identificacion <- emicron_identificacion %>%
@@ -677,6 +700,7 @@ emicron_ventas <- emicron_ventas %>%
   )
 
 #### 1.4.a.4) Verificar la llave ----
+# Comprobar unicidad de la llave antes de consolidar EMICRON
 tabla_na_llaves_emicron <- data.frame(
   MODULO = c(
     "Identificación",
@@ -729,6 +753,7 @@ print(tabla_llaves_emicron)
 write.csv(tabla_llaves_emicron, file.path(ruta_outputs, "1_4_llaves_emicron.csv"), row.names = FALSE)
 
 #### 1.4.a.5) Construir la base EMICRON ----
+# Unir los modulos de EMICRON preservando la muestra de micronegocios
 emicron <- emicron_identificacion %>%
   left_join(emicron_caracteristicas, by = llave_emicron) %>%
   left_join(emicron_inclusion, by = llave_emicron) %>%
@@ -745,6 +770,7 @@ if (nrow(emicron) != nrow(emicron_identificacion)) {
 ### 1.4.c) Determinación de la llave y análisis del período de referencia ----
 
 #### 1.4.c.1) Distribución de SECUENCIA_ENCUESTA ----
+# Distribucion de frecuencias de la secuencia del encuestado
 tabla_secuencia_encuesta <- emicron %>%
   group_by(SECUENCIA_ENCUESTA) %>%
   summarise(REGISTROS = n(), .groups = "drop") %>%
@@ -752,6 +778,7 @@ tabla_secuencia_encuesta <- emicron %>%
 print(tabla_secuencia_encuesta)
 
 #### 1.4.c.2) SECUENCIA_ENCUESTA dentro de los hogares ----
+# Verificar rango de personas dentro de cada vivienda de EMICRON
 tabla_propietarios_hogar <- emicron %>%
   group_by(DIRECTORIO, SECUENCIA_P) %>%
   summarise(PROPIETARIOS = n(), .groups = "drop") %>%
@@ -761,6 +788,7 @@ tabla_propietarios_hogar <- emicron %>%
 print(tabla_propietarios_hogar)
 
 #### 1.4.c.3) Comparación con ORDEN ----
+# Probar equivalencia empírica entre SECUENCIA_ENCUESTA y ORDEN
 geih_personas <- GEIH %>% select(DIRECTORIO, SECUENCIA_P, ORDEN)
 comparacion_orden <- emicron %>%
   select(DIRECTORIO, SECUENCIA_P, SECUENCIA_ENCUESTA) %>%
@@ -790,6 +818,7 @@ write.csv(
 )
 
 #### 1.4.c.4) Construcción de la llave de persona ----
+# Crear variable ORDEN en EMICRON a partir de SECUENCIA_ENCUESTA
 if (
   resumen_relacion_orden$MAS_DE_UNA_COINCIDENCIA > 0 |
     resumen_relacion_orden$SIN_COINCIDENCIA > 0
@@ -800,6 +829,7 @@ if (
 emicron_persona <- emicron %>% mutate(ORDEN = SECUENCIA_ENCUESTA)
 
 #### 1.4.c.5) Comparación entre MES_REF y MES y 1.4.c.6) Relaciones temporales ----
+# Evaluar las tres hipotesis temporales (mes igual, t-1 y t+1)
 meses_nombres_orden <- c(
   "ENERO",
   "FEBRERO",
@@ -865,6 +895,7 @@ write.csv(
 
 
 ### 1.4.d) Pegue de las dos encuestas ----
+# Cruzar EMICRON con GEIH 2024 usando llave de persona
 geih_2024_micro <- GEIH %>% filter(ANIO == 2024)
 
 # Chequeo de duplicados en la llave de GEIH 2024
@@ -893,6 +924,7 @@ print(resumen_pegue)
 write.csv(resumen_pegue, file.path(ruta_outputs, "1_4_resumen_pegue.csv"), row.names = FALSE)
 
 ### 1.4.e) Validación de la calidad del pegue ----
+# Contrastar edad, sexo y clase geografica entre ambas fuentes
 validacion_pegue <- base_micro %>%
   filter(EMPAREJADO) %>%
   summarise(
@@ -911,6 +943,7 @@ write.csv(validacion_pegue, file.path(ruta_outputs, "1_4_validacion_pegue.csv"),
 
 ### 1.4.f) Auditoría del pegue ----
 #### 1.4.f.1) Auditoría mensual ----
+# Resumen de emparejamiento mes a mes
 auditoria_mensual <- base_micro %>%
   group_by(MES_REF, MES_REF_NUM) %>%
   summarise(
@@ -928,6 +961,7 @@ write.csv(
 )
 
 #### 1.4.f.2) No emparejados y GEIH 2023 ----
+# Buscar en GEIH 2023 los micronegocios no encontrados en 2024
 no_emparejados <- base_micro %>%
   filter(!EMPAREJADO) %>%
   select(DIRECTORIO, SECUENCIA_P, ORDEN, MES_REF, MES_REF_NUM)
@@ -952,6 +986,7 @@ write.csv(
 )
 
 #### 1.4.f.3) Relación temporal complementaria ----
+# Auditoria temporal del rezago para los registros rescatados
 auditoria_2023 <- comparacion_2023 %>%
   filter(EN_GEIH_2023) %>%
   group_by(MES_REF, MES) %>%
@@ -960,6 +995,7 @@ print(auditoria_2023)
 
 ### 1.4.g) Interpretación ----
 #### 1.4.g.1) Distribución de P6430 ----
+# Distribucion ponderada de micronegocios por posicion ocupacional
 distribucion_posicion <- base_micro %>%
   filter(EMPAREJADO, !is.na(P6430)) %>%
   group_by(P6430) %>%
@@ -985,6 +1021,7 @@ write.csv(
 ## 2.1) Tasas y poblaciones ----
 
 ### 2.1.1) Definición de trimestres y factor de expansión trimestral ----
+# Construir variable de trimestre movil y ponderador FEX_C18 / 3
 GEIH <- GEIH %>%
   mutate(
     TRIMESTRE = case_when(
@@ -999,6 +1036,7 @@ GEIH <- GEIH %>%
   )
 
 ### 2.1.2) Cálculo de poblaciones y tasas por trimestre y sexo ----
+# Estimar TGP, TO y TD para cada trimestre y genero
 orden_trimestres <- c(
   "Enero - marzo 2023",
   "Abril - junio 2023",
@@ -1033,6 +1071,7 @@ tabla_indicadores_trim <- GEIH %>%
   )
 
 ### 2.1.3) Verificación de consistencia entre FT, Ocupados y Desocupados ----
+# Chequeo aditivo: FT debe ser igual a Ocupados + Desocupados
 verificacion_consistencia_tasas <- tabla_indicadores_trim %>%
   mutate(
     DIFERENCIA = FT_CALC - (OCUPADOS_CALC + DESOCUPADOS_CALC),
@@ -1062,6 +1101,7 @@ if (!all(verificacion_consistencia_tasas$CONSISTENTE)) {
 }
 
 ### 2.1.4) Reestructuración a la estructura solicitada ----
+# Pivotear tasas para armar el formato final de reporte
 nombres_indicadores <- c(
   "TGP" = "Tasa global de participación (TGP)",
   "TO" = "Tasa de ocupación (TO)",
@@ -1134,6 +1174,7 @@ tabla_tasas_mujeres <- tabla_indicadores_trim %>%
   select(`Tasas (%) y poblaciones`, all_of(orden_trimestres))
 
 ### 2.1.5) Exportar tablas a Excel ----
+# Guardar libros de Excel con tasas para hombres y mujeres
 write.xlsx(
   tabla_tasas_hombres,
   file.path(ruta_outputs, "2_1_tasas_hombres.xlsx")
@@ -1147,6 +1188,7 @@ write.xlsx(
 ## 2.2) Análisis de las tasas de mercado laboral ----
 
 ### 2.2.1) Preparar datos para el gráfico de series de tiempo ----
+# Reestructurar indicadores trimestrales en formato largo
 datos_grafico_tasas <- tabla_indicadores_trim %>%
   mutate(
     SEXO = ifelse(P3271 == 1, "Hombre", "Mujer"),
@@ -1436,6 +1478,7 @@ write.csv(
 print(control_ei_dane)
 
 ### 2.3.2) Dataframe con total expandido según formalidad y sexo ----
+# Poblacion formal e informal expandida para las 13 ciudades
 tabla_formalidad_sexo <- GEIH_13ciudades_dic %>%
   filter(!is.na(EI), P3271 %in% c(1, 2), !is.na(FEX_C18)) %>%
   mutate(
@@ -1504,10 +1547,12 @@ ggsave(
 ## 2.4) Población ocupada según posición ocupacional ----
 
 ### 2.4.1) Preparar datos de enero de 2023 ----
+# Filtrar ocupados de enero 2023 para el total nacional
 GEIH_2023_ENE <- GEIH %>%
   filter(ANIO == 2023, MES == 1, OCI == 1, !is.na(P6430))
 
 ### 2.4.2) Calcular totales expandidos y proporciones por grupo ----
+# Calcular porcentaje de ocupados por posicion ocupacional
 posicion_total <- GEIH_2023_ENE %>%
   group_by(P6430) %>%
   summarise(TOTAL_EXP = sum(FEX_C18, na.rm = TRUE), .groups = "drop") %>%
@@ -1554,12 +1599,14 @@ posicion_consolidada <- bind_rows(
   )
 
 ### 2.4.3) Verificación de suma de proporciones ----
+# Confirmar que las participaciones sumen 100% en cada grupo
 verificacion_suma_posicion <- posicion_consolidada %>%
   group_by(GRUPO) %>%
   summarise(SUMA_PORCENTAJE = sum(PORCENTAJE), .groups = "drop")
 print(verificacion_suma_posicion)
 
 ### 2.4.4) Proporción conjunta de cuenta propia y patrones ----
+# Calcular peso agregado de trabajadores independientes y patrones
 prop_cuenta_propia_patron <- posicion_total %>%
   filter(P6430 %in% c(4, 5)) %>%
   summarise(PORCENTAJE_CONJUNTO = sum(PORCENTAJE)) %>%
@@ -1635,6 +1682,7 @@ ggsave(
 # (TOTAL_SIN_REDONDEAR), y posteriormente se redondea TOTAL_EXPANDIDO a unidades enteras.
 
 ### 3.1.1) Total nacional de micronegocios ----
+# Universo expandido nacional de micronegocios en 2024
 total_nacional_micros <- emicron %>%
   summarise(
     TOTAL_SIN_REDONDEAR = sum(F_EXP, na.rm = TRUE),
@@ -1648,6 +1696,7 @@ total_nacional_micros <- emicron %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
 ### 3.1.2) Distribución por rama de actividad (GRUPOS12) ----
+# Estimacion expandida de micronegocios segun 12 sectores economicos
 distribucion_rama <- emicron %>%
   mutate(
     CATEGORIA = case_when(
@@ -1686,6 +1735,7 @@ distribucion_rama <- emicron %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
 ### 3.1.3) Distribución según sexo del propietario ----
+# Proporcion de micronegocios segun genero del duenio
 distribucion_sexo <- emicron %>%
   mutate(
     CATEGORIA = case_when(
@@ -1710,6 +1760,7 @@ distribucion_sexo <- emicron %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
 ### 3.1.4) Porcentaje con Registro Único Tributario (RUT) ----
+# Tasa de tenencia de RUT en micronegocios (P1633)
 distribucion_rut <- emicron %>%
   mutate(
     CATEGORIA = case_when(
@@ -1734,6 +1785,7 @@ distribucion_rut <- emicron %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
 ### 3.1.5) Porcentaje registrado ante Cámara de Comercio ----
+# Tasa de matricula mercantil en Camara de Comercio (P1055)
 distribucion_camara <- emicron %>%
   mutate(
     CATEGORIA = case_when(
@@ -1758,6 +1810,7 @@ distribucion_camara <- emicron %>%
   select(INDICADOR, CATEGORIA, TOTAL_EXPANDIDO, PORCENTAJE)
 
 ### 3.1.6) Consolidar y exportar tabla de indicadores básicos ----
+# Unificar indicadores basicos y exportar a Excel
 tabla_indicadores_micros <- bind_rows(
   total_nacional_micros,
   distribucion_sexo,
@@ -1820,10 +1873,12 @@ print(verificacion_3_1_dane)
 ## 3.2) Inclusión financiera de los micronegocios ----
 
 ### 3.2.1) Preparación de datos de inclusión financiera ----
+# Seleccionar ramas validas y variables de medios de pago
 base_inclusion <- emicron %>%
   filter(GRUPOS4 %in% 1:4) # Excluimos registros sin clasificación en las 4 macrorramas (GRUPOS4 == 5)
 
 ### 3.2.2) Cálculo de formas de pago por rama usando un bucle for ----
+# Iterar sobre las 7 formas de pago agrupando por macrorrama GRUPOS4
 diccionario_formas <- data.frame(
   VARIABLE = paste0("P1764_", 1:7),
   FORMA_PAGO = c(
@@ -1879,6 +1934,7 @@ tabla_formas_pago <- bind_rows(lista_formas_pago) %>%
   )
 
 ### 3.2.3) Indicadores de crédito y ahorro nacional ----
+# Porcentaje global de micronegocios con solicitud de credito y ahorro
 indicadores_credito_ahorro <- base_inclusion %>%
   summarise(
     SOLICITO_CREDITO_PCT = round(
@@ -1974,6 +2030,7 @@ auditoria_educacion_3_3 <- base_micro %>%
 print(auditoria_educacion_3_3)
 
 ### 3.3.2) Preparación de datos con las categorías explícitas del DANE (P3042) ----
+# Clasificar los 13 niveles educativos del DANE y tenencia de RUT
 niveles_dane_p3042 <- c(
   "Ninguno",
   "Preescolar",
@@ -2025,6 +2082,7 @@ datos_cruce <- base_micro %>%
   )
 
 ### 3.3.3) Construcción de la tabla de contingencia expandida (13 niveles x 2 estados RUT) ----
+# Tabla cruzada de educacion por estado de RUT expandida con F_EXP
 tabla_contingencia_cruce <- datos_cruce %>%
   group_by(NIVEL_EDUCATIVO, TIENE_RUT) %>%
   summarise(
@@ -2235,6 +2293,7 @@ write.csv(
 )
 
 ### 4.1.2) Construcción y exportación del gráfico 4_1_geografia_informalidad.png ----
+# Generar grafico de dispersion territorial con ajuste no parametrico
 deptos_etiqueta <- datos_deptos %>%
   filter(
     NOMBRE_DPTO %in%
