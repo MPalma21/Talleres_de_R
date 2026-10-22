@@ -93,11 +93,12 @@ datos %>%
 # ¿Por qué eso impide estimar el efecto comparando simplemente a quienes
 # participan con quienes no?
 # RESPUESTA:
-# Porque la participacion es voluntaria y los hogares se autoseleccionan. Quienes
-# deciden entrar suelen tener mayor motivacion o interes por la educacion de sus
-# hijos (la variable 'u'), factores no observados que aumentarian su gasto
-# educativo de todos modos. Comparar directo participantes con no participantes
-# mezcla el efecto real del programa con esas diferencias previas (sesgo de seleccion).
+# Porque la decision de participar es endogena. Como senalo James Heckman (Nobel 2000),
+# cuando los individuos eligen entrar voluntariamente a un programa, se autoseleccionan
+# segun factores no observables (motivacion, interes o red de apoyo, capturados en 'u').
+# Comparar directo a participantes contra no participantes confunde el efecto del
+# programa con el sesgo de seleccion de Heckman: los participantes ya tenian una
+# predisposicion a invertir mas en educacion aun sin el subsidio.
 
 
 # ==============================================================================
@@ -149,20 +150,22 @@ modelsummary(list("ITT"           = m_itt,
 # Expliquen con sus palabras por qué el ITT es menor que el LATE.
 # RESPUESTA:
 # Verificacion: 11.7634 / 0.4600 = 25.5726, que coincide con el LATE (25.5711).
-# El ITT es menor porque promedia el impacto entre todos los que recibieron la
-# oferta (los elegibles), incluyendo a quienes no participaron. En cambio, el
-# LATE divide ese impacto por la tasa efectiva de cumplimiento (~46%),
-# concentrando todo el efecto en los hogares que efectivamente entraron gracias
-# a ser elegibles (los cumplidores o compliers).
+# Siguiendo el marco de Angrist e Imbens (Nobel 2021) sobre variables instrumentales
+# con cumplimiento imperfecto, el ITT mide el impacto promedio de la intencion de tratar
+# diluido entre toda la poblacion elegible (cumplidores y no cumplidores). El estimador
+# de Wald escala el ITT dividiendolo por la proporcion de cumplidores (primera etapa, ~46%),
+# aislando el efecto local promedio (LATE) exclusivamente sobre quienes modifican su
+# participacion debido al incentivo de elegibilidad (compliers).
 
 # PREGUNTA 3: ¿Por qué el MCO SOBREestima el efecto? Piensen en la variable
 # u de la Parte 0: ¿cómo afecta la participación y cómo afecta el gasto?
 # RESPUESTA:
-# Porque la variable omitida 'u' (motivacion) empuja ambas variables en la misma
-# direccion: hace mas probable que el hogar participe (+1.0 en la probabilidad)
-# y a la vez aumenta su gasto (+6.0 en gasto_edu_post). Como Cov(participacion, u) > 0,
-# MCO confunde la mayor motivacion de esos hogares con un mayor impacto del
-# programa, inflando el coeficiente a 30.4 cuando el LATE real es 25.6.
+# Por la formula clasica de sesgo por variable omitida (Angrist y Pischke, 'Mostly Harmless
+# Econometrics'): el sesgo de MCO es igual al efecto de la variable omitida 'u' sobre 'y'
+# multiplicado por la regresion de 'u' sobre la participacion. En este caso, 'u' aumenta la
+# probabilidad de participar (+1.0) y a la vez eleva el gasto educativo (+6.0), por lo que
+# Cov(participacion, u) > 0. MCO le atribuye a la transferencia monetaria lo que en realidad
+# es fruto de la mayor motivacion y habilidad intrinseca del hogar.
 
 
 # ==============================================================================
@@ -201,11 +204,12 @@ modelsummary(list("LATE (todos)"   = m_iv,
 # económica por la que un PTC aumentaría más el gasto educativo cuando la
 # participante es mujer?
 # RESPUESTA:
-# El efecto es mayor para las mujeres (LATE ≈ 31.2 frente a 18.6 en hombres).
-# En la literatura de transferencias condicionadas (como Familias en Accion),
-# los modelos de negociacion dentro del hogar muestran que las madres suelen
-# tener mayor preferencia por el bienestar de los hijos y asignan una fraccion
-# mas alta de los ingresos adicionales a utiles, matriculas y alimentacion escolar.
+# El efecto es sustancialmente mayor para las mujeres (LATE ≈ 31.2 frente a 18.6 en hombres).
+# Esto coincide con los hallazgos de Esther Duflo (Nobel 2019) y los modelos de negociacion
+# colectiva intra-hogar: al incrementarse el poder de decision de las mujeres, aumenta la
+# inversion en capital humano infantil (salud, nutricion y educacion) en comparacion con los
+# hombres. Por esta razon, programas pioneros de transferencias condicionadas como Progresa/
+# Oportunidades y Familias en Accion designan deliberadamente a las madres como titulares.
 
 
 # ==============================================================================
@@ -217,9 +221,10 @@ modelsummary(list("LATE (todos)"   = m_iv,
 # Mencionen UN canal por el cual ser elegible (tener índice >= 50) podría
 # afectar el gasto educativo aunque el hogar no participe.
 # RESPUESTA:
-# Que el mismo puntaje de pobreza (indice >= 50) de acceso a otros beneficios
-# del Estado, como subsidios de transporte escolar, alimentacion escolar o becas.
-# Si un hogar no entra a este programa pero por su puntaje recibe transporte
-# subsidiado, le queda mas presupuesto libre para educacion, cambiando su gasto
-# sin haber participado. Eso rompe la exclusion porque el indice afecta el gasto
-# por otra via distinta.
+# La restriccion de exclusion (formalizada por Angrist, Imbens y Rubin, JASA 1996) exige
+# que el instrumento Z no tenga efecto directo sobre Y salvo a traves de D. Un canal que
+# violaria esto es la multifocalizacion de la politica social: si el mismo indice de
+# pobreza (indice >= 50, tipo SISBEN) es utilizado por el gobierno local para asignar
+# exenciones de matricula escolar, alimentacion del PAE o subsidios de transporte, el hogar
+# elegible experimenta un choque positivo de ingreso o reduccion de costos educativos aun
+# si decide no participar en el PTC, alterando su gasto educativo post por una via alterna.
