@@ -93,14 +93,11 @@ datos %>%
 # ¿Por qué eso impide estimar el efecto comparando simplemente a quienes
 # participan con quienes no?
 # RESPUESTA:
-# Porque la decisión de participar es voluntaria (autoselección) y existe
-# cumplimiento imperfecto (cumplidores parciales o imperfect compliance).
-# Los hogares que deciden participar difieren sistemáticamente de los que no
-# en características no observadas (como motivación, aspiraciones o interés por
-# la educación de sus hijos, capturadas en 'u'). Al comparar directamente a
-# participantes contra no participantes, esa diferencia inicial no observada
-# genera sesgo de selección: se le atribuiría al programa una ventaja en gasto
-# educativo que en realidad proviene de la mayor motivación previa de esos hogares.
+# Porque la participacion es voluntaria y los hogares se autoseleccionan. Quienes
+# deciden entrar suelen tener mayor motivacion o interes por la educacion de sus
+# hijos (la variable 'u'), factores no observados que aumentarian su gasto
+# educativo de todos modos. Comparar directo participantes con no participantes
+# mezcla el efecto real del programa con esas diferencias previas (sesgo de seleccion).
 
 
 # ==============================================================================
@@ -151,32 +148,21 @@ modelsummary(list("ITT"           = m_itt,
 # PREGUNTA 2: Verifiquen que LATE ≈ ITT / (coeficiente de la primera etapa).
 # Expliquen con sus palabras por qué el ITT es menor que el LATE.
 # RESPUESTA:
-# Verificación numérica:
-# Coeficiente ITT = 11.7634
-# Coeficiente Primera Etapa (elegible) = 0.4600
-# Ratio Wald = 11.7634 / 0.4600 ≈ 25.5726 (coincide exactamente con LATE = 25.5711).
-# Razón económica:
-# El ITT (Intention to Treat) mide el efecto promedio de la OFERTA o elegibilidad
-# sobre toda la población elegible, diluyendo el impacto entre quienes sí
-# participaron (compliers) y quienes decidieron no hacerlo. En contraste, el LATE
-# (Local Average Treatment Effect) escala el ITT dividiéndolo por el cambio en la
-# probabilidad de participación inducido por el instrumento (la primera etapa, ~0.46).
-# Por tanto, el LATE aísla el efecto causal específico sobre los hogares que
-# efectivamente participaron gracias a haber sido elegibles (compliers), resultando
-# mayor que el ITT.
+# Verificacion: 11.7634 / 0.4600 = 25.5726, que coincide con el LATE (25.5711).
+# El ITT es menor porque promedia el impacto entre todos los que recibieron la
+# oferta (los elegibles), incluyendo a quienes no participaron. En cambio, el
+# LATE divide ese impacto por la tasa efectiva de cumplimiento (~46%),
+# concentrando todo el efecto en los hogares que efectivamente entraron gracias
+# a ser elegibles (los cumplidores o compliers).
 
 # PREGUNTA 3: ¿Por qué el MCO SOBREestima el efecto? Piensen en la variable
 # u de la Parte 0: ¿cómo afecta la participación y cómo afecta el gasto?
 # RESPUESTA:
-# Porque existe un sesgo por variable omitida positivo (sesgo de selección).
-# En el proceso generador de datos:
-# 1) 'u' entra con signo positivo (+1.0) en la probabilidad latente de participación.
-# 2) 'u' entra con signo positivo (+6.0) directamente en el gasto educativo posterior.
-# Por ende, Cov(participacion, u) > 0. Los hogares con mayor 'u' (más motivados o con
-# mayor valoración por la educación) tienen más probabilidad de inscribirse y, al
-# mismo tiempo, gastarían más en educación independientemente del programa. MCO
-# atribuye erróneamente esa mayor predisposición no observada al efecto de la
-# participación, arrojando un coeficiente inflado (30.4 frente a 25.6 del LATE).
+# Porque la variable omitida 'u' (motivacion) empuja ambas variables en la misma
+# direccion: hace mas probable que el hogar participe (+1.0 en la probabilidad)
+# y a la vez aumenta su gasto (+6.0 en gasto_edu_post). Como Cov(participacion, u) > 0,
+# MCO confunde la mayor motivacion de esos hogares con un mayor impacto del
+# programa, inflando el coeficiente a 30.4 cuando el LATE real es 25.6.
 
 
 # ==============================================================================
@@ -215,14 +201,11 @@ modelsummary(list("LATE (todos)"   = m_iv,
 # económica por la que un PTC aumentaría más el gasto educativo cuando la
 # participante es mujer?
 # RESPUESTA:
-# El efecto es considerablemente mayor para las mujeres (LATE ≈ 31.2 vs. 18.6 en hombres).
-# Una razón económica ampliamente documentada en la literatura de transferencias
-# condicionadas (p. ej. en programas tipo Familias en Acción o Progresa/Oportunidades)
-# es el modelo de negociación intra-hogar: las mujeres suelen tener una mayor
-# propensión marginal a destinar los recursos del hogar hacia el bienestar infantil,
-# la nutrición y la educación en comparación con los hombres. Cuando la titular del
-# beneficio o participante es mujer, una mayor proporción de la transferencia se
-# canaliza directamente hacia útiles, uniformes y colegiaturas.
+# El efecto es mayor para las mujeres (LATE ≈ 31.2 frente a 18.6 en hombres).
+# En la literatura de transferencias condicionadas (como Familias en Accion),
+# los modelos de negociacion dentro del hogar muestran que las madres suelen
+# tener mayor preferencia por el bienestar de los hijos y asignan una fraccion
+# mas alta de los ingresos adicionales a utiles, matriculas y alimentacion escolar.
 
 
 # ==============================================================================
@@ -234,12 +217,9 @@ modelsummary(list("LATE (todos)"   = m_iv,
 # Mencionen UN canal por el cual ser elegible (tener índice >= 50) podría
 # afectar el gasto educativo aunque el hogar no participe.
 # RESPUESTA:
-# Un canal plausible es el acceso a otros programas o beneficios sociales
-# complementarios vinculados al mismo índice de focalización (por ejemplo, subsidios
-# de transporte escolar, alimentación PAE, becas municipales o exención de costos de
-# matrícula escolar para hogares clasificados con índice >= 50).
-# Si el hecho de tener un índice de pobreza >= 50 clasifica automáticamente al hogar
-# para recibir esos otros apoyos, el presupuesto del hogar se liberaría o se
-# incentivaría la asistencia escolar, alterando el gasto en educación directamente
-# sin necesidad de haber participado en el PTC evaluado. Eso violaría la restricción
-# de exclusión: el instrumento afectaría a Y por una vía alterna a D.
+# Que el mismo puntaje de pobreza (indice >= 50) de acceso a otros beneficios
+# del Estado, como subsidios de transporte escolar, alimentacion escolar o becas.
+# Si un hogar no entra a este programa pero por su puntaje recibe transporte
+# subsidiado, le queda mas presupuesto libre para educacion, cambiando su gasto
+# sin haber participado. Eso rompe la exclusion porque el indice afecta el gasto
+# por otra via distinta.
