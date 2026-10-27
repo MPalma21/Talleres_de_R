@@ -122,3 +122,51 @@ En cumplimiento de los requisitos de entrega, a continuación se relacionan los 
 
 * **Conversación 1 – Depuración sintáctica en R:** [Adjuntar enlace público o archivo PDF antes de la entrega final]
 * **Conversación 2 – Maquetación en Quarto / XeLaTeX:** [Adjuntar enlace público o archivo PDF antes de la entrega final]
+
+
+---
+
+# Anexo Taller 3: Datos Geoespaciales, Web Scraping y Visualización Interactiva
+
+## 1. Alcance y Directrices Institucionales Aplicadas al Taller 3
+Para el desarrollo del Taller 3, el Grupo 10 mantuvo una adhesión estricta a los **Lineamientos de IAG de la Universidad de los Andes (Nivel 3: Edición y Refinamiento)**:
+1. **Asistencia Técnica Limitada:** Se emplearon herramientas de IA exclusivamente como asistente de programación en sintaxis espacial (`sf`, `rmapshaper`), consumo de APIs financieras (`httr`, `jsonlite`), parseo de respuestas SDMX en XML (`xml2`) y arquitectura de interfaz reactiva en Shiny (`bslib`).
+2. **Autoría Humana y Análisis Económico Exclusivo:** La concepción de las interpretaciones, el análisis sustantivo de las finanzas territoriales colombianas, la evaluación de la paridad en tasas de interés (IBR vs. SOFR) y la redacción integral del informe escrito en R Markdown fueron elaboradas al 100% por los integrantes del Grupo 10.
+
+---
+
+## 2. Tareas Sustantivas NO Delegadas (Autoría Humana Exclusiva - Grupo 10)
+* **Formulación del Ponderador y Demostración de Homogeneidad (Punto 1.2):**  
+  La deducción analítica de que el ponderador municipal $w_i = (L_i \cdot VA_i) / \sum(L_k \cdot VA_k)$ es invariante ante cualquier tasa uniforme de crecimiento proporcional del valor agregado fue formulada por los estudiantes, aportando una justificación metodológica robusta en el informe.
+* **Diagnóstico de Complejidad Computacional (Punto 1.3 - Bono):**  
+  El análisis de cuellos de botella por densidad poligonal en dispositivos gráficos vectoriales y la decisión de implementar el algoritmo Visvalingam con preservación topológica (`rmapshaper`) fue investigada y resuelta por el equipo.
+* **Diseño Libre en Plotly y Dualismo Laboral (Punto 3.3):**  
+  La articulación temática de la informalidad laboral frente al ingreso mediano departamental, integrando los hallazgos de los talleres anteriores y redactando la interpretación de disparidades centro-periferia, fue concebida directamente por los integrantes del Grupo 10.
+
+---
+
+## 3. Matriz de Detección y Descarte Crítico de Alucinaciones en Taller 3
+
+| Dimensión Técnica | Sugerencia Errónea de la IAG (Alucinación / Desvío) | Razón Técnica del Descarte Humano | Acción Correctiva Implementada por el Grupo |
+| :--- | :--- | :--- | :--- |
+| **Simplificación de Polígonos Municipales** | La IAG sugirió aplicar `sf::st_simplify(dTolerance = 0.05)` de forma directa sobre la capa de municipios. | **Degeneración Cartográfica:** El algoritmo de Douglas-Peucker genera huecos vacíos (*gaps*) y superposiciones (*overlaps*) entre municipios colindantes. | Se descartó y se implementó `rmapshaper::ms_simplify(keep = 0.08, keep_shapes = TRUE)` preservando la topología compartida. |
+| **Puntaje del IDF Departamental** | La IAG propuso promediar aritméticamente el IDF de los municipios sin ponderar por población o producto. | **Violación del Enunciado:** El taller exige explícitamente una media ponderada por el producto de población y valor agregado. | El grupo programó la fórmula estricta $IDF_j = \sum IDF_i \cdot w_i$ comprobando que $\sum w_i = 1$. |
+| **Convenciones de Tasas Financieras** | La IAG intentó calcular la devaluación implícita mezclando tasas porcentuales directamente sin transformar a decimales. | **Error Matemático / Financiero:** La fórmula $\pi = (1 + i_d)/(1 + i_e) - 1$ requiere tasas expresadas en base decimal comparable. | Se estructuró la transformación defensiva $i = \text{tasa}/100$ tanto en el script maestro como en la reactividad de Shiny. |
+
+---
+
+## 4. Registro de Prompts Reales - Taller 3
+
+### Caso 1: Parseo de Respuestas XML SDMX de BanRep
+* **Herramienta:** Antigravity / Gemini 3.8 Flash
+* **Prompt representativo:**
+  > *"¿Cómo extraer de forma limpia los nodos `<generic:Obs>` con `ObsDimension` y `ObsValue` de un archivo XML con namespaces complejos en R usando la librería `xml2` sin perder las fechas en formato AAAAMMDD?"*
+* **Aporte práctico:** Proveyó la sintaxis para capturar los namespaces con `xml_ns()` y filtrar mediante XPath relativo `.//generic:Series[.//generic:Value[@id='SUBJECT' and @value='IRIBRM00']]`.
+* **Supervisión humana:** El grupo verificó contra los boletines oficiales que la serie correspondiera a la convención Efectiva Anual (`UNIT_MEASURE = ER`).
+
+### Caso 2: Manejo de Días No Hábiles en Series Cruzadas IBR–SOFR
+* **Herramienta:** Antigravity / Gemini 3.8 Flash
+* **Prompt representativo:**
+  > *"Al fusionar series diarias de tasas de Colombia y Estados Unidos, los festivos bancarios difieren. ¿Cuál es la forma más limpia en `tidyr` para aplicar un forward-fill sobre las fechas faltantes manteniendo la serie diaria continua?"*
+* **Aporte práctico:** Sugirió el uso de `full_join()` ordenado por fecha seguido de `tidyr::fill(sofr_on, ibr_on, .direction = 'down')`.
+* **Supervisión humana:** Se validó que el método forward-fill refleja la práctica financiera estándar donde la última tasa de cierre se mantiene activa durante días feriados.
