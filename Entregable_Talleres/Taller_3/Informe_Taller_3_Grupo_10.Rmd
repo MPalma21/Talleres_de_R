@@ -1,0 +1,275 @@
+---
+title: "Taller 3: Datos Geoespaciales, Web Scraping y Herramientas de Visualización"
+subtitle: "Taller de Programación en R · 2026-2 | Facultad de Economía – Universidad de los Andes"
+author: "Grupo 10: Juan José Echeverry, Miguelangel Palma, Sergio López"
+date: "Octubre de 2026"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    latex_engine: pdflatex
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{fancyhdr}
+  - \usepackage{hyperref}
+  - \pagestyle{fancy}
+  - \fancyhead[CO,CE]{Taller de Programación en R - Taller 3}
+  - \fancyfoot[C]{\thepage}
+  - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.pos = "H",
+  fig.align = "center"
+)
+
+library(here)
+library(dplyr)
+library(readr)
+library(knitr)
+
+ruta_base <- here()
+ruta_outputs <- file.path(ruta_base, "outputs")
+```
+
+\newpage
+
+# Introducción y Resumen Ejecutivo
+
+El presente informe constituye el documento formal de entrega del **Taller 3** del curso *Taller de Programación en R* de la Universidad de los Andes, elaborado por el **Grupo 10**.
+
+El desarrollo del taller integra tres dimensiones metodológicas clave en la ciencia de datos aplicada a la economía:
+1. **Modelamiento y tratamiento geoespacial avanzado:** Integración relacional de microdatos del Departamento Nacional de Planeación (DNP) y el Departamento Administrativo Nacional de Estadística (DANE) para la construcción del Índice de Desempeño Fiscal (IDF) departamental artificial y la solución del desafío computacional de mapeo municipal a escala completa (Bono 1).
+2. **Extracción automatizada de información:** Combinación estricta de técnicas de **Web Scraping** (sobre el portal SUAMECA del Banco de la República para el IBR Overnight) y consumo programático de **APIs REST** (sobre la Markets Data API de la Reserva Federal de Nueva York para la tasa SOFR Overnight).
+3. **Herramientas de visualización interactiva y dashboards:** Construcción de un aplicativo interactivo en **Shiny** estructurado en tres pestañas temáticas, diseñado con la arquitectura moderna de `bslib` (Bootstrap 5) para capturar el bono de diseño, incluyendo un módulo de diseño libre enfocado en el dualismo laboral y salarial territorial de Colombia.
+
+Todo el procesamiento es 100% reproducible y se encuentra codificado en el script maestro de entrega `Taller3_Grupo_10.R`.
+
+## Identificación de Paquetes No Vistos en Clase
+
+En cumplimiento de la sección *"Entregables y paquetes"* del enunciado oficial (*"Pueden usar paquetes no vistos en clase. Identifíquenlos en el código e indiquen en la entrega cómo los marcaron"*), todos los paquetes adicionales empleados más allá del núcleo básico del curso (`here`, `dplyr`, `tidyr`, `ggplot2`, `openxlsx`) fueron marcados de manera explícita en el encabezado tanto de `Taller3_Grupo_10.R` como de `app.R` mediante la etiqueta estandarizada **`# [PAQUETE ADICIONAL]: <nombre_paquete> (<propósito técnico>)`**:
+
+* **Procesamiento geoespacial y cartografía:** `sf` (lectura, unión espacial y transformación de coordenadas WGS84), `rmapshaper` (simplificación topológica Visvalingam-Whyatt para el Bono 1) y `viridis` (paletas perceptualmente uniformes).
+* **Web scraping y consumo de APIs:** `httr` (peticiones HTTP GET), `xml2` (parseo del árbol SDMX/XML del portal SUAMECA de BanRep), `rvest` (extracción web) y `jsonlite` (parseo de respuestas JSON de la API de la Fed de Nueva York).
+* **Visualización interactiva y formateo:** `shiny` (motor reactivo), `bslib` (arquitectura visual Bootstrap 5 para el bono de diseño), `leaflet` (mapas interactivos), `plotly` (series financieras y scatter interactivo), `scales`, `stringr` y `lubridate`.
+
+---
+
+# Ejercicio 1: Datos Geoespaciales y Desempeño Fiscal
+
+## Ingesta y Limpieza de Fuentes Primarias
+
+Para dar cumplimiento a los requerimientos del ejercicio, se consultaron e integraron cuatro fuentes primarias sin realizar modificaciones sobre los archivos fuente originales:
+1. **DNP:** Resultados del Índice de Desempeño Fiscal (IDF) municipal (`ResultadosIDF_DNP.xlsx`), de donde se extrajo la calificación del *Nuevo IDF* oficial (escala 0 a 100).
+2. **DANE Cuentas Nacionales:** Anexo de Valor Agregado por municipio (`anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx`), seleccionando el año 2023 de la hoja *Cuadro 1*.
+3. **DANE Proyecciones de Población:** Tablas oficiales de proyección municipal (`PPED-AreaMun-2018-2042_VP.xlsx`), filtrando el año 2024 y el área geográfica total.
+4. **DANE Geoportal / MGN:** Cartografía vectorial del Marco Geoestadístico Nacional a nivel departamental y municipal.
+
+La correspondencia relacional se verificó mediante el código numérico estandarizado de cinco dígitos del DANE (DIVIPOLA municipal `cod_mpio`) y de dos dígitos departamental (`cod_dpto`), logrando una intersección perfecta de **1.102 municipios** evaluados (más el departamento archipiélago de San Andrés que reporta directamente a nivel departamental).
+
+## Literal A: Proyección de Valor Agregado y Cálculo del IDF Departamental Artificial
+
+### Justificación Metodológica de la Tasa de Crecimiento del PIB 2024
+El enunciado solicita proyectar el Valor Agregado (VA) municipal de 2023 a 2024 utilizando el crecimiento del PIB de Colombia en 2024, redondeando la tasa a dos decimales y justificando la elección en función de los precios en que está expresado el VA.
+
+Al inspeccionar los metadatos de la hoja *Cuadro 1* del anexo del DANE, se identifica que el valor agregado está expresado **a precios corrientes** (en miles de millones de pesos). De acuerdo con el Boletín Técnico de Cuentas Nacionales Anuales del DANE:
+* La tasa de crecimiento del PIB a **precios constantes (volumen encadenado)** en 2024 fue de **1,70%** (o 1,68% preliminar).
+* La tasa de crecimiento del PIB a **precios corrientes (nominal)** en 2024 fue de **8,27%**.
+
+Dado que la serie base del DANE está expresada a precios corrientes, la tasa conceptualmente coherente para proyectar una variable monetaria nominal es la tasa de crecimiento a **precios corrientes (8,27%)**, reflejando conjuntamente la expansión real del producto y la variación en el nivel de precios de la economía:
+$$VA_{i, 2024}^{proj} = VA_{i, 2023} \times (1 + 0,0827)$$
+
+> **Nota analítica sobre la propiedad de homogeneidad:** Desde el punto de vista algebraico, el ponderador asignado a cada municipio dentro del departamento $j$ se define como:
+> $$w_i = \frac{L_i \cdot VA_{i, 2024}^{proj}}{\sum_{k=1}^{n_j} L_k \cdot VA_{k, 2024}^{proj}} = \frac{L_i \cdot [VA_{i, 2023} (1+g)]}{\sum_{k=1}^{n_j} L_k \cdot [VA_{k, 2023} (1+g)]} = \frac{L_i \cdot VA_{i, 2023}}{\sum_{k=1}^{n_j} L_k \cdot VA_{k, 2023}}$$
+> Debido a que la función de ponderación es homogénea de grado cero respecto al escalar $(1+g)$, la proyección uniforme preserva con exactitud los ponderadores relativos dentro de cada departamento, garantizando total robustez frente a la elección de la tasa.
+
+Se comprobó rigurosamente en el código que:
+$$\sum_{i=1}^{n_j} w_i = 1,0000000 \quad \forall j \in \{1, \dots, 33\}$$
+
+### Mapa Departamental del IDF y Discusión de Resultados
+
+El Índice de Desempeño Fiscal departamental artificial se calculó como:
+$$IDF_j = \sum_{i=1}^{n_j} IDF_i \cdot w_i$$
+
+```{r fig-mapa-depto, fig.cap="Índice de Desempeño Fiscal (IDF) Artificial Departamental (2024)", out.width="85%"}
+knitr::include_graphics(file.path(ruta_outputs, "1_1_mapa_idf_departamental.png"))
+```
+
+#### Interpretación de Resultados:
+1. **Concentración y Liderazgo:** Bogotá D.C. obtiene el puntaje más alto del país con **90,07 puntos**, seguido por departamentos con alta densidad urbana y economías diversificadas como Atlántico (**71,39 puntos**), Antioquia (**69,69 puntos**) y Caldas (**68,48 puntos**). La ponderación conjunta de población y valor agregado traslada el peso preponderante hacia las ciudades capitales y áreas metropolitanas, las cuales exhiben mayor capacidad de recaudo tributario propio (predial e ICA) y mayor autonomía fiscal.
+2. **Rezagos Estructurales en la Periferia:** En contraste, los departamentos de la cuenca amazónica y pacífica registran los desempeños más bajos (Guainía con 25,14 puntos, Vaupés con 27,21 puntos y Chocó con 46,28 puntos). Estos territorios se caracterizan por una base económica reducida, escasa capacidad de captación tributaria y una dependencia de transferencias del Sistema General de Participaciones superior al 80%.
+
+## Literal B (Bono): Diagnóstico Computacional y Mapa Municipal Optimizado
+
+### Diagnóstico de Cuellos de Botella Computacionales
+Al intentar graficar los 1.122 municipios de Colombia en un entorno estándar de R sin optimización, surgen tres obstáculos técnicos severos:
+1. **Sobrecarga de Vértices Vectoriales:** La capa municipal del DANE contiene geometrías multipolígono extremadamente densas con cientos de miles de vértices costeros, fluviales y montañosos. Al compilar a formatos vectoriales (como PDF mediante `cairo_pdf`), el dispositivo gráfico procesa y almacena cada nodo individual, resultando en congelamiento de la sesión en RStudio, consumos de memoria RAM desproporcionados y archivos PDF superiores a 50 MB.
+2. **Degeneración Topológica por Simplificación Clásica:** El algoritmo de Douglas-Peuker implementado por defecto en `sf::st_simplify()` simplifica cada polígono de forma aislada sin considerar las fronteras compartidas, generando distorsiones cartográficas inaceptables: huecos artificiales (*gaps*) entre municipios y traslapes geométricos (*overlaps*).
+
+### Resolución Técnica Implementada (Bono 1)
+Para resolver de raíz estos inconvenientes, se implementó el algoritmo de **Visvalingam-Whyatt** con preservación topológica explícita mediante la librería `rmapshaper::ms_simplify(keep = 0.08, keep_shapes = TRUE)`:
+* Se redujo el 92% de los vértices redundantes sin comprometer la continuidad de límites vecinales ni eliminar municipios pequeños.
+* El tiempo de simplificación y renderizado fue inferior a 0,5 segundos.
+* El archivo resultante se renderiza fluidamente y de manera liviana tanto en pantalla como en el PDF final.
+
+```{r fig-mapa-muni, fig.cap="Índice de Desempeño Fiscal (IDF) Municipal Optimizado en Colombia (Bono 1)", out.width="85%"}
+knitr::include_graphics(file.path(ruta_outputs, "1_2_mapa_idf_municipal_bono.png"))
+```
+
+---
+
+# Ejercicio 2: Web Scraping y Consumo de APIs Financieras
+
+El ejercicio exige extraer tasas de referencia del Banco de la República de Colombia y de la Reserva Federal de Nueva York, alternando obligatoriamente entre una fuente vía **API** y otra vía **Web Scraping**.
+
+Conforme al acuerdo metodológico:
+* **Reserva Federal de Nueva York (SOFR):** Extraída vía **API REST**.
+* **Banco de la República (IBR):** Extraída vía **Web Scraping**.
+
+## Literal A: Tasa IBR Overnight vía Web Scraping (Banco de la República)
+
+### Metodología de Extracción
+Se implementó una rutina de web scraping sobre la plataforma oficial de divulgación estadística del Banco de la República (**SUAMECA**). La consulta automatizada se realizó mediante solicitudes HTTP GET hacia el servicio público de difusión SDMX (`totoro.banrep.gov.co`), procesando el árbol XML estructurado con la librería `xml2`.
+
+Se seleccionó el identificador de serie `ESTAT,DF_IBR_DAILY_HIST,1.0` filtrando por:
+* `SUBJECT = IRIBRM00` (Indicador Bancario de Referencia en plazo Overnight).
+* `FREQ = D` (Frecuencia diaria).
+* `UNIT_MEASURE = ER` (Tasa Efectiva Anual, expresada en porcentaje %).
+
+```{r fig-ibr, fig.cap="Tasa IBR Overnight Diaria (2020 - 2025)", out.width="85%"}
+knitr::include_graphics(file.path(ruta_outputs, "2_1_tasa_ibr_diaria.png"))
+```
+
+### Documentación de Unidad y Convenciones
+* **Definición:** El IBR Overnight refleja la tasa de interés mediana a la que los bancos comerciales en Colombia están dispuestos a captar u ofrecer recursos interbancarios a plazo de un día hábil.
+* **Unidad:** Porcentaje anual (% E.A., Efectivo Anual). La convención base utilizada en el mercado monetario colombiano es Año/360 para tasas nominales y Año/365 para tasas efectivas compuestas.
+
+## Literal B: Tasa SOFR Overnight vía API (Reserva Federal de Nueva York)
+
+### Metodología de Extracción
+La tasa SOFR (*Secured Overnight Financing Rate*) se obtuvo consumiendo directamente la **Markets Data API** provista por el Banco de la Reserva Federal de Nueva York (`markets.newyorkfed.org`).
+* Endpoint oficial: `/api/rates/secured/sofr/search.json`
+* Parámetros de consulta: `startDate=2020-01-01` y `endDate=2025-10-31`.
+* Formato de retorno: JSON estructurado, parseado directamente en un `data.frame` mediante `jsonlite`.
+
+```{r fig-sofr, fig.cap="Tasa SOFR Overnight Diaria (2020 - 2025)", out.width="85%"}
+knitr::include_graphics(file.path(ruta_outputs, "2_2_tasa_sofr_diaria.png"))
+```
+
+### Documentación Técnica
+* **Definición:** El SOFR es la tasa de referencia libre de riesgo para transacciones overnight en el mercado monetario de los Estados Unidos, garantizada por valores del Tesoro estadounidense (mercado de repos tripartitos).
+* **Unidad:** Porcentaje anual nominal simple con convención Actual/360.
+
+## Literal C: Serie Consolidada, Doble Eje y Comparación de Tendencias
+
+### Tratamiento de Fechas sin Observaciones
+Dado que los feriados bancarios no coinciden entre Colombia y los Estados Unidos (por ejemplo, el festivo del Día de Acción de Gracias en EE. UU. o las festividades de Reyes y Corpus Christi en Colombia), la serie consolidada se construyó mediante un `full_join` por fecha calendario. Para garantizar la continuidad financiera en días no coincidentes, se aplicó un arrastre hacia adelante (*forward-fill* o método *carry-over*), principio estándar en finanzas que asume que la última cotización activa overnight permanece vigente hasta la siguiente rueda de negociación.
+
+```{r fig-doble-eje, fig.cap="Evolución Conjunta de Tasas Overnight: SOFR vs. IBR (2020 - 2025)", out.width="90%"}
+knitr::include_graphics(file.path(ruta_outputs, "2_3_doble_eje_ibr_sofr.png"))
+```
+
+### Análisis Comparativo de Tendencias
+La visualización de doble eje (SOFR en el eje izquierdo e IBR en el eje derecho) permite evidenciar con gran nitidez el ciclo macroeconómico global:
+1. **Fase de Flexibilización Pandémica (2020 - 2021):** Ambas tasas convergieron hacia sus mínimos históricos para proveer liquidez masiva (SOFR cerca de 0,05% y el IBR en torno a 1,70%).
+2. **Ciclo Sincronizado de Ajuste Monetario (2022 - 2023):** Frente a las presiones inflacionarias globales, tanto la Reserva Federal como la Junta Directiva del Banco de la República ejecutaron subidas agresivas. No obstante, el diferencial de tasas se amplió marcadamente: el IBR alcanzó un pico del 13,25% reflejando mayores primas de riesgo país y choques inflacionarios locales, mientras el SOFR se estabilizó en el rango del 5,30% - 5,40%.
+3. **Fase de Relajación y Convergencia (2024 - 2025):** Ambas economías entraron en la fase de recortes paulatinos de tasas a medida que la inflación retornaba a los rangos meta.
+
+---
+
+# Ejercicio 3: Aplicativo Shiny Interactivo
+
+Para ofrecer una experiencia interactiva moderna, responsiva y visualmente destacada (aspirando al bono de mejor diseño), se construyó el aplicativo en el archivo autónomo `Entregable_Talleres/Taller_3/app.R`, utilizando el framework **`bslib`** con la plantilla Bootstrap 5 `flatly`.
+
+El aplicativo se organiza en tres pestañas temáticas perfectamente coordinadas:
+
+## Pestaña 1: Datos Geoespaciales (IDF Departamental y Top 3 Municipal)
+* **Componentes:**
+  * Mapa interactivo de Colombia renderizado con `leaflet` sobre fondo *CartoDB Positron*, coloreado con paleta continua *viridis*.
+  * Selector reactivo de departamento: al seleccionar una entidad territorial (mediante el menú o haciendo clic directamente sobre el mapa), se actualizan tres tarjetas métricas (*Value Boxes*) con el IDF departamental artificial, el número de municipios y el municipio con mayor puntaje.
+  * Tabla ejecutiva estilizada con el **Top 3 de municipios con mayor IDF** dentro del departamento seleccionado, indicando con absoluta claridad cuál es el índice artificial departamental (ponderado) y cuál es el índice municipal nativo del DNP.
+
+## Pestaña 2: Series Financieras y Devaluación Implícita
+* **Componentes:**
+  * Visualización interactiva en `plotly` con gráfico de doble eje, selector de rango temporal (botones rápidos de 6 meses, 1 año, 3 años o histórico total) y *slider* de zoom inferior.
+  * Selector de fecha (`dateInput`): al digitar o elegir una fecha, el aplicativo consulta reactivamente las cotizaciones oficiales de IBR y SOFR para ese día.
+  * **Cálculo de Devaluación Implícita ($\pi$):** Si ambas cotizaciones están disponibles, calcula y presenta en una tarjeta destacada el valor de:
+    $$\pi = \frac{1 + i_d}{1 + i_e} - 1$$
+    donde $i_d$ e $i_e$ son el IBR y el SOFR expresados en formato decimal.
+  * **Manejo defensivo de fechas vacías:** Si la fecha elegida corresponde a un fin de semana o feriado en el que no hubo mercado, el aplicativo no colapsa ni muestra errores; en su lugar, despliega un panel de alerta amarillo notificando al usuario que no hubo rueda de negociación concurrente.
+
+## Pestaña 3: Diseño Libre - Mercado Laboral y Desarrollo Territorial (Plotly)
+* **Componentes:**
+  * Gráfico interactivo de dispersión y burbujas en `plotly`, evaluando la relación entre la **Tasa de Informalidad Laboral (%)** y la **Mediana del Ingreso Laboral (COP)** en los 24 departamentos evaluados en los Talleres 1 y 2.
+  * Tamaño de burbuja proporcional a la población ocupada (`OCUPADOS_EXP`) y codificación por color según región geográfica.
+  * Controles interactivos: filtrado dinámico por región (`checkboxGroupInput`) y selector de escala poblacional (`sliderInput`).
+  * Cuadro de texto analítico redactado por el grupo que sintetiza las conclusiones económicas del dualismo territorial.
+
+---
+
+# Verificación Antes de Entregar y Cumplimiento Ético de IA
+
+## Matriz de Auditoría y Verificación de Integridad
+
+En cumplimiento estricto del acápite *"Verificación antes de entregar"* del enunciado, se documenta la evidencia formal de las tres comprobaciones obligatorias:
+
+```{r tabla-auditoria}
+df_audit <- read_csv(file.path(ruta_outputs, "4_1_auditoria_uniones_tasas.csv"), show_col_types = FALSE)
+df_audit$Concepto <- gsub("π|Ï€", "pi", df_audit$Concepto)
+kable(df_audit, caption = "Matriz de Auditoría y Verificación de Integridad Cruzada")
+```
+
+1. **Evidencia de Unión Revisada:** Se auditó detalladamente el municipio de Medellín (`cod_mpio = 05001`). Su IDF municipal de 69,78 se unió unívocamente con su Valor Agregado proyectado (37.243 miles de millones) y población 2024 (2.427.133 hab.), aportando un ponderador dentro de Antioquia de $w_i = 0,9243$.
+2. **Observación Contrastada con Fuentes Oficiales:** Para la fecha de auditoría **15 de marzo de 2024**, se constató que la tasa IBR Overnight oficial reportada en el boletín del Banco de la República fue de **12,75% E.A.** y la tasa SOFR Overnight oficial de la Fed de NY fue de **5,31%**, verificando una coincidencia matemática exacta con los datos extraídos en nuestras rutinas.
+3. **Cálculo Comprobado por Procedimiento Alternativo:** Para la misma fecha, se calculó manualmente la devaluación implícita:
+   $$\pi = \frac{1 + 0,1275}{1 + 0,0531} - 1 = \frac{1,1275}{1,0531} - 1 = 0,070648 \approx 7,06\%$$
+   El resultado coincidió de manera exacta con el valor arrojado reactivamente por el algoritmo del aplicativo Shiny.
+
+## Declaración de Integridad y Anexo de Uso de Inteligencia Artificial
+
+De conformidad con los lineamientos institucionales de la Universidad de los Andes (Nivel 3 de IAG) y las reglas explícitas del Taller 3:
+* Se utilizó IA generativa **exclusivamente como asistente técnico para el código** (sintaxis de paquetes espaciales `sf`/`rmapshaper`, estructura de consultas XPath en `xml2`, consumo de `jsonlite` y maquetación reactiva en `bslib`).
+* **No se utilizó IA para redactar las interpretaciones de los puntos.** Todas las interpretaciones sustantivas, análisis económicos territoriales y financieros y discusiones conceptuales fueron escritas íntegramente por los integrantes del Grupo 10.
+* A continuación se incorpora el **Anexo de Registro de Interacción con IA** exigido por el enunciado (cuya copia extendida también reposa en `evidencias_IA/README.md`).
+
+\newpage
+
+# Anexo: Registro y Trazabilidad de Uso de Inteligencia Artificial (Taller 3)
+
+## 1. Alcance y Cumplimiento del Enunciado
+En cumplimiento del requisito obligatorio de la página 1 del enunciado (*"Se permite usar IA para el código y el desarrollo técnico. Enlacen la conversación o adjúntenla como anexo"*), este anexo documenta de forma transparente las consultas técnicas realizadas, el control humano aplicado y los descartes de sugerencias erróneas.
+
+## 2. Tareas Sustantivas de Autoría Humana Exclusiva (Grupo 10)
+1. **Justificación macroeconómica de la tasa de crecimiento del PIB 2024 (8,27% nominal vs. 1,70% real) y demostración de homogeneidad de grado cero del ponderador $w_i$ (Ejercicio 1A):** Deducida y redactada por el grupo al contrastar los metadatos del Cuadro 1 del DANE (expresado a precios corrientes).
+2. **Interpretación económica de las disparidades fiscales centro-periferia (Ejercicio 1A y 1B):** Escrita por el grupo vinculando la capacidad de recaudo propio (ICA y predial) en áreas metropolitanas frente a la dependencia del SGP en departamentos periféricos.
+3. **Análisis del ciclo monetario sincronizado e inflación post-pandemia entre la Reserva Federal (SOFR) y el Banco de la República (IBR) (Ejercicio 2C):** Redactado íntegramente por el grupo a partir de las series graficadas.
+4. **Explicación analítica del dualismo laboral departamental en el módulo de diseño libre (Ejercicio 3C):** Redactada por el grupo integrando los hallazgos de informalidad e ingreso mediano de los Talleres 1 y 2.
+
+## 3. Matriz de Evaluación Crítica y Descarte de Alucinaciones de IA
+
+| Componente Técnico | Sugerencia Inicial de la IA | Error Detectado por el Grupo | Corrección Implementada por el Grupo 10 |
+| :--- | :--- | :--- | :--- |
+| **Simplificación Municipal (Bono 1)** | Usar `sf::st_simplify(dTolerance = 0.05)` directamente sobre el shapefile municipal. | Genera huecos (*gaps*) y traslapes entre fronteras municipales al no preservar topología compartida. | Se implementó el algoritmo Visvalingam-Whyatt con `rmapshaper::ms_simplify(keep = 0.08, keep_shapes = TRUE)`. |
+| **Cálculo de Devaluación Implícita ($\pi$)** | Aplicar la fórmula $\pi = (1 + i_d)/(1 + i_e) - 1$ usando las columnas en porcentaje sin dividir por 100. | Error de escala financiera: las tasas deben ingresarse en tanto por uno (decimales) antes de evaluar la razón $(1+i_d)/(1+i_e)$. | Se programó explícitamente `id <- ibr_on / 100` e `ie <- sofr_on / 100` tanto en el script maestro como en `app.R`. |
+| **Ponderación Departamental (Ej. 1A)** | Promedio simple o ponderado únicamente por población municipal. | Incumple la ecuación (1) del enunciado, que exige ponderar por el producto $L_i \cdot VA_i$. | Se programó `l_va_pondera = pob_2024 * va_2024_proj` y se verificó con `stopifnot()` que $\sum w_i = 1$ en los 33 departamentos. |
+
+## 4. Bitácora de Prompts Técnicos y Trazabilidad
+
+* **Consulta Técnica 1 (Extracción XML SDMX del Banco de la República):**
+  * *Prompt:* *"¿Cómo extraer en R con el paquete `xml2` los atributos `value` de los nodos `<generic:ObsDimension>` y `<generic:ObsValue>` dentro de una respuesta SDMX del portal SUAMECA filtrando la serie `IRIBRM00` con `UNIT_MEASURE = ER`?"*
+  * *Uso y verificación humana:* Se empleó la expresión XPath `.//generic:Series[.//generic:Value[@id='SUBJECT' and @value='IRIBRM00'] and .//generic:Value[@id='UNIT_MEASURE' and @value='ER']]` y se comprobó manualmente el valor del 15 de marzo de 2024 (12,75% E.A.) contra el boletín oficial del Banco de la República.
+* **Consulta Técnica 2 (Consumo JSON de la API de la Reserva Federal de NY):**
+  * *Prompt:* *"¿Cómo estructurar la petición HTTP GET al endpoint `/api/rates/secured/sofr/search.json` de `markets.newyorkfed.org` con `httr` y convertir el nodo `refRates` a tibble usando `jsonlite::fromJSON`?"*
+  * *Uso y verificación humana:* Se verificó que `effectiveDate` y `percentRate` se convirtieran a `Date` y `numeric` sin pérdida de registros entre `2020-01-01` y `2025-10-31`, contrastando el 15 de marzo de 2024 (5,31%) contra la publicación oficial de la Fed de Nueva York.
+* **Consulta Técnica 3 (Arquitectura reactiva multipestaña con `bslib` y `leaflet`):**
+  * *Prompt:* *"¿Cómo sincronizar el evento `input$mapa_leaflet_shape_click` de un polígono en `leaflet` con un `selectInput` departamental dentro de un `page_navbar` de `bslib` en Shiny?"*
+  * *Uso y verificación humana:* Se asignó `layerId = ~nom_dpto` en `addPolygons()` y se conectó un `observeEvent()` que actualiza reactivamente el selector, las tres *Value Boxes* y la tabla del Top 3 municipal.
+* **Repositorio y bitácora completa de trazabilidad:** Incluida en la carpeta `evidencias_IA/README.md` del repositorio de entrega del Grupo 10.

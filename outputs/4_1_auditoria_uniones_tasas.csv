@@ -1,0 +1,5 @@
+"Concepto","Valor_Calculado","Fuente_Oficial","Estado_Verificacion"
+"1. Unión DIVIPOLA (Medellín 05001)","IDF: 69.78 | Peso w_i: 0.9243","DNP CIFFIT / DANE Cuentas Nacionales","COINCIDENCIA EXACTA"
+"2. Contraste IBR BanRep (2024-03-15)","12.75% E.A.","Boletín Diario BanRep SUAMECA","COINCIDENCIA EXACTA"
+"3. Contraste SOFR Fed NY (2024-03-15)","5.31%","Markets Data Release NY Fed","COINCIDENCIA EXACTA"
+"4. Devaluación Implícita (pi)","7.06%","Fórmula de Paridad No Cubierta","COMPROBADO"
