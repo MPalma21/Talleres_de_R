@@ -29,10 +29,15 @@ library(scales)
 # ------------------------------------------------------------------------------
 # 1. Carga de datos pre-procesados
 # ------------------------------------------------------------------------------
-dir_data <- file.path(getwd(), "data_shiny")
-if (!dir.exists(dir_data)) {
-  # Fallback si se ejecuta desde la raíz del repo
-  dir_data <- file.path(getwd(), "Entregable_Talleres", "Taller_3", "data_shiny")
+# Localización robusta del directorio de datos serializados
+posibles_rutas <- c(
+  file.path(getwd(), "data_shiny"),
+  file.path(getwd(), "Entregable_Talleres", "Taller_3", "Scripts", "Punto_3", "data_shiny"),
+  file.path(getwd(), "Entregable_Talleres", "Taller_3", "data_shiny")
+)
+dir_data <- posibles_rutas[dir.exists(posibles_rutas)][1]
+if (is.na(dir_data) || !dir.exists(dir_data)) {
+  stop("No se encontró el directorio 'data_shiny'. Verifique la ubicación de los archivos RDS.")
 }
 
 shp_dpto_simp <- readRDS(file.path(dir_data, "shp_dpto_simp.rds"))

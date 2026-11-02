@@ -1,0 +1,1191 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  10pt,
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage[top=20mm,bottom=20mm,left=20mm,right=20mm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\let\oldincludegraphics\includegraphics
+\renewcommand{\includegraphics}[2][]{%
+  \oldincludegraphics[#1,max width=\linewidth,max height=0.9\textheight,keepaspectratio]{#2}%
+}
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,fontsize=\footnotesize,commandchars=\\\{\}}
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Taller 3: Web Scraping, APIs y Aplicaciones Interactivas},
+  pdfauthor={Grupo 10},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Taller 3: Web Scraping, APIs y Aplicaciones Interactivas}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Taller de Programación en R (2026-2), Facultad de Economía,
+Universidad de los Andes}
+\author{Grupo 10}
+\date{2026-11-01}
+\begin{document}
+\maketitle
+
+\renewcommand*\contentsname{Índice de contenido}
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+
+\section{Introducción y arquitectura del Taller
+3}\label{introducciuxf3n-y-arquitectura-del-taller-3}
+
+Este informe contiene el desarrollo del Taller 3 (``Datos geoespaciales,
+web scraping y herramientas de visualización'') del curso Taller de
+Programación en R, en la Facultad de Economía de la Universidad de los
+Andes.
+
+El taller comprende tres ejercicios interconectados, sintetizados en la
+Table~\ref{tbl-alcance-ejercicios}:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1259}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2222}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.0667}}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.0963}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.4889}}@{}}
+\caption{Alcance temático y ponderación de los ejercicios del Taller
+3.}\label{tbl-alcance-ejercicios}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Ejercicio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Módulo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Puntos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Estado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Función en el taller
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Ejercicio
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Módulo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Puntos
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Estado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Función en el taller
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ejercicio 1 & Datos geoespaciales (IDF y DANE) & 1.5 & Pendiente &
+Estimación del IDF ponderado departamental y generación de mapas con
+shapefiles, insumo para la pestaña 1 del aplicativo interactivo. \\
+Ejercicio 2 & Web scraping y API & 2.0 & Completado & Extracción de
+series diarias de IBR (Banco de la República) y SOFR (Fed de Nueva
+York), validación con boletines oficiales, análisis comparativo y
+consolidación de series\_financieras\_ibr\_sofr.csv. \\
+Ejercicio 3 & Aplicativo interactivo en Shiny & 1.5 & Pendiente &
+Tablero con tres componentes: mapa departamental del IDF (Ejercicio 1),
+cálculo de devaluación implícita con las tasas obtenidas (Ejercicio 2) y
+una visualización en Plotly. \\
+\end{longtable}
+
+\subsection{Flujo de trabajo del
+proyecto}\label{flujo-de-trabajo-del-proyecto}
+
+El diagrama resume el recorrido de los datos desde las fuentes externas
+hasta los archivos procesados y su articulación con los demás puntos del
+taller:
+
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics[width=14.98in,height=14.93in]{Taller_3_Grupo_10_files/figure-latex/mermaid-figure-1.png}
+
+}
+
+\caption{\label{fig-diagrama-flujo}Figura A. Diagrama de flujo de
+extracción de datos, armonización y articulación del Taller 3.}
+
+\end{figure}%
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Ejercicio 2: Integración de series macroeconómicas y
+financieras}\label{ejercicio-2-integraciuxf3n-de-series-macroeconuxf3micas-y-financieras}
+
+El objetivo de este módulo es consultar, ordenar y comparar las tasas de
+interés interbancarias a un día (overnight) de Colombia y Estados Unidos
+entre el 1 de enero de 2020 y el 31 de octubre de 2025.
+
+\subsection{Metodología de extracción por entidad
+emisora}\label{metodologuxeda-de-extracciuxf3n-por-entidad-emisora}
+
+Para dar estricto cumplimiento a los requerimientos técnicos del taller,
+se implementó una técnica de captura diferenciada por entidad oficial:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{SOFR Overnight (Estados Unidos):} consulta programática
+  automatizada a la API RESTful (formato JSON) del Federal Reserve Bank
+  of New York, recuperando la serie histórica diaria y respaldando la
+  respuesta cruda en disco.
+\item
+  \textbf{IBR Overnight (Colombia):} descarga y procesamiento directo
+  sobre el árbol DOM del feed SDMX-XML del Banco de la República
+  mediante técnicas de web scraping y expresiones XPath
+  (\texttt{IRIBRM00} y \texttt{ER}).
+\end{itemize}
+
+\subsection{Implementación de los flujos de
+extracción}\label{sec-flujos-extraccion}
+
+Para mantener el código auditable y reproducible, cada etapa se programó
+en un script independiente con operaciones secuenciales, sin
+encapsulaciones innecesarias. Las siguientes secciones presentan la
+arquitectura técnica y la lógica aplicada en cada caso:
+
+\subsubsection{Flujo 1: SOFR (API REST)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Script ejecutable:}
+  \href{https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/01_extraer_sofr_api.R}{\texttt{01\_extraer\_sofr\_api.R}}
+  \emph{(Carpeta Scripts/Punto\_2/)}
+\item
+  \textbf{Fuente oficial:}
+  \href{https://www.newyorkfed.org/markets/reference-rates/sofr}{Federal
+  Reserve Bank of New York} (Markets Data API)
+\item
+  \textbf{Endpoint público:}
+  \url{https://markets.newyorkfed.org/api/rates/secured/sofr/search.json}
+\item
+  \textbf{Parámetros de consulta:} \texttt{startDate\ =\ 2020-01-01} y
+  \texttt{endDate\ =\ 2025-10-31} (HTTP GET / JSON)
+\item
+  \textbf{Destino en raw/:} \texttt{sofr\_raw.json} (crudo) y
+  \texttt{sofr\_diaria\_2020\_2025.csv} (tratado)
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(httr)}
+\FunctionTok{library}\NormalTok{(jsonlite)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(here)}
+
+\NormalTok{fecha\_inicio }\OtherTok{\textless{}{-}} \StringTok{"2020{-}01{-}01"}
+\NormalTok{fecha\_fin    }\OtherTok{\textless{}{-}} \StringTok{"2025{-}10{-}31"}
+
+\NormalTok{endpoint\_sofr }\OtherTok{\textless{}{-}} \StringTok{"https://markets.newyorkfed.org/api/rates/secured/sofr/search.json"}
+
+\CommentTok{\# 1. Petición HTTP GET al endpoint oficial de la Fed de Nueva York}
+\NormalTok{respuesta\_api }\OtherTok{\textless{}{-}} \FunctionTok{GET}\NormalTok{(}
+  \AttributeTok{url =}\NormalTok{ endpoint\_sofr,}
+  \AttributeTok{query =} \FunctionTok{list}\NormalTok{(}\AttributeTok{startDate =}\NormalTok{ fecha\_inicio, }\AttributeTok{endDate =}\NormalTok{ fecha\_fin),}
+  \FunctionTok{user\_agent}\NormalTok{(}\StringTok{"Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}\NormalTok{)}
+\NormalTok{)}
+
+\CommentTok{\# 2. Respaldo del archivo crudo en JSON}
+\NormalTok{contenido\_json }\OtherTok{\textless{}{-}} \FunctionTok{content}\NormalTok{(respuesta\_api, }\AttributeTok{as =} \StringTok{"text"}\NormalTok{, }\AttributeTok{encoding =} \StringTok{"UTF{-}8"}\NormalTok{)}
+\FunctionTok{writeLines}\NormalTok{(contenido\_json, }\AttributeTok{con =} \StringTok{"Outputs/Data/raw/sofr\_raw.json"}\NormalTok{)}
+
+\CommentTok{\# 3. Tratamiento, tipado y estructuración de la serie individual}
+\NormalTok{datos\_crudos }\OtherTok{\textless{}{-}} \FunctionTok{fromJSON}\NormalTok{(contenido\_json, }\AttributeTok{flatten =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{df\_sofr }\OtherTok{\textless{}{-}}\NormalTok{ datos\_crudos}\SpecialCharTok{$}\NormalTok{refRates }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{as\_tibble}\NormalTok{() }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{transmute}\NormalTok{(}
+    \AttributeTok{fecha     =} \FunctionTok{ymd}\NormalTok{(effectiveDate),}
+    \AttributeTok{tasa\_sofr =} \FunctionTok{as.numeric}\NormalTok{(percentRate)}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}
+    \SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(tasa\_sofr),}
+\NormalTok{    fecha }\SpecialCharTok{\textgreater{}=} \FunctionTok{ymd}\NormalTok{(fecha\_inicio),}
+\NormalTok{    fecha }\SpecialCharTok{\textless{}=} \FunctionTok{ymd}\NormalTok{(fecha\_fin)}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(fecha)}
+
+\CommentTok{\# 4. Exportación de la serie tratada en CSV dentro de raw/}
+\FunctionTok{write\_csv}\NormalTok{(df\_sofr, }\StringTok{"Outputs/Data/raw/sofr\_diaria\_2020\_2025.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Flujo 2: IBR (Web Scraping SDMX)}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Script ejecutable:}
+  \href{https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/02_extraer_ibr_banrep.R}{\texttt{02\_extraer\_ibr\_banrep.R}}
+  \emph{(Carpeta Scripts/Punto\_2/)}
+\item
+  \textbf{Fuente oficial:}
+  \href{https://www.banrep.gov.co/es/estadisticas/indicador-bancario-referencia-ibr}{Banco
+  de la República de Colombia} (portal SUAMECA / Totoro SDMX)
+\item
+  \textbf{URL del feed SDMX:}
+  \href{https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020&dimensionAtObservation=TIME_PERIOD&detail=full}{Feed
+  SDMX Totoro SUAMECA}
+\item
+  \textbf{Técnica aplicada:} Web Scraping XML y extracción XPath
+  (\texttt{IRIBRM00} \& \texttt{ER})
+\item
+  \textbf{Destino en raw/:} \texttt{ibr\_raw.xml} (crudo) y
+  \texttt{ibr\_diaria\_2020\_2025.csv} (tratado)
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(httr)}
+\FunctionTok{library}\NormalTok{(xml2)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(here)}
+
+\NormalTok{fecha\_inicio }\OtherTok{\textless{}{-}} \StringTok{"2020{-}01{-}01"}
+\NormalTok{fecha\_fin    }\OtherTok{\textless{}{-}} \StringTok{"2025{-}10{-}31"}
+
+\NormalTok{url\_sdmx\_banrep }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}
+  \StringTok{"https://totoro.banrep.gov.co/nsi{-}jax{-}ws/rest/data/ESTAT,DF\_IBR\_DAILY\_HIST,1.0/all/ALL/"}\NormalTok{,}
+  \StringTok{"?startPeriod=2020\&dimensionAtObservation=TIME\_PERIOD\&detail=full"}
+\NormalTok{)}
+
+\CommentTok{\# 1. Descarga del feed web oficial SDMX{-}XML si no se encuentra en disco}
+\ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{file.exists}\NormalTok{(}\StringTok{"Outputs/Data/raw/ibr\_raw.xml"}\NormalTok{)) \{}
+\NormalTok{  respuesta\_banrep }\OtherTok{\textless{}{-}} \FunctionTok{GET}\NormalTok{(}
+    \AttributeTok{url =}\NormalTok{ url\_sdmx\_banrep,}
+    \AttributeTok{config =} \FunctionTok{config}\NormalTok{(}\AttributeTok{ssl\_verifypeer =} \ConstantTok{FALSE}\NormalTok{),}
+    \FunctionTok{add\_headers}\NormalTok{(}\AttributeTok{Accept =} \StringTok{"application/vnd.sdmx.genericdata+xml;version=2.1"}\NormalTok{),}
+    \FunctionTok{user\_agent}\NormalTok{(}\StringTok{"Mozilla/5.0"}\NormalTok{)}
+\NormalTok{  )}
+  \FunctionTok{writeBin}\NormalTok{(}\FunctionTok{content}\NormalTok{(respuesta\_banrep, }\AttributeTok{as =} \StringTok{"raw"}\NormalTok{), }\StringTok{"Outputs/Data/raw/ibr\_raw.xml"}\NormalTok{)}
+\NormalTok{\}}
+
+\CommentTok{\# 2. Extracción directa con XPath sobre el DOM XML}
+\NormalTok{doc\_xml }\OtherTok{\textless{}{-}} \FunctionTok{read\_xml}\NormalTok{(}\StringTok{"Outputs/Data/raw/ibr\_raw.xml"}\NormalTok{)}
+\NormalTok{nodo\_serie\_on }\OtherTok{\textless{}{-}} \FunctionTok{xml\_find\_first}\NormalTok{(}
+\NormalTok{  doc\_xml,}
+  \StringTok{".//*[local{-}name()=\textquotesingle{}Series\textquotesingle{}][.//*[local{-}name()=\textquotesingle{}Value\textquotesingle{}][@value=\textquotesingle{}IRIBRM00\textquotesingle{}] and .//*[local{-}name()=\textquotesingle{}Value\textquotesingle{}][@value=\textquotesingle{}ER\textquotesingle{}]]"}
+\NormalTok{)}
+
+\NormalTok{nodos\_obs    }\OtherTok{\textless{}{-}} \FunctionTok{xml\_find\_all}\NormalTok{(nodo\_serie\_on, }\StringTok{".//*[local{-}name()=\textquotesingle{}Obs\textquotesingle{}]"}\NormalTok{)}
+\NormalTok{fechas\_crudo }\OtherTok{\textless{}{-}} \FunctionTok{xml\_attr}\NormalTok{(}\FunctionTok{xml\_find\_all}\NormalTok{(nodos\_obs, }\StringTok{".//*[local{-}name()=\textquotesingle{}ObsDimension\textquotesingle{}]"}\NormalTok{), }\StringTok{"value"}\NormalTok{)}
+\NormalTok{tasas\_crudo  }\OtherTok{\textless{}{-}} \FunctionTok{xml\_attr}\NormalTok{(}\FunctionTok{xml\_find\_all}\NormalTok{(nodos\_obs, }\StringTok{".//*[local{-}name()=\textquotesingle{}ObsValue\textquotesingle{}]"}\NormalTok{), }\StringTok{"value"}\NormalTok{)}
+
+\CommentTok{\# 3. Tratamiento, tipado y estructuración de la serie individual}
+\NormalTok{df\_ibr }\OtherTok{\textless{}{-}} \FunctionTok{tibble}\NormalTok{(}
+  \AttributeTok{fecha    =} \FunctionTok{ymd}\NormalTok{(fechas\_crudo),}
+  \AttributeTok{tasa\_ibr =} \FunctionTok{as.numeric}\NormalTok{(tasas\_crudo)}
+\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}
+    \SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(tasa\_ibr),}
+\NormalTok{    fecha }\SpecialCharTok{\textgreater{}=} \FunctionTok{ymd}\NormalTok{(fecha\_inicio),}
+\NormalTok{    fecha }\SpecialCharTok{\textless{}=} \FunctionTok{ymd}\NormalTok{(fecha\_fin)}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(fecha)}
+
+\CommentTok{\# 4. Exportación de la serie tratada en CSV dentro de raw/}
+\FunctionTok{write\_csv}\NormalTok{(df\_ibr, }\StringTok{"Outputs/Data/raw/ibr\_diaria\_2020\_2025.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Flujo 3: Armonización e Integración}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Script ejecutable:}
+  \href{https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/03_analisis_financiero_punto_2.R}{\texttt{03\_analisis\_financiero\_punto\_2.R}}
+  \emph{(Carpeta Scripts/Punto\_2/)}
+\item
+  \textbf{Insumos de entrada:} Series tratadas en CSV desde
+  \texttt{Outputs/Data/raw/}
+\item
+  \textbf{Procesamiento:} Lectura de CSVs, empalme continuo
+  (\texttt{full\_join}), forward-fill y spread
+\item
+  \textbf{Tratamiento de festivos:} \emph{Forward-fill} (\texttt{fill})
+  según convención del mercado monetario
+\item
+  \textbf{Archivo final único:}
+  \texttt{Outputs/Data/processed/series\_financieras\_ibr\_sofr.csv}
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(scales)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(here)}
+
+\CommentTok{\# 1. Lectura de las series tratadas directamente desde raw/}
+\NormalTok{df\_sofr }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"Outputs/Data/raw/sofr\_diaria\_2020\_2025.csv"}\NormalTok{, }\AttributeTok{show\_col\_types =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{fecha =} \FunctionTok{as.Date}\NormalTok{(fecha))}
+
+\NormalTok{df\_ibr }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"Outputs/Data/raw/ibr\_diaria\_2020\_2025.csv"}\NormalTok{, }\AttributeTok{show\_col\_types =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{fecha =} \FunctionTok{as.Date}\NormalTok{(fecha))}
+
+\CommentTok{\# 2. Empalme temporal continuo, tratamiento de festivos (forward{-}fill) y cálculo del spread}
+\NormalTok{df\_consolidado }\OtherTok{\textless{}{-}} \FunctionTok{full\_join}\NormalTok{(df\_sofr, df\_ibr, }\AttributeTok{by =} \StringTok{"fecha"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(fecha) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{fill}\NormalTok{(tasa\_sofr, }\AttributeTok{.direction =} \StringTok{"down"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{fill}\NormalTok{(tasa\_ibr, }\AttributeTok{.direction =} \StringTok{"down"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(tasa\_sofr), }\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(tasa\_ibr)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{spread\_ibr\_sofr =}\NormalTok{ tasa\_ibr }\SpecialCharTok{{-}}\NormalTok{ tasa\_sofr)}
+
+\CommentTok{\# 3. Exportación del único archivo final en la carpeta processed/}
+\FunctionTok{write\_csv}\NormalTok{(df\_consolidado, }\StringTok{"Outputs/Data/processed/series\_financieras\_ibr\_sofr.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Auditoría, trazabilidad y control de
+calidad}\label{auditoruxeda-trazabilidad-y-control-de-calidad}
+
+Con el fin de garantizar la reproducibilidad y el rigor metodológico
+exigidos en el taller, se implementó un protocolo de auditoría en tres
+dimensiones:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Trazabilidad de fuentes y endpoints:} Registro sistemático de
+  las entidades oficiales emisoras, métodos de extracción, scripts
+  ejecutables asociados y especificación de parámetros.
+\item
+  \textbf{Matriz de contraste frente a boletines oficiales:}
+  Confrontación puntual de tres hitos macroeconómicos clave (línea base
+  pre-pandémica, pico contractivo y fecha de corte) contra las
+  publicaciones oficiales del Federal Reserve Bank of New York y del
+  Banco de la República.
+\item
+  \textbf{Evidencias de consistencia técnica:} Demostración empírica del
+  tratamiento de festivos asimétricos (\emph{forward-fill}) y
+  comprobación matemática de los cálculos financieros por un
+  procedimiento analítico alternativo.
+\end{enumerate}
+
+\subsubsection{Trazabilidad técnica y metadatos de las fuentes
+oficiales}\label{trazabilidad-tuxe9cnica-y-metadatos-de-las-fuentes-oficiales}
+
+La Table~\ref{tbl-trazabilidad-fuentes} detalla los canales de captura,
+enlaces web directos y scripts del repositorio empleados en el flujo de
+extracción.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1215}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1776}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1963}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2150}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1121}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1776}}@{}}
+\caption{Trazabilidad técnica y metadatos de las fuentes oficiales de
+información.}\label{tbl-trazabilidad-fuentes}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Serie y Plazo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Emisor Oficial
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Técnica de Captura y Script
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Recurso Público / Endpoint
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Observaciones
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Convención Financiera
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Serie y Plazo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Emisor Oficial
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Técnica de Captura y Script
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Recurso Público / Endpoint
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Observaciones
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Convención Financiera
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{SOFR Overnight} &
+\href{https://www.newyorkfed.org/markets/reference-rates/sofr}{Federal
+Reserve Bank of NY} & \hyperref[sec-flujos-extraccion]{API REST (JSON) -
+Script 01} &
+\href{https://markets.newyorkfed.org/api/rates/secured/sofr/search.json}{Markets
+Data API Endpoint} & 1,458 obs. \emph{(2020-2025)} & \% Nominal Anual
+(Actual/360) \\
+\textbf{IBR Overnight} &
+\href{https://www.banrep.gov.co/es/estadisticas/indicador-bancario-referencia-ibr}{Banco
+de la República} & \hyperref[sec-flujos-extraccion]{Web Scraping XML -
+Script 02} &
+\href{https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020&dimensionAtObservation=TIME_PERIOD&detail=full}{Feed
+SDMX-XML SUAMECA} & 1,426 obs. \emph{(2020-2025)} & \% Efectivo Anual
+E.A. (Base 360) \\
+\end{longtable}
+
+\subsubsection{Matriz de contraste frente a boletines
+oficiales}\label{matriz-de-contraste-frente-a-boletines-oficiales}
+
+La Table~\ref{tbl-validacion-boletines} confronta verticalmente los
+valores descargados por los scripts en R frente a los boletines
+oficiales en las tres fechas de control exigidas por la guía.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1481}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1852}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1481}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1852}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1481}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1852}}@{}}
+\caption{Matriz de validación y contraste con boletines oficiales en
+hitos de control.}\label{tbl-validacion-boletines}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Hito Macroeconómico
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Serie Evaluada
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Tasa en R
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Boletín Oficial de Referencia
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Estado de Auditoría
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Hito Macroeconómico
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Serie Evaluada
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Tasa en R
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Boletín Oficial de Referencia
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Estado de Auditoría
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{1. Línea base pre-pandémica} & \texttt{2020-01-02} & SOFR ON
+(EE. UU.) & \textbf{1.54\%} &
+\href{https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2020-01-02&endDate=2020-01-02}{1.54\%
+(NY Fed Markets API)} & {Coincidencia Exacta} \\
+\textbf{1. Línea base pre-pandémica} & \texttt{2020-01-02} & IBR ON
+(Colombia) & \textbf{4.259\%} &
+\href{https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020-01-02&endPeriod=2020-01-02}{4.259\%
+E.A. (BanRep SUAMECA)} & {Coincidencia Exacta} \\
+\textbf{2. Pico contractivo antiinflacionario} & \texttt{2023-07-27} &
+SOFR ON (EE. UU.) & \textbf{5.30\%} &
+\href{https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2023-07-27&endDate=2023-07-27}{5.30\%
+(Corredor Fed 5.25\% - 5.50\%)} & {Coincidencia Exacta} \\
+\textbf{2. Pico contractivo antiinflacionario} & \texttt{2023-04-28} &
+IBR ON (Colombia) & \textbf{13.250\%} &
+\href{https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2023-04-28&endPeriod=2023-04-28}{13.250\%
+E.A. (Repo BanRep 13.25\%)} & {Coincidencia Exacta} \\
+\textbf{3. Cierre del horizonte evaluado} & \texttt{2025-10-31} & SOFR
+ON (EE. UU.) & \textbf{4.22\%} &
+\href{https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2025-10-31&endDate=2025-10-31}{4.22\%
+(NY Fed Markets API)} & {Coincidencia Exacta} \\
+\textbf{3. Cierre del horizonte evaluado} & \texttt{2025-10-31} & IBR ON
+(Colombia) & \textbf{9.250\%} &
+\href{https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2025-10-31&endPeriod=2025-10-31}{9.250\%
+E.A. (BanRep SUAMECA)} & {Coincidencia Exacta} \\
+\end{longtable}
+
+\subsubsection{Evidencias de auditoría
+metodológica}\label{evidencias-de-auditoruxeda-metodoluxf3gica}
+
+\paragraph{Evidencia 1: Tratamiento empírico de festivos
+asimétricos}\label{evidencia-1-tratamiento-empuxedrico-de-festivos-asimuxe9tricos}
+
+La disparidad de calendarios bancarios entre Colombia (festivos por Ley
+Emiliani y celebraciones religiosas) y Estados Unidos (festivos
+federales) genera desalineaciones temporales. La
+Table~\ref{tbl-evidencia-festivos} expone casos concretos donde la
+imputación mediante \emph{forward-fill}
+(\texttt{fill(...,\ .direction\ =\ "down")}) garantizó la continuidad
+del devengo financiero sin alterar la dinámica de tasas.
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2381}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1905}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1905}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1905}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1905}}@{}}
+\caption{Casos testigo de armonización de festivos no coincidentes entre
+Colombia y EE. UU.}\label{tbl-evidencia-festivos}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Contexto de Mercado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dato Crudo Extraído
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tratamiento Aplicado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación Financiera
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Contexto de Mercado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dato Crudo Extraído
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tratamiento Aplicado
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Justificación Financiera
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{2020-01-06} & \textbf{Día de Reyes Magos} (Festivo Colombia,
+hábil EE. UU.) & SOFR: 1.55\%, IBR: \texttt{NA} & Forward-fill: IBR
+mantiene \textbf{4.259\%} (del 2020-01-03) & Los contratos monetarios
+overnight continúan devengando intereses a la última tasa oficial
+vigente hasta la reapertura bancaria. \\
+\texttt{2020-01-20} & \textbf{Martin Luther King Jr.~Day} (Festivo EE.
+UU., hábil Colombia) & SOFR: \texttt{NA}, IBR: 4.250\% & Forward-fill:
+SOFR mantiene \textbf{1.55\%} (del 2020-01-17) & Convención bancaria
+internacional estándar (\emph{last observation carried forward}). \\
+\texttt{2024-07-04} & \textbf{Independence Day} (Festivo EE. UU., hábil
+Colombia) & SOFR: \texttt{NA}, IBR: 11.230\% & Forward-fill: SOFR
+mantiene \textbf{5.34\%} (del 2024-07-03) & Conserva la integridad
+temporal de la base continua (1,500 observaciones de mercado). \\
+\texttt{2024-07-20} & \textbf{Grito de Independencia} (Festivo Colombia,
+hábil EE. UU.) & SOFR: 5.34\%, IBR: \texttt{NA} & Forward-fill: IBR
+mantiene \textbf{11.230\%} (del 2024-07-19) & Evita truncamientos
+artificiales en el vector diario del spread financiero. \\
+\end{longtable}
+
+\paragraph{Evidencia 2: Comprobación analítica por procedimiento
+alternativo}\label{evidencia-2-comprobaciuxf3n-analuxedtica-por-procedimiento-alternativo}
+
+Para contrastar la exactitud matemática de las transformaciones
+ejecutadas en R, se verificaron analíticamente el spread financiero y la
+devaluación implícita para la fecha de corte (\textbf{31 de octubre de
+2025}):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Parámetros de entrada:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Tasa doméstica: \(i_d = \text{IBR}_{ON} = 9.250\% = 0.09250\).
+  \item
+    Tasa externa: \(i_e = \text{SOFR}_{ON} = 4.220\% = 0.04220\).
+  \end{itemize}
+\item
+  \textbf{Cálculo del spread financiero:}
+  \[\text{Spread}_t = i_d - i_e = 9.250\% - 4.220\% = 5.030\% \quad (503.0 \text{ puntos básicos})\]
+\item
+  \textbf{Cálculo exacto de la devaluación implícita (\(\pi\)):}
+  \[\begin{aligned}
+  \pi &= \frac{1 + i_d}{1 + i_e} - 1 = \frac{1 + 0.09250}{1 + 0.04220} - 1 \\
+  &= \frac{1.09250}{1.04220} - 1 \approx 0.048263 \implies 4.826\%
+  \end{aligned}\]
+\item
+  \textbf{Procedimiento alternativo (Expansión de Taylor de primer
+  orden):} \[\begin{aligned}
+  \pi &\approx (i_d - i_e) - i_e(i_d - i_e) \\
+  &= 0.05030 - (0.04220 \times 0.05030) \\
+  &= 0.05030 - 0.002123 = 0.048177 \implies 4.818\%
+  \end{aligned}\] La diferencia residual de 0.008 puntos porcentuales (8
+  puntos básicos) corresponde estrictamente al término no lineal de
+  segundo orden (\(i_e \cdot \pi\)), validando la consistencia
+  computacional del flujo programado.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Literal 2.A: Gráfico y análisis del IBR Overnight
+(2020-2025)}\label{literal-2.a-gruxe1fico-y-anuxe1lisis-del-ibr-overnight-2020-2025}
+
+\subsubsection{Unidad de medida y convención
+financiera}\label{unidad-de-medida-y-convenciuxf3n-financiera}
+
+El Indicador Bancario de Referencia (IBR) a plazo overnight mide el
+costo diario al que los bancos comerciales colombianos están dispuestos
+a prestar o captar liquidez en pesos.
+
+\begin{itemize}
+\tightlist
+\item
+  Unidad: Tasa Efectiva Anual (E.A., en porcentaje).
+\item
+  Convención de conteo: Base comercial de 360 días (doce meses de 30
+  días, estándar del sistema financiero colombiano).
+\item
+  Relación entre tasa nominal y efectiva:
+  \[i_{E.A.} = \left( 1 + \frac{i_{nominal} \times 1}{360} \right)^{360} - 1\]
+\end{itemize}
+
+\subsubsection{Visualización
+histórica}\label{visualizaciuxf3n-histuxf3rica}
+
+\begin{figure}[H]
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Taller_3_Grupo_10_files/figure-pdf/fig-ibr-diaria-1.pdf}}
+
+}
+
+\caption{\label{fig-ibr-diaria}Figura 1. Evolución diaria del IBR
+Overnight en Colombia (2020-2025), señalando el estímulo inicial por
+COVID-19, el ajuste alcista y el período de normalización.}
+
+\end{figure}%
+
+\subsubsection{Comportamiento de la
+serie}\label{comportamiento-de-la-serie}
+
+\paragraph{Estímulo monetario por COVID-19 (marzo de 2020 a septiembre
+de
+2021)}\label{estuxedmulo-monetario-por-covid-19-marzo-de-2020-a-septiembre-de-2021}
+
+La llegada de la pandemia en marzo de 2020 llevó a la Junta Directiva
+del Banco de la República a recortar su tasa de intervención en siete
+reuniones consecutivas, pasando de 4.25\% a un mínimo histórico de
+1.75\% a finales de septiembre de 2020. El IBR overnight transmitió este
+impulso con rapidez y se mantuvo en una banda estrecha entre 1.70\% y
+1.75\% durante doce meses, abaratando el costo del fondeo a muy corto
+plazo para los intermediarios financieros en una etapa de parálisis
+productiva.
+
+Este piso de tasas estuvo respaldado por operaciones transitorias de
+liquidez (repos) en títulos públicos y privados, además de compras
+definitivas de títulos para evitar tensiones de liquidez en el sistema
+de pagos. La permanencia del IBR en 1.75\% evidenció un exceso sostenido
+de reservas bancarias, donde los establecimientos de crédito mantuvieron
+saldos disponibles suficientes sin necesidad de pujar al alza por
+recursos interbancarios.
+
+\paragraph{Choque inflacionario y ciclo alcista (octubre de 2021 a abril
+de
+2023)}\label{choque-inflacionario-y-ciclo-alcista-octubre-de-2021-a-abril-de-2023}
+
+Hacia el último trimestre de 2021, la reapertura comercial, los cuellos
+de botella en el comercio internacional y el encarecimiento de los
+insumos reactivaron las presiones sobre los precios al consumidor. El
+fenómeno se profundizó durante 2022 por el choque de materias primas
+derivado del conflicto en Ucrania y la depreciación del peso, lo que
+llevó la inflación anual por encima del 13\% en los primeros meses de
+2023. Ante el riesgo de desanclar las expectativas de inflación de
+mediano plazo, el emisor inició el ciclo contractivo más acelerado en la
+historia del esquema de inflación objetivo.
+
+Entre octubre de 2021 y abril de 2023, la tasa de intervención subió de
+forma acumulada 1,150 puntos básicos, desde 1.75\% hasta 13.25\%. La
+serie diaria del IBR refleja este proceso como una escalera ascendente
+continua que replica de forma casi inmediata cada incremento de la
+Junta, alcanzando su nivel máximo el 28 de abril de 2023. El ajuste
+incrementó el costo del crédito en todas las modalidades y restringió la
+demanda interna para encauzar la inflación hacia la meta.
+
+\paragraph{Meseta restrictiva y normalización paulatina (mayo de 2023 a
+octubre de
+2025)}\label{meseta-restrictiva-y-normalizaciuxf3n-paulatina-mayo-de-2023-a-octubre-de-2025}
+
+Alcanzado el techo de 13.25\% en abril de 2023, la Junta mantuvo la tasa
+sin cambios durante siete meses consecutivos. Esta pausa prolongada
+buscaba verificar que la desaceleración del índice de precios fuera
+consistente antes de iniciar cualquier relajamiento, dada la rigidez que
+mostraron los rubros de servicios y arriendos por los mecanismos
+formales de indexación.
+
+En diciembre de 2023, con la inflación anual descendiendo y la inversión
+mostrando caídas continuas, el banco central comenzó a recortar la tasa
+directriz en pasos sucesivos de 50 puntos básicos. Esta fase de
+flexibilización situó el IBR overnight en 9.25\% al cierre de octubre de
+2025. Aunque el nivel actual es sustancialmente menor que el pico de
+2023, la tasa real permanece en terreno neutral o moderadamente
+restrictivo, lo que busca afianzar la convergencia gradual de los
+precios hacia la meta del 3\%.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Literal 2.B: Gráfico y análisis del SOFR Overnight
+(2020-2025)}\label{literal-2.b-gruxe1fico-y-anuxe1lisis-del-sofr-overnight-2020-2025}
+
+\subsubsection{Unidad de medida y convención
+financiera}\label{unidad-de-medida-y-convenciuxf3n-financiera-1}
+
+La tasa SOFR (Secured Overnight Financing Rate) mide el costo del fondeo
+en dólares a 24 horas garantizado con títulos del Tesoro de Estados
+Unidos en el mercado repo tripartito.
+
+\begin{itemize}
+\tightlist
+\item
+  Unidad: Tasa porcentual anualizada nominal (APR, \%).
+\item
+  Convención de conteo: Base del mercado monetario estadounidense
+  Actual/360 (días calendario reales sobre 360).
+\item
+  Respaldo colateral: al negociarse contra deuda soberana de Estados
+  Unidos, la tasa no incorpora primas de riesgo crediticio de
+  contraparte bancaria, a diferencia del extinto esquema LIBOR.
+\end{itemize}
+
+\subsubsection{Visualización
+histórica}\label{visualizaciuxf3n-histuxf3rica-1}
+
+\begin{figure}[H]
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Taller_3_Grupo_10_files/figure-pdf/fig-sofr-diaria-1.pdf}}
+
+}
+
+\caption{\label{fig-sofr-diaria}Figura 2. Evolución diaria del SOFR
+Overnight en Estados Unidos (2020-2025), mostrando el período de tasa
+cero, el ciclo de aumentos de la Reserva Federal y los recortes
+posteriores.}
+
+\end{figure}%
+
+\subsubsection{Comportamiento de la
+serie}\label{comportamiento-de-la-serie-1}
+
+\paragraph{Política de tasa cero (ZIRP, marzo de 2020 a marzo de
+2022)}\label{poluxedtica-de-tasa-cero-zirp-marzo-de-2020-a-marzo-de-2022}
+
+Para contener el colapso financiero al inicio de la pandemia en marzo de
+2020, el Comité Federal de Mercado Abierto (FOMC) redujo su tasa de
+referencia al rango de 0.00\% a 0.25\% e inició compras a gran escala de
+bonos del Tesoro y títulos respaldados por hipotecas. La tasa SOFR cayó
+rápidamente desde 1.54\% a principios de 2020 hasta situarse muy cerca
+de cero, promediando 0.05\% a lo largo de dos años continuos.
+
+La gran cantidad de reservas inyectadas al sistema bancario generó
+presiones a la baja sobre las tasas a un día. Para evitar que el costo
+del fondeo colateralizado pasara a terreno negativo, la Reserva Federal
+utilizó la facilidad de operaciones de recompra inversa (Overnight
+Reverse Repo Facility, ON RRP), que funcionó como un piso operativo en
+torno a 0.05\%. Este mecanismo permitió absorber el excedente de
+liquidez y mantener la estabilidad del mercado repo sin las tensiones
+observadas en septiembre de 2019.
+
+\paragraph{Choque inflacionario y endurecimiento acelerado (marzo de
+2022 a julio de
+2023)}\label{choque-inflacionario-y-endurecimiento-acelerado-marzo-de-2022-a-julio-de-2023}
+
+En los primeros meses de 2022, la combinación de problemas en las
+cadenas globales de valor, un mercado laboral con desempleo en mínimos
+históricos y el estímulo fiscal pospandemia elevó la inflación anual al
+9.1\% en junio de 2022, el nivel más alto en cuarenta años. La Reserva
+Federal abandonó la premisa de transitoriedad e implementó una de las
+correcciones monetarias más rápidas registradas en las últimas décadas.
+
+A partir de marzo de 2022, el FOMC aplicó incrementos sucesivos que
+incluyeron cuatro movimientos consecutivos de 75 puntos básicos,
+situando el corredor de política en 5.25\% - 5.50\% en julio de 2023. La
+serie diaria del SOFR siguió de cerca cada decisión del banco central
+estadounidense y escaló desde 0.08\% hasta marcar un pico de 5.30\% el
+27 de julio de 2023. La evolución de la tasa ilustra la eficiencia con
+la que los ajustes en las facilidades de la Fed se transmiten al mercado
+de deuda soberana de corto plazo.
+
+\paragraph{Meseta prolongada y ciclo de recortes (agosto de 2023 a
+octubre de
+2025)}\label{meseta-prolongada-y-ciclo-de-recortes-agosto-de-2023-a-octubre-de-2025}
+
+Entre agosto de 2023 y agosto de 2024, la Reserva Federal mantuvo su
+tasa de intervención inalterada bajo la directriz de sostener
+condiciones restrictivas el tiempo necesario para doblegar la inflación.
+Durante este año de meseta, el SOFR osciló en una franja muy estable
+entre 5.30\% y 5.33\%, con fluctuaciones menores explicadas
+principalmente por efectos de calendario y fechas de liquidación del
+Tesoro.
+
+En septiembre de 2024, con la inflación subyacente acercándose a la meta
+del 2\% y señales de enfriamiento en el empleo, la Fed comenzó a
+flexibilizar su postura con un recorte inicial de 50 puntos básicos,
+seguido de reducciones adicionales de 25 puntos básicos. Hacia el 31 de
+octubre de 2025, el SOFR cerró en 4.22\%, reflejando la transición hacia
+un entorno monetario menos restrictivo destinado a preservar el
+crecimiento sin descuidar el equilibrio de precios.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Literal 2.C: Gráfico con doble eje y análisis
+comparativo}\label{literal-2.c-gruxe1fico-con-doble-eje-y-anuxe1lisis-comparativo}
+
+\subsubsection{Justificación de la frecuencia
+diaria}\label{justificaciuxf3n-de-la-frecuencia-diaria}
+
+Los mercados monetarios overnight operan con vencimiento a 24 horas. El
+uso de datos diarios resulta indispensable para observar la volatilidad
+en cierres de mes, pagos tributarios y subastas de liquidez, efectos que
+un promedio mensual o trimestral borraría por completo.
+
+\subsubsection{Tratamiento de días no bursátiles
+cruzados}\label{tratamiento-de-duxedas-no-bursuxe1tiles-cruzados}
+
+Los calendarios festivos de ambos países no coinciden: Colombia cuenta
+con los feriados de la Ley Emiliani y fechas religiosas, mientras que
+Estados Unidos observa festivos federales como el Día de Martin Luther
+King o el 4 de Julio.
+
+Para integrar ambas series en una misma serie temporal sin distorsiones,
+se combinaron las observaciones mediante \texttt{full\_join} y se imputó
+el valor inmediato anterior
+(\texttt{fill(...,\ .direction\ =\ "down")}). Esta regla refleja la
+práctica financiera habitual: cuando un mercado cierra por feriado
+local, los contratos vigentes continúan acumulando intereses a la última
+tasa oficial fijada hasta la siguiente reapertura hábil.
+
+\subsubsection{Visualización conjunta con doble
+eje}\label{visualizaciuxf3n-conjunta-con-doble-eje}
+
+\begin{figure}[H]
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Taller_3_Grupo_10_files/figure-pdf/fig-doble-eje-1.pdf}}
+
+}
+
+\caption{\label{fig-doble-eje}Figura 3. Comparación de tasas de
+referencia: SOFR en el eje izquierdo e IBR en el eje derecho
+(2020-2025).}
+
+\end{figure}%
+
+\subsubsection{Interpretación
+económica}\label{interpretaciuxf3n-econuxf3mica}
+
+\paragraph{Paridad descubierta de tasas y prima de
+riesgo}\label{paridad-descubierta-de-tasas-y-prima-de-riesgo}
+
+La diferencia en la magnitud de los ciclos (el SOFR subió 525 puntos
+básicos, mientras que el IBR aumentó 1,150) ilustra la dinámica de una
+economía emergente frente al emisor de la moneda de reserva global. Con
+movilidad de capitales y régimen cambiario flexible, la paridad
+descubierta de tasas de interés (UIP) aproximada incorpora la prima por
+riesgo soberano:
+
+\[i_{t}^{COL} \approx i_{t}^{USA} + \mathbb{E}_t[\Delta s_{t+1}] + \rho_t\]
+
+En esta expresión, \(s_t\) representa el logaritmo del tipo de cambio
+peso/dólar y \(\rho_t\) resume el riesgo país (medido comúnmente por el
+EMBI) y la prima por inflación. Durante 2022 y 2023, el aumento en la
+aversión global al riesgo y la depreciación del peso obligaron al Banco
+de la República a fijar un diferencial de tasas sustancialmente más alto
+para estabilizar las presiones cambiarias y evitar salidas desordenadas
+de capital.
+
+\paragraph{Evolución del spread financiero (IBR -
+SOFR)}\label{evoluciuxf3n-del-spread-financiero-ibr---sofr}
+
+Entre 2020 y 2021, el diferencial entre ambas tasas fluctuó entre 150 y
+200 puntos básicos, un margen moderado que respondió a la abundancia de
+liquidez global y a la reducción sincrónica del costo del dinero por la
+emergencia sanitaria.
+
+A partir de 2022, la mayor persistencia inflacionaria en Colombia y el
+encarecimiento de la deuda externa ampliaron este diferencial de forma
+considerable, superando los 800 puntos básicos durante el primer
+semestre de 2023 cuando el IBR alcanzó el 13.25\% frente a un SOFR de
+5.05\%. Con el avance del proceso desinflacionario y el inicio de los
+recortes en ambos emisores, el spread se comprimió paulatinamente hasta
+ubicarse en 503 puntos básicos al 31 de octubre de 2025 (9.25\% frente a
+4.22\%), reflejando una normalización relativa de las condiciones
+monetarias comparadas.
+
+\paragraph{Rezagos en la transmisión
+monetaria}\label{rezagos-en-la-transmisiuxf3n-monetaria}
+
+Como observó Milton Friedman, las decisiones de política monetaria
+operan con rezagos temporales variables. El Banco de la República inició
+su ciclo alcista en octubre de 2021, unos seis meses antes que la
+Reserva Federal (marzo de 2022), lo que concuerda con la mayor
+sensibilidad inicial de los precios en economías en desarrollo ante
+choques de alimentos y materias primas. De forma similar, la
+persistencia de la inflación local obligó a mantener niveles
+restrictivos por un período más largo que el de las economías avanzadas.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Conclusiones}\label{conclusiones}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Los flujos de captura se ejecutaron mediante una API REST para el SOFR
+  y web scraping sobre documentos SDMX-XML para el IBR, cumpliendo el
+  requerimiento de emplear metodologías diferenciadas por entidad.
+\item
+  El desfase entre los días festivos de Colombia y Estados Unidos se
+  resolvió mediante un calendario unificado con arrastre del último
+  valor observado (\emph{forward-fill}), lo que garantiza la
+  comparabilidad diaria del diferencial de tasas.
+\item
+  La base continua consolidada
+  (\texttt{series\_financieras\_ibr\_sofr.csv}) queda almacenada en
+  \texttt{Outputs/Data/processed/}, lista para alimentar la calculadora
+  de devaluación implícita en la pestaña 2 del aplicativo interactivo
+  del Ejercicio 3.
+\end{enumerate}
+
+
+
+
+\end{document}

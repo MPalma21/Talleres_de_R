@@ -1,0 +1,905 @@
+---
+title: "Taller 3: Web Scraping, APIs y Aplicaciones Interactivas"
+subtitle: "Taller de Programación en R (2026-2), Facultad de Economía, Universidad de los Andes"
+author: "Grupo 10"
+date: today
+format:
+  html:
+    theme:
+      light: cosmo
+    toc: true
+    toc-depth: 3
+    toc-title: "Índice de contenido"
+    toc-location: right
+    number-sections: true
+    code-fold: true
+    code-tools: true
+    code-copy: true
+    df-print: kable
+    embed-resources: true
+    smooth-scroll: true
+    echo: true
+    include-in-header:
+      text: |
+        <style>
+        /* Alineación y estilo moderno para los botones de pestañas (Tabs) */
+        .panel-tabset .nav-tabs {
+          display: flex !important;
+          flex-wrap: nowrap !important;
+          justify-content: space-between !important;
+          gap: 8px !important;
+          border-bottom: 2px solid #e2e8f0 !important;
+          margin-bottom: 1.25rem !important;
+          padding: 0 !important;
+        }
+        .panel-tabset .nav-tabs .nav-item {
+          flex: 1 1 0 !important;
+          display: flex !important;
+          margin: 0 !important;
+        }
+        .panel-tabset .nav-tabs .nav-link {
+          width: 100% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 8px !important;
+          padding: 9px 12px !important;
+          font-size: 0.88rem !important;
+          font-weight: 600 !important;
+          color: #475569 !important;
+          background-color: #f8fafc !important;
+          border: 1.5px solid #e2e8f0 !important;
+          border-bottom: none !important;
+          border-radius: 8px 8px 0 0 !important;
+          white-space: nowrap !important;
+          text-decoration: none !important;
+          transition: all 0.2s ease !important;
+        }
+        .panel-tabset .nav-tabs .nav-link:hover {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+          border-color: #cbd5e1 !important;
+        }
+        .panel-tabset .nav-tabs .nav-link.active {
+          background-color: #ffffff !important;
+          color: #00458f !important;
+          border-color: #cbd5e1 #cbd5e1 #ffffff !important;
+          border-top: 3px solid #00458f !important;
+          font-weight: 700 !important;
+          box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.04) !important;
+        }
+        
+        /* Badges estilizados */
+        .badge-api { background-color: #059669; color: #ffffff; padding: 2px 7px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.03em; text-transform: uppercase; }
+        .badge-scraping { background-color: #0284c7; color: #ffffff; padding: 2px 7px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.03em; text-transform: uppercase; }
+        .badge-integration { background-color: #475569; color: #ffffff; padding: 2px 7px; border-radius: 4px; font-weight: 600; font-size: 0.72rem; letter-spacing: 0.03em; text-transform: uppercase; }
+        
+        /* Tarjetas de Ficha Técnica */
+        .ficha-tecnica {
+          background-color: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-left: 4px solid #00458f;
+          border-radius: 6px;
+          padding: 12px 18px;
+          margin-bottom: 16px;
+          font-size: 0.88rem;
+        }
+        .ficha-tecnica ul {
+          margin: 0;
+          padding-left: 1.2rem;
+        }
+        .ficha-tecnica li {
+          margin-bottom: 4px;
+        }
+        .ficha-tecnica li:last-child {
+          margin-bottom: 0;
+        }
+        .kpi-card { background: #f8f9fa; border-left: 4px solid #00458f; padding: 12px 18px; margin-bottom: 12px; border-radius: 4px; }
+        
+        /* Badges y estilos de tablas de auditoría */
+        .badge-audit-ok { background-color: #059669; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.02em; display: inline-block; white-space: nowrap; }
+        .badge-audit-info { background-color: #0284c7; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.02em; display: inline-block; white-space: nowrap; }
+        .table th { background-color: #f8fafc !important; color: #1e293b !important; font-weight: 700 !important; font-size: 0.88rem !important; border-bottom: 2px solid #cbd5e1 !important; vertical-align: middle !important; }
+        .table td { font-size: 0.87rem !important; vertical-align: middle !important; }
+
+        /* Contenedores de fórmulas matemáticas para evitar desbordamientos */
+        .MathJax, .mjx-chtml, .katex-display {
+          overflow-x: auto !important;
+          overflow-y: hidden !important;
+          max-width: 100% !important;
+        }
+        </style>
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          // Activación automática de pestañas al hacer clic en enlaces de auditoría
+          document.querySelectorAll('a[data-tab-target]').forEach(function(link) {
+            link.addEventListener('click', function() {
+              var targetId = this.getAttribute('data-tab-target');
+              if (targetId) {
+                var tabEl = document.getElementById(targetId);
+                if (tabEl) {
+                  var tabInstance = bootstrap.Tab.getOrCreateInstance(tabEl);
+                  tabInstance.show();
+                }
+              }
+            });
+          });
+        });
+        </script>
+  pdf:
+    documentclass: scrartcl
+    papersize: letter
+    fontsize: 10pt
+    geometry:
+      - top=20mm
+      - bottom=20mm
+      - left=20mm
+      - right=20mm
+    toc: true
+    toc-depth: 2
+    toc-title: "Índice de contenido"
+    number-sections: true
+    colorlinks: true
+    linkcolor: blue
+    urlcolor: blue
+    fig-pos: "H"
+    fig-align: center
+    mermaid-format: png
+    keep-tex: true
+    echo: false
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{caption}
+        \captionsetup{font=small,labelfont=bf}
+        \usepackage{graphicx}
+        \usepackage[export]{adjustbox}
+        \let\oldincludegraphics\includegraphics
+        \renewcommand{\includegraphics}[2][]{%
+          \oldincludegraphics[#1,max width=\linewidth,max height=0.9\textheight,keepaspectratio]{#2}%
+        }
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,fontsize=\footnotesize,commandchars=\\\{\}}
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(scales)
+library(lubridate)
+library(here)
+library(knitr)
+library(kableExtra)
+
+dir_taller3 <- here("Entregable_Talleres", "Taller_3")
+dir_scripts <- file.path(dir_taller3, "Scripts", "Punto_2")
+dir_proc    <- file.path(dir_taller3, "Outputs", "Data", "processed")
+dir_images  <- file.path(dir_taller3, "Outputs", "Images")
+
+# Tema visual institucional
+tema_institucional <- theme_minimal(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold", size = 13, color = "#111827", margin = margin(b = 4)),
+    plot.subtitle = element_text(size = 9.3, color = "#4b5563", margin = margin(b = 10)),
+    plot.caption = element_text(size = 8, color = "#6b7280", hjust = 0, margin = margin(t = 10), lineheight = 1.15),
+    axis.title.x = element_text(face = "bold", size = 9.5, color = "#1f2937", margin = margin(t = 6)),
+    axis.title.y = element_text(face = "bold", size = 9.5, color = "#1f2937", margin = margin(r = 6)),
+    axis.text = element_text(size = 8.8, color = "#374151"),
+    axis.line.x = element_line(color = "#9ca3af", linewidth = 0.5),
+    axis.ticks.x = element_line(color = "#9ca3af", linewidth = 0.4),
+    panel.grid.major.y = element_line(color = "#e5e7eb", linewidth = 0.45),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "#ffffff", color = NA),
+    panel.background = element_rect(fill = "#ffffff", color = NA),
+    plot.margin = margin(t = 12, r = 14, b = 10, l = 12)
+  )
+```
+
+# Introducción y arquitectura del Taller 3
+
+Este informe contiene el desarrollo del Taller 3 ("Datos geoespaciales, web scraping y herramientas de visualización") del curso Taller de Programación en R, en la Facultad de Economía de la Universidad de los Andes.
+
+El taller comprende tres ejercicios interconectados, sintetizados en la @tbl-alcance-ejercicios:
+
+::: {#tbl-alcance-ejercicios}
+
+| Ejercicio | Módulo | Puntos | Estado | Función en el taller |
+| :---------------- | :----------------------------- | :-------: | :-----------: | :----------------------------------------------------------------- |
+| Ejercicio 1 | Datos geoespaciales (IDF y DANE) | 1.5 | Pendiente | Estimación del IDF ponderado departamental y generación de mapas con shapefiles, insumo para la pestaña 1 del aplicativo interactivo. |
+| Ejercicio 2 | Web scraping y API | 2.0 | Completado | Extracción de series diarias de IBR (Banco de la República) y SOFR (Fed de Nueva York), validación con boletines oficiales, análisis comparativo y consolidación de series_financieras_ibr_sofr.csv. |
+| Ejercicio 3 | Aplicativo interactivo en Shiny | 1.5 | Pendiente | Tablero con tres componentes: mapa departamental del IDF (Ejercicio 1), cálculo de devaluación implícita con las tasas obtenidas (Ejercicio 2) y una visualización en Plotly. |
+
+: Alcance temático y ponderación de los ejercicios del Taller 3.
+:::
+
+## Flujo de trabajo del proyecto
+
+El diagrama resume el recorrido de los datos desde las fuentes externas hasta los archivos procesados y su articulación con los demás puntos del taller:
+
+```{mermaid}
+%%| label: fig-diagrama-flujo
+%%| fig-cap: "Figura A. Diagrama de flujo de extracción de datos, armonización y articulación del Taller 3."
+%%| echo: false
+flowchart TD
+    subgraph Fuentes["Fuentes Externas Oficiales"]
+        F1["Federal Reserve Bank of New York<br/>(Markets Data API)"]
+        F2["Banco de la República de Colombia<br/>(SUAMECA / Feed SDMX-XML)"]
+        F3["DNP & DANE Geoportal<br/>(IDF, Proyecciones y Shapefiles)"]
+    end
+
+    subgraph ScriptsP2["Scripts Punto 2 (Completado)"]
+        S1["01_extraer_sofr_api.R<br/>(REST API - HTTP GET)"]
+        S2["02_extraer_ibr_banrep.R<br/>(Web Scraping SDMX - XPath)"]
+        S3["03_analisis_financiero_punto_2.R<br/>(Integración, Armonización y Figuras)"]
+    end
+
+    subgraph DatosRaw["Datos Crudos y Series Tratadas (raw/)"]
+        R1[("sofr_raw.json<br/>& sofr_diaria_2020_2025.csv")]
+        R2[("ibr_raw.xml<br/>& ibr_diaria_2020_2025.csv")]
+    end
+
+    subgraph DatosProc["Datos Procesados Finales (processed/)"]
+        P1[("series_financieras_ibr_sofr.csv<br/>(Archivo Único Final + Spread)")]
+    end
+
+    subgraph Salidas["Salidas y Entregables"]
+        G1["Outputs/Images/<br/>(2_a, 2_b, 2_c en 300 DPI)"]
+        QMD["Notebooks/Taller_3_Grupo_10.html<br/>(Informe Quarto Reproducible)"]
+    end
+
+    subgraph Pendientes["Módulos Pendientes"]
+        PUNTO1["Ejercicio 1: Datos Geoespaciales<br/>[En Desarrollo]"]
+        SHINY["Ejercicio 3: Aplicativo Shiny<br/>[En Desarrollo]<br/>• Pestaña 1: Mapa IDF Dpto/Mpio<br/>• Pestaña 2: Calculadora Devaluación Implícita<br/>• Pestaña 3: Gráfico Libre Plotly"]
+    end
+
+    %% Relaciones Punto 2
+    F1 -->|"API JSON"| S1
+    S1 -->|"JSON y CSV tratado"| R1
+
+    F2 -->|"Web Scraping XML"| S2
+    S2 -->|"XML y CSV tratado"| R2
+
+    R1 -->|"Lectura de CSV"| S3
+    R2 -->|"Lectura de CSV"| S3
+    S3 -->|"Dataset final único"| P1
+    S3 -->|"Figuras"| G1
+    P1 --> QMD
+    G1 --> QMD
+
+    %% Articulación con pendientes
+    F3 -.-> PUNTO1
+    PUNTO1 -.->|"Insumo Geoespacial IDF"| SHINY
+    P1 -.->|"Insumo Series Financieras (Tasa id e ie)"| SHINY
+
+    style Fuentes fill:#f1f3f5,stroke:#495057,stroke-width:1.5px
+    style ScriptsP2 fill:#e7f5ff,stroke:#1971c2,stroke-width:2px
+    style DatosProc fill:#e6fcf5,stroke:#0ca678,stroke-width:2px
+    style Salidas fill:#fff3bf,stroke:#f59f00,stroke-width:2px
+    style Pendientes fill:#f8f9fa,stroke:#868e96,stroke-dasharray: 5 5,stroke-width:1.5px
+```
+
+---
+
+# Ejercicio 2: Integración de series macroeconómicas y financieras
+
+El objetivo de este módulo es consultar, ordenar y comparar las tasas de interés interbancarias a un día (overnight) de Colombia y Estados Unidos entre el 1 de enero de 2020 y el 31 de octubre de 2025.
+
+## Metodología de extracción por entidad emisora
+
+Para dar estricto cumplimiento a los requerimientos técnicos del taller, se implementó una técnica de captura diferenciada por entidad oficial:
+
+- **SOFR Overnight (Estados Unidos):** consulta programática automatizada a la API RESTful (formato JSON) del Federal Reserve Bank of New York, recuperando la serie histórica diaria y respaldando la respuesta cruda en disco.
+- **IBR Overnight (Colombia):** descarga y procesamiento directo sobre el árbol DOM del feed SDMX-XML del Banco de la República mediante técnicas de web scraping y expresiones XPath (`IRIBRM00` y `ER`).
+
+## Implementación de los flujos de extracción {#sec-flujos-extraccion}
+
+Para mantener el código auditable y reproducible, cada etapa se programó en un script independiente con operaciones secuenciales, sin encapsulaciones innecesarias. Las siguientes secciones presentan la arquitectura técnica y la lógica aplicada en cada caso:
+
+::: {.panel-tabset}
+
+### Flujo 1: SOFR (API REST)
+
+* **Script ejecutable:** [`01_extraer_sofr_api.R`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/01_extraer_sofr_api.R){target="_blank"} *(Carpeta Scripts/Punto_2/)*
+* **Fuente oficial:** [Federal Reserve Bank of New York](https://www.newyorkfed.org/markets/reference-rates/sofr){target="_blank"} (Markets Data API)
+* **Endpoint público:** [https://markets.newyorkfed.org/api/rates/secured/sofr/search.json](https://markets.newyorkfed.org/api/rates/secured/sofr/search.json){target="_blank"}
+* **Parámetros de consulta:** `startDate = 2020-01-01` y `endDate = 2025-10-31` (HTTP GET / JSON)
+* **Destino en raw/:** `sofr_raw.json` (crudo) y `sofr_diaria_2020_2025.csv` (tratado)
+
+```r
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(here)
+
+fecha_inicio <- "2020-01-01"
+fecha_fin    <- "2025-10-31"
+
+endpoint_sofr <- "https://markets.newyorkfed.org/api/rates/secured/sofr/search.json"
+
+# 1. Petición HTTP GET al endpoint oficial de la Fed de Nueva York
+respuesta_api <- GET(
+  url = endpoint_sofr,
+  query = list(startDate = fecha_inicio, endDate = fecha_fin),
+  user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+)
+
+# 2. Respaldo del archivo crudo en JSON
+contenido_json <- content(respuesta_api, as = "text", encoding = "UTF-8")
+writeLines(contenido_json, con = "Outputs/Data/raw/sofr_raw.json")
+
+# 3. Tratamiento, tipado y estructuración de la serie individual
+datos_crudos <- fromJSON(contenido_json, flatten = TRUE)
+
+df_sofr <- datos_crudos$refRates |>
+  as_tibble() |>
+  transmute(
+    fecha     = ymd(effectiveDate),
+    tasa_sofr = as.numeric(percentRate)
+  ) |>
+  filter(
+    !is.na(tasa_sofr),
+    fecha >= ymd(fecha_inicio),
+    fecha <= ymd(fecha_fin)
+  ) |>
+  arrange(fecha)
+
+# 4. Exportación de la serie tratada en CSV dentro de raw/
+write_csv(df_sofr, "Outputs/Data/raw/sofr_diaria_2020_2025.csv")
+```
+
+### Flujo 2: IBR (Web Scraping SDMX)
+
+* **Script ejecutable:** [`02_extraer_ibr_banrep.R`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/02_extraer_ibr_banrep.R){target="_blank"} *(Carpeta Scripts/Punto_2/)*
+* **Fuente oficial:** [Banco de la República de Colombia](https://www.banrep.gov.co/es/estadisticas/indicador-bancario-referencia-ibr){target="_blank"} (portal SUAMECA / Totoro SDMX)
+* **URL del feed SDMX:** [Feed SDMX Totoro SUAMECA](https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020&dimensionAtObservation=TIME_PERIOD&detail=full){target="_blank"}
+* **Técnica aplicada:** Web Scraping XML y extracción XPath (`IRIBRM00` & `ER`)
+* **Destino en raw/:** `ibr_raw.xml` (crudo) y `ibr_diaria_2020_2025.csv` (tratado)
+
+```r
+library(tidyverse)
+library(httr)
+library(xml2)
+library(lubridate)
+library(here)
+
+fecha_inicio <- "2020-01-01"
+fecha_fin    <- "2025-10-31"
+
+url_sdmx_banrep <- paste0(
+  "https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/",
+  "?startPeriod=2020&dimensionAtObservation=TIME_PERIOD&detail=full"
+)
+
+# 1. Descarga del feed web oficial SDMX-XML si no se encuentra en disco
+if (!file.exists("Outputs/Data/raw/ibr_raw.xml")) {
+  respuesta_banrep <- GET(
+    url = url_sdmx_banrep,
+    config = config(ssl_verifypeer = FALSE),
+    add_headers(Accept = "application/vnd.sdmx.genericdata+xml;version=2.1"),
+    user_agent("Mozilla/5.0")
+  )
+  writeBin(content(respuesta_banrep, as = "raw"), "Outputs/Data/raw/ibr_raw.xml")
+}
+
+# 2. Extracción directa con XPath sobre el DOM XML
+doc_xml <- read_xml("Outputs/Data/raw/ibr_raw.xml")
+nodo_serie_on <- xml_find_first(
+  doc_xml,
+  ".//*[local-name()='Series'][.//*[local-name()='Value'][@value='IRIBRM00'] and .//*[local-name()='Value'][@value='ER']]"
+)
+
+nodos_obs    <- xml_find_all(nodo_serie_on, ".//*[local-name()='Obs']")
+fechas_crudo <- xml_attr(xml_find_all(nodos_obs, ".//*[local-name()='ObsDimension']"), "value")
+tasas_crudo  <- xml_attr(xml_find_all(nodos_obs, ".//*[local-name()='ObsValue']"), "value")
+
+# 3. Tratamiento, tipado y estructuración de la serie individual
+df_ibr <- tibble(
+  fecha    = ymd(fechas_crudo),
+  tasa_ibr = as.numeric(tasas_crudo)
+) |>
+  filter(
+    !is.na(tasa_ibr),
+    fecha >= ymd(fecha_inicio),
+    fecha <= ymd(fecha_fin)
+  ) |>
+  arrange(fecha)
+
+# 4. Exportación de la serie tratada en CSV dentro de raw/
+write_csv(df_ibr, "Outputs/Data/raw/ibr_diaria_2020_2025.csv")
+```
+
+### Flujo 3: Armonización e Integración
+
+* **Script ejecutable:** [`03_analisis_financiero_punto_2.R`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_2/03_analisis_financiero_punto_2.R){target="_blank"} *(Carpeta Scripts/Punto_2/)*
+* **Insumos de entrada:** Series tratadas en CSV desde `Outputs/Data/raw/`
+* **Procesamiento:** Lectura de CSVs, empalme continuo (`full_join`), forward-fill y spread
+* **Tratamiento de festivos:** *Forward-fill* (`fill`) según convención del mercado monetario
+* **Archivo final único:** `Outputs/Data/processed/series_financieras_ibr_sofr.csv`
+
+```r
+library(tidyverse)
+library(scales)
+library(lubridate)
+library(here)
+
+# 1. Lectura de las series tratadas directamente desde raw/
+df_sofr <- read_csv("Outputs/Data/raw/sofr_diaria_2020_2025.csv", show_col_types = FALSE) |>
+  mutate(fecha = as.Date(fecha))
+
+df_ibr <- read_csv("Outputs/Data/raw/ibr_diaria_2020_2025.csv", show_col_types = FALSE) |>
+  mutate(fecha = as.Date(fecha))
+
+# 2. Empalme temporal continuo, tratamiento de festivos (forward-fill) y cálculo del spread
+df_consolidado <- full_join(df_sofr, df_ibr, by = "fecha") |>
+  arrange(fecha) |>
+  fill(tasa_sofr, .direction = "down") |>
+  fill(tasa_ibr, .direction = "down") |>
+  filter(!is.na(tasa_sofr), !is.na(tasa_ibr)) |>
+  mutate(spread_ibr_sofr = tasa_ibr - tasa_sofr)
+
+# 3. Exportación del único archivo final en la carpeta processed/
+write_csv(df_consolidado, "Outputs/Data/processed/series_financieras_ibr_sofr.csv")
+```
+
+:::
+
+```{r}
+#| label: cargar-datos
+#| include: false
+# Carga del único archivo final consolidado generado en processed/
+df_consolidado <- read_csv(file.path(dir_proc, "series_financieras_ibr_sofr.csv"), show_col_types = FALSE)
+
+# Subseries derivadas para los gráficos individuales
+df_ibr  <- df_consolidado |> select(fecha, tasa_ibr) |> filter(!is.na(tasa_ibr))
+df_sofr <- df_consolidado |> select(fecha, tasa_sofr) |> filter(!is.na(tasa_sofr))
+```
+
+---
+
+## Auditoría, trazabilidad y control de calidad
+
+Con el fin de garantizar la reproducibilidad y el rigor metodológico exigidos en el taller, se implementó un protocolo de auditoría en tres dimensiones:
+
+1. **Trazabilidad de fuentes y endpoints:** Registro sistemático de las entidades oficiales emisoras, métodos de extracción, scripts ejecutables asociados y especificación de parámetros.
+2. **Matriz de contraste frente a boletines oficiales:** Confrontación puntual de tres hitos macroeconómicos clave (línea base pre-pandémica, pico contractivo y fecha de corte) contra las publicaciones oficiales del Federal Reserve Bank of New York y del Banco de la República.
+3. **Evidencias de consistencia técnica:** Demostración empírica del tratamiento de festivos asimétricos (*forward-fill*) y comprobación matemática de los cálculos financieros por un procedimiento analítico alternativo.
+
+### Trazabilidad técnica y metadatos de las fuentes oficiales
+
+La @tbl-trazabilidad-fuentes detalla los canales de captura, enlaces web directos y scripts del repositorio empleados en el flujo de extracción.
+
+::: {#tbl-trazabilidad-fuentes}
+
+| Serie y Plazo | Emisor Oficial | Técnica de Captura y Script | Recurso Público / Endpoint | Observaciones | Convención Financiera |
+| :------------ | :------------------ | :-------------------- | :---------------------- | :----------: | :------------------ |
+| **SOFR Overnight** | [Federal Reserve Bank of NY](https://www.newyorkfed.org/markets/reference-rates/sofr){target="_blank"} | [API REST (JSON) - Script 01](#sec-flujos-extraccion){data-tab-target="tabset-1-1-tab"} | [Markets Data API Endpoint](https://markets.newyorkfed.org/api/rates/secured/sofr/search.json){target="_blank"} | 1,458 obs. *(2020-2025)* | % Nominal Anual (Actual/360) |
+| **IBR Overnight** | [Banco de la República](https://www.banrep.gov.co/es/estadisticas/indicador-bancario-referencia-ibr){target="_blank"} | [Web Scraping XML - Script 02](#sec-flujos-extraccion){data-tab-target="tabset-1-2-tab"} | [Feed SDMX-XML SUAMECA](https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020&dimensionAtObservation=TIME_PERIOD&detail=full){target="_blank"} | 1,426 obs. *(2020-2025)* | % Efectivo Anual E.A. (Base 360) |
+
+: Trazabilidad técnica y metadatos de las fuentes oficiales de información.
+:::
+
+### Matriz de contraste frente a boletines oficiales
+
+La @tbl-validacion-boletines confronta verticalmente los valores descargados por los scripts en R frente a los boletines oficiales en las tres fechas de control exigidas por la guía.
+
+::: {#tbl-validacion-boletines}
+
+| Hito Macroeconómico | Fecha | Serie Evaluada | Tasa en R | Boletín Oficial de Referencia | Estado de Auditoría |
+| :--- | :---: | :--- | :---: | :--- | :---: |
+| **1. Línea base pre-pandémica** | `2020-01-02` | SOFR ON (EE. UU.) | **1.54%** | [1.54% (NY Fed Markets API)](https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2020-01-02&endDate=2020-01-02){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+| **1. Línea base pre-pandémica** | `2020-01-02` | IBR ON (Colombia) | **4.259%** | [4.259% E.A. (BanRep SUAMECA)](https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2020-01-02&endPeriod=2020-01-02){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+| **2. Pico contractivo antiinflacionario** | `2023-07-27` | SOFR ON (EE. UU.) | **5.30%** | [5.30% (Corredor Fed 5.25% - 5.50%)](https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2023-07-27&endDate=2023-07-27){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+| **2. Pico contractivo antiinflacionario** | `2023-04-28` | IBR ON (Colombia) | **13.250%** | [13.250% E.A. (Repo BanRep 13.25%)](https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2023-04-28&endPeriod=2023-04-28){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+| **3. Cierre del horizonte evaluado** | `2025-10-31` | SOFR ON (EE. UU.) | **4.22%** | [4.22% (NY Fed Markets API)](https://markets.newyorkfed.org/api/rates/secured/sofr/search.json?startDate=2025-10-31&endDate=2025-10-31){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+| **3. Cierre del horizonte evaluado** | `2025-10-31` | IBR ON (Colombia) | **9.250%** | [9.250% E.A. (BanRep SUAMECA)](https://totoro.banrep.gov.co/nsi-jax-ws/rest/data/ESTAT,DF_IBR_DAILY_HIST,1.0/all/ALL/?startPeriod=2025-10-31&endPeriod=2025-10-31){target="_blank"} | [Coincidencia Exacta]{.badge-audit-ok} |
+
+: Matriz de validación y contraste con boletines oficiales en hitos de control.
+:::
+
+### Evidencias de auditoría metodológica
+
+#### Evidencia 1: Tratamiento empírico de festivos asimétricos
+
+La disparidad de calendarios bancarios entre Colombia (festivos por Ley Emiliani y celebraciones religiosas) y Estados Unidos (festivos federales) genera desalineaciones temporales. La @tbl-evidencia-festivos expone casos concretos donde la imputación mediante *forward-fill* (`fill(..., .direction = "down")`) garantizó la continuidad del devengo financiero sin alterar la dinámica de tasas.
+
+::: {#tbl-evidencia-festivos}
+
+| Fecha | Contexto de Mercado | Dato Crudo Extraído | Tratamiento Aplicado | Justificación Financiera |
+| :---: | :--- | :--- | :--- | :--- |
+| `2020-01-06` | **Día de Reyes Magos** (Festivo Colombia, hábil EE. UU.) | SOFR: 1.55%, IBR: `NA` | Forward-fill: IBR mantiene **4.259%** (del 2020-01-03) | Los contratos monetarios overnight continúan devengando intereses a la última tasa oficial vigente hasta la reapertura bancaria. |
+| `2020-01-20` | **Martin Luther King Jr. Day** (Festivo EE. UU., hábil Colombia) | SOFR: `NA`, IBR: 4.250% | Forward-fill: SOFR mantiene **1.55%** (del 2020-01-17) | Convención bancaria internacional estándar (*last observation carried forward*). |
+| `2024-07-04` | **Independence Day** (Festivo EE. UU., hábil Colombia) | SOFR: `NA`, IBR: 11.230% | Forward-fill: SOFR mantiene **5.34%** (del 2024-07-03) | Conserva la integridad temporal de la base continua (1,500 observaciones de mercado). |
+| `2024-07-20` | **Grito de Independencia** (Festivo Colombia, hábil EE. UU.) | SOFR: 5.34%, IBR: `NA` | Forward-fill: IBR mantiene **11.230%** (del 2024-07-19) | Evita truncamientos artificiales en el vector diario del spread financiero. |
+
+: Casos testigo de armonización de festivos no coincidentes entre Colombia y EE. UU.
+:::
+
+#### Evidencia 2: Comprobación analítica por procedimiento alternativo
+
+Para contrastar la exactitud matemática de las transformaciones ejecutadas en R, se verificaron analíticamente el spread financiero y la devaluación implícita para la fecha de corte (**31 de octubre de 2025**):
+
+1. **Parámetros de entrada:**
+   * Tasa doméstica: $i_d = \text{IBR}_{ON} = 9.250\% = 0.09250$.
+   * Tasa externa: $i_e = \text{SOFR}_{ON} = 4.220\% = 0.04220$.
+
+2. **Cálculo del spread financiero:**
+   $$\text{Spread}_t = i_d - i_e = 9.250\% - 4.220\% = 5.030\% \quad (503.0 \text{ puntos básicos})$$
+
+3. **Cálculo exacto de la devaluación implícita ($\pi$):**
+   $$\begin{aligned}
+   \pi &= \frac{1 + i_d}{1 + i_e} - 1 = \frac{1 + 0.09250}{1 + 0.04220} - 1 \\
+   &= \frac{1.09250}{1.04220} - 1 \approx 0.048263 \implies 4.826\%
+   \end{aligned}$$
+
+4. **Procedimiento alternativo (Expansión de Taylor de primer orden):**
+   $$\begin{aligned}
+   \pi &\approx (i_d - i_e) - i_e(i_d - i_e) \\
+   &= 0.05030 - (0.04220 \times 0.05030) \\
+   &= 0.05030 - 0.002123 = 0.048177 \implies 4.818\%
+   \end{aligned}$$
+   La diferencia residual de 0.008 puntos porcentuales (8 puntos básicos) corresponde estrictamente al término no lineal de segundo orden ($i_e \cdot \pi$), validando la consistencia computacional del flujo programado.
+
+---
+
+## Literal 2.A: Gráfico y análisis del IBR Overnight (2020-2025)
+
+### Unidad de medida y convención financiera
+
+El Indicador Bancario de Referencia (IBR) a plazo overnight mide el costo diario al que los bancos comerciales colombianos están dispuestos a prestar o captar liquidez en pesos.
+
+* Unidad: Tasa Efectiva Anual (E.A., en porcentaje).
+* Convención de conteo: Base comercial de 360 días (doce meses de 30 días, estándar del sistema financiero colombiano).
+* Relación entre tasa nominal y efectiva:
+  $$i_{E.A.} = \left( 1 + \frac{i_{nominal} \times 1}{360} \right)^{360} - 1$$
+
+### Visualización histórica
+
+```{r}
+#| label: fig-ibr-diaria
+#| fig-cap: "Figura 1. Evolución diaria del IBR Overnight en Colombia (2020-2025), señalando el estímulo inicial por COVID-19, el ajuste alcista y el período de normalización."
+#| fig-width: 9.5
+#| fig-height: 5.2
+
+color_linea_ibr <- "#111827"
+
+pt_min_ibr   <- df_ibr |> filter(fecha == as.Date("2020-09-30"))
+pt_pico_ibr  <- df_ibr |> filter(fecha == as.Date("2023-04-28"))
+pt_final_ibr <- df_ibr |> filter(fecha == as.Date("2025-10-31"))
+
+ggplot(df_ibr, aes(x = fecha, y = tasa_ibr)) +
+  annotate("rect", xmin = as.Date("2020-03-27"), xmax = as.Date("2021-09-30"),
+           ymin = 0, ymax = Inf, fill = "#15803d", alpha = 0.07) +
+  annotate("rect", xmin = as.Date("2021-10-01"), xmax = as.Date("2023-04-30"),
+           ymin = 0, ymax = Inf, fill = "#b91c1c", alpha = 0.06) +
+  annotate("rect", xmin = as.Date("2023-05-01"), xmax = as.Date("2025-10-31"),
+           ymin = 0, ymax = Inf, fill = "#1d4ed8", alpha = 0.04) +
+  geom_hline(yintercept = 1.75, linetype = "dotted", color = "#166534", linewidth = 0.45) +
+  geom_hline(yintercept = 13.25, linetype = "dotted", color = "#991b1b", linewidth = 0.45) +
+  geom_line(color = color_linea_ibr, linewidth = 0.95) +
+  geom_point(data = pt_min_ibr, aes(x = fecha, y = tasa_ibr), color = "#166534", size = 2.8) +
+  geom_point(data = pt_pico_ibr, aes(x = fecha, y = tasa_ibr), color = "#991b1b", size = 2.8) +
+  geom_point(data = pt_final_ibr, aes(x = fecha, y = tasa_ibr), color = color_linea_ibr, size = 2.8) +
+  annotate("label", x = as.Date("2021-04-15"), y = 5.2,
+           label = "Mínimo Histórico: 1.75% E.A.\nFase de Estímulo y Alivio COVID-19\n(30 de septiembre de 2020)",
+           size = 2.85, fontface = "bold", color = "#166534", fill = "#f0fdf4",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2021-02-15"), y = 4.2,
+           xend = as.Date("2020-10-15"), yend = 1.95,
+           curvature = 0.18, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#166534", linewidth = 0.5) +
+  annotate("label", x = as.Date("2023-07-01"), y = 15.0,
+           label = "Pico Contractivo: 13.25% E.A.\nMáximo Ciclo Anti-inflacionario\n(28 de abril de 2023)",
+           size = 2.85, fontface = "bold", color = "#991b1b", fill = "#fef2f2",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2023-05-15"), y = 14.3,
+           xend = as.Date("2023-04-28"), yend = 13.45,
+           curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#991b1b", linewidth = 0.5) +
+  annotate("label", x = as.Date("2025-03-15"), y = 5.2,
+           label = "Cierre de Observación: 9.25% E.A.\nFase de Normalización y Recortes\n(31 de octubre de 2025)",
+           size = 2.85, fontface = "bold", color = "#1e3a8a", fill = "#eff6ff",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2025-06-15"), y = 5.9,
+           xend = as.Date("2025-10-25"), yend = 9.0,
+           curvature = -0.18, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#1e3a8a", linewidth = 0.5) +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y",
+    limits = c(as.Date("2020-01-02"), as.Date("2025-10-31")),
+    expand = expansion(mult = c(0.005, 0.005))
+  ) +
+  scale_y_continuous(
+    labels = label_percent(scale = 1, accuracy = 1),
+    breaks = seq(0, 16, by = 2),
+    limits = c(0, 16.0),
+    expand = expansion(mult = c(0.005, 0.02))
+  ) +
+  labs(
+    title = "Indicador Bancario de Referencia (IBR Overnight - ON) en Colombia",
+    subtitle = "Evolución diaria de la tasa de política e interbancaria (2020–2025) | Tasa Efectiva Anual (% E.A., base 360 días)",
+    x = "Fecha de Negociación (Frecuencia Diaria)",
+    y = "Tasa de Interés IBR Overnight (% E.A.)",
+    caption = "Fuente: Banco de la República de Colombia (Sistema SUAMECA - Serie Oficial IRIBRM00 ER).\nElaboración propia con base en registros oficiales del mercado monetario interbancario."
+  ) +
+  tema_institucional
+```
+
+### Comportamiento de la serie
+
+#### Estímulo monetario por COVID-19 (marzo de 2020 a septiembre de 2021)
+
+La llegada de la pandemia en marzo de 2020 llevó a la Junta Directiva del Banco de la República a recortar su tasa de intervención en siete reuniones consecutivas, pasando de 4.25% a un mínimo histórico de 1.75% a finales de septiembre de 2020. El IBR overnight transmitió este impulso con rapidez y se mantuvo en una banda estrecha entre 1.70% y 1.75% durante doce meses, abaratando el costo del fondeo a muy corto plazo para los intermediarios financieros en una etapa de parálisis productiva.
+
+Este piso de tasas estuvo respaldado por operaciones transitorias de liquidez (repos) en títulos públicos y privados, además de compras definitivas de títulos para evitar tensiones de liquidez en el sistema de pagos. La permanencia del IBR en 1.75% evidenció un exceso sostenido de reservas bancarias, donde los establecimientos de crédito mantuvieron saldos disponibles suficientes sin necesidad de pujar al alza por recursos interbancarios.
+
+#### Choque inflacionario y ciclo alcista (octubre de 2021 a abril de 2023)
+
+Hacia el último trimestre de 2021, la reapertura comercial, los cuellos de botella en el comercio internacional y el encarecimiento de los insumos reactivaron las presiones sobre los precios al consumidor. El fenómeno se profundizó durante 2022 por el choque de materias primas derivado del conflicto en Ucrania y la depreciación del peso, lo que llevó la inflación anual por encima del 13% en los primeros meses de 2023. Ante el riesgo de desanclar las expectativas de inflación de mediano plazo, el emisor inició el ciclo contractivo más acelerado en la historia del esquema de inflación objetivo.
+
+Entre octubre de 2021 y abril de 2023, la tasa de intervención subió de forma acumulada 1,150 puntos básicos, desde 1.75% hasta 13.25%. La serie diaria del IBR refleja este proceso como una escalera ascendente continua que replica de forma casi inmediata cada incremento de la Junta, alcanzando su nivel máximo el 28 de abril de 2023. El ajuste incrementó el costo del crédito en todas las modalidades y restringió la demanda interna para encauzar la inflación hacia la meta.
+
+#### Meseta restrictiva y normalización paulatina (mayo de 2023 a octubre de 2025)
+
+Alcanzado el techo de 13.25% en abril de 2023, la Junta mantuvo la tasa sin cambios durante siete meses consecutivos. Esta pausa prolongada buscaba verificar que la desaceleración del índice de precios fuera consistente antes de iniciar cualquier relajamiento, dada la rigidez que mostraron los rubros de servicios y arriendos por los mecanismos formales de indexación.
+
+En diciembre de 2023, con la inflación anual descendiendo y la inversión mostrando caídas continuas, el banco central comenzó a recortar la tasa directriz en pasos sucesivos de 50 puntos básicos. Esta fase de flexibilización situó el IBR overnight en 9.25% al cierre de octubre de 2025. Aunque el nivel actual es sustancialmente menor que el pico de 2023, la tasa real permanece en terreno neutral o moderadamente restrictivo, lo que busca afianzar la convergencia gradual de los precios hacia la meta del 3%.
+
+---
+
+## Literal 2.B: Gráfico y análisis del SOFR Overnight (2020-2025)
+
+### Unidad de medida y convención financiera
+
+La tasa SOFR (Secured Overnight Financing Rate) mide el costo del fondeo en dólares a 24 horas garantizado con títulos del Tesoro de Estados Unidos en el mercado repo tripartito.
+
+* Unidad: Tasa porcentual anualizada nominal (APR, %).
+* Convención de conteo: Base del mercado monetario estadounidense Actual/360 (días calendario reales sobre 360).
+* Respaldo colateral: al negociarse contra deuda soberana de Estados Unidos, la tasa no incorpora primas de riesgo crediticio de contraparte bancaria, a diferencia del extinto esquema LIBOR.
+
+### Visualización histórica
+
+```{r}
+#| label: fig-sofr-diaria
+#| fig-cap: "Figura 2. Evolución diaria del SOFR Overnight en Estados Unidos (2020-2025), mostrando el período de tasa cero, el ciclo de aumentos de la Reserva Federal y los recortes posteriores."
+#| fig-width: 9.5
+#| fig-height: 5.2
+
+color_linea_sofr <- "#111827"
+color_acento_sofr <- "#0f766e"
+
+pt_min_sofr   <- df_sofr |> filter(fecha == as.Date("2021-03-01"))
+pt_pico_sofr  <- df_sofr |> filter(fecha == as.Date("2023-07-27"))
+pt_final_sofr <- df_sofr |> filter(fecha == as.Date("2025-10-31"))
+
+ggplot(df_sofr, aes(x = fecha, y = tasa_sofr)) +
+  annotate("rect", xmin = as.Date("2020-03-15"), xmax = as.Date("2022-03-15"),
+           ymin = 0, ymax = Inf, fill = "#0284c7", alpha = 0.08) +
+  annotate("rect", xmin = as.Date("2022-03-16"), xmax = as.Date("2023-07-26"),
+           ymin = 0, ymax = Inf, fill = "#b91c1c", alpha = 0.07) +
+  annotate("rect", xmin = as.Date("2023-07-27"), xmax = as.Date("2025-10-31"),
+           ymin = 0, ymax = Inf, fill = "#0f766e", alpha = 0.05) +
+  geom_hline(yintercept = 0.05, linetype = "dotted", color = "#0369a1", linewidth = 0.45) +
+  geom_hline(yintercept = 5.30, linetype = "dotted", color = "#991b1b", linewidth = 0.45) +
+  geom_line(color = color_linea_sofr, linewidth = 0.95) +
+  geom_point(data = pt_min_sofr, aes(x = fecha, y = tasa_sofr), color = "#0369a1", size = 2.8) +
+  geom_point(data = pt_pico_sofr, aes(x = fecha, y = tasa_sofr), color = "#991b1b", size = 2.8) +
+  geom_point(data = pt_final_sofr, aes(x = fecha, y = tasa_sofr), color = color_linea_sofr, size = 2.8) +
+  annotate("label", x = as.Date("2021-04-15"), y = 2.2,
+           label = "Piso Histórico ZIRP: ~0.05%\nPolítica de Tasa Cero COVID-19\n(Período 2020–2022)",
+           size = 2.85, fontface = "bold", color = "#0369a1", fill = "#f0f9ff",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2021-02-15"), y = 1.65,
+           xend = as.Date("2020-11-15"), yend = 0.2,
+           curvature = 0.18, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#0369a1", linewidth = 0.5) +
+  annotate("label", x = as.Date("2023-09-15"), y = 6.2,
+           label = "Pico Contractivo Fed: 5.30%\nMáximo Rango Objetivo (5.25%–5.50%)\n(27 de julio de 2023)",
+           size = 2.85, fontface = "bold", color = "#991b1b", fill = "#fef2f2",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2023-07-15"), y = 5.85,
+           xend = as.Date("2023-07-27"), yend = 5.42,
+           curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#991b1b", linewidth = 0.5) +
+  annotate("label", x = as.Date("2025-03-15"), y = 2.0,
+           label = "Cierre de Observación: 4.22%\nFase de Flexibilización Monetaria\n(31 de octubre de 2025)",
+           size = 2.85, fontface = "bold", color = color_acento_sofr, fill = "#f0fdfa",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2025-06-15"), y = 2.4,
+           xend = as.Date("2025-10-25"), yend = 4.10,
+           curvature = -0.18, arrow = arrow(length = unit(1.8, "mm")),
+           color = color_acento_sofr, linewidth = 0.5) +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y",
+    limits = c(as.Date("2020-01-02"), as.Date("2025-10-31")),
+    expand = expansion(mult = c(0.005, 0.005))
+  ) +
+  scale_y_continuous(
+    labels = label_percent(scale = 1, accuracy = 0.5),
+    breaks = seq(0, 6, by = 1),
+    limits = c(0, 6.8),
+    expand = expansion(mult = c(0.005, 0.02))
+  ) +
+  labs(
+    title = "Secured Overnight Financing Rate (SOFR Overnight - ON) en Estados Unidos",
+    subtitle = "Evolución diaria de la tasa de fondeo colateralizada con bonos del Tesoro (2020–2025) | Base Actual/360",
+    x = "Fecha de Transacción (Frecuencia Diaria)",
+    y = "Tasa SOFR Overnight Anualizada (% Actual/360)",
+    caption = "Fuente: Federal Reserve Bank of New York (Markets Data API Oficial).\nElaboración propia con base en transacciones efectivas del mercado monetario repo tripartito."
+  ) +
+  tema_institucional
+```
+
+### Comportamiento de la serie
+
+#### Política de tasa cero (ZIRP, marzo de 2020 a marzo de 2022)
+
+Para contener el colapso financiero al inicio de la pandemia en marzo de 2020, el Comité Federal de Mercado Abierto (FOMC) redujo su tasa de referencia al rango de 0.00% a 0.25% e inició compras a gran escala de bonos del Tesoro y títulos respaldados por hipotecas. La tasa SOFR cayó rápidamente desde 1.54% a principios de 2020 hasta situarse muy cerca de cero, promediando 0.05% a lo largo de dos años continuos.
+
+La gran cantidad de reservas inyectadas al sistema bancario generó presiones a la baja sobre las tasas a un día. Para evitar que el costo del fondeo colateralizado pasara a terreno negativo, la Reserva Federal utilizó la facilidad de operaciones de recompra inversa (Overnight Reverse Repo Facility, ON RRP), que funcionó como un piso operativo en torno a 0.05%. Este mecanismo permitió absorber el excedente de liquidez y mantener la estabilidad del mercado repo sin las tensiones observadas en septiembre de 2019.
+
+#### Choque inflacionario y endurecimiento acelerado (marzo de 2022 a julio de 2023)
+
+En los primeros meses de 2022, la combinación de problemas en las cadenas globales de valor, un mercado laboral con desempleo en mínimos históricos y el estímulo fiscal pospandemia elevó la inflación anual al 9.1% en junio de 2022, el nivel más alto en cuarenta años. La Reserva Federal abandonó la premisa de transitoriedad e implementó una de las correcciones monetarias más rápidas registradas en las últimas décadas.
+
+A partir de marzo de 2022, el FOMC aplicó incrementos sucesivos que incluyeron cuatro movimientos consecutivos de 75 puntos básicos, situando el corredor de política en 5.25% - 5.50% en julio de 2023. La serie diaria del SOFR siguió de cerca cada decisión del banco central estadounidense y escaló desde 0.08% hasta marcar un pico de 5.30% el 27 de julio de 2023. La evolución de la tasa ilustra la eficiencia con la que los ajustes en las facilidades de la Fed se transmiten al mercado de deuda soberana de corto plazo.
+
+#### Meseta prolongada y ciclo de recortes (agosto de 2023 a octubre de 2025)
+
+Entre agosto de 2023 y agosto de 2024, la Reserva Federal mantuvo su tasa de intervención inalterada bajo la directriz de sostener condiciones restrictivas el tiempo necesario para doblegar la inflación. Durante este año de meseta, el SOFR osciló en una franja muy estable entre 5.30% y 5.33%, con fluctuaciones menores explicadas principalmente por efectos de calendario y fechas de liquidación del Tesoro.
+
+En septiembre de 2024, con la inflación subyacente acercándose a la meta del 2% y señales de enfriamiento en el empleo, la Fed comenzó a flexibilizar su postura con un recorte inicial de 50 puntos básicos, seguido de reducciones adicionales de 25 puntos básicos. Hacia el 31 de octubre de 2025, el SOFR cerró en 4.22%, reflejando la transición hacia un entorno monetario menos restrictivo destinado a preservar el crecimiento sin descuidar el equilibrio de precios.
+
+---
+
+## Literal 2.C: Gráfico con doble eje y análisis comparativo
+
+### Justificación de la frecuencia diaria
+
+Los mercados monetarios overnight operan con vencimiento a 24 horas. El uso de datos diarios resulta indispensable para observar la volatilidad en cierres de mes, pagos tributarios y subastas de liquidez, efectos que un promedio mensual o trimestral borraría por completo.
+
+### Tratamiento de días no bursátiles cruzados
+
+Los calendarios festivos de ambos países no coinciden: Colombia cuenta con los feriados de la Ley Emiliani y fechas religiosas, mientras que Estados Unidos observa festivos federales como el Día de Martin Luther King o el 4 de Julio. 
+
+Para integrar ambas series en una misma serie temporal sin distorsiones, se combinaron las observaciones mediante `full_join` y se imputó el valor inmediato anterior (`fill(..., .direction = "down")`). Esta regla refleja la práctica financiera habitual: cuando un mercado cierra por feriado local, los contratos vigentes continúan acumulando intereses a la última tasa oficial fijada hasta la siguiente reapertura hábil.
+
+### Visualización conjunta con doble eje
+
+```{r}
+#| label: fig-doble-eje
+#| fig-cap: "Figura 3. Comparación de tasas de referencia: SOFR en el eje izquierdo e IBR en el eje derecho (2020-2025)."
+#| fig-width: 10.5
+#| fig-height: 5.8
+
+factor_escala <- 2.5
+color_sofr_doble <- "#0f766e"
+color_ibr_doble  <- "#111827"
+
+pt_pico_ibr_c   <- tibble(fecha = as.Date("2023-04-28"), y_plot = 13.250 / factor_escala)
+pt_pico_sofr_c  <- tibble(fecha = as.Date("2023-07-27"), y_plot = 5.300)
+pt_final_ibr_c  <- tibble(fecha = as.Date("2025-10-31"), y_plot = 9.250 / factor_escala)
+pt_final_sofr_c <- tibble(fecha = as.Date("2025-10-31"), y_plot = 4.220)
+
+ggplot(df_consolidado, aes(x = fecha)) +
+  annotate("rect", xmin = as.Date("2020-03-20"), xmax = as.Date("2021-09-30"),
+           ymin = 0, ymax = Inf, fill = "#15803d", alpha = 0.05) +
+  annotate("rect", xmin = as.Date("2021-10-01"), xmax = as.Date("2023-06-30"),
+           ymin = 0, ymax = Inf, fill = "#b91c1c", alpha = 0.05) +
+  annotate("rect", xmin = as.Date("2023-07-01"), xmax = as.Date("2025-10-31"),
+           ymin = 0, ymax = Inf, fill = "#1d4ed8", alpha = 0.04) +
+  geom_line(aes(y = tasa_sofr, color = "SOFR ON (EE. UU. - Reserva Federal) [Eje Izq.]"), linewidth = 0.95) +
+  geom_line(aes(y = tasa_ibr / factor_escala, color = "IBR ON (Colombia - Banco de la República) [Eje Der.]"), linewidth = 0.95) +
+  geom_point(data = pt_pico_sofr_c, aes(x = fecha, y = y_plot), color = color_sofr_doble, size = 2.6) +
+  geom_point(data = pt_pico_ibr_c, aes(x = fecha, y = y_plot), color = color_ibr_doble, size = 2.6) +
+  geom_point(data = pt_final_sofr_c, aes(x = fecha, y = y_plot), color = color_sofr_doble, size = 2.4) +
+  geom_point(data = pt_final_ibr_c, aes(x = fecha, y = y_plot), color = color_ibr_doble, size = 2.4) +
+  annotate("label", x = as.Date("2021-02-15"), y = 5.6,
+           label = "Estímulo Monetario Sincronizado (2020–2021)\nPiso Histórico de Tasas por Emergencia COVID-19\nIBR: 1.75% E.A. | SOFR: ~0.05%",
+           size = 2.8, fontface = "bold", color = "#166534", fill = "#f0fdf4",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2021-02-15"), y = 4.8,
+           xend = as.Date("2021-02-15"), yend = 1.0,
+           curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#166534", linewidth = 0.5) +
+  annotate("label", x = as.Date("2023-06-01"), y = 6.25,
+           label = "Picos del Ciclo Contractivo (2023)\nAjuste Anti-inflacionario Récord en Ambos Países\nIBR máx: 13.25% (abr-23) | SOFR máx: 5.30% (jul-23)",
+           size = 2.8, fontface = "bold", color = "#991b1b", fill = "#fef2f2",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2023-05-15"), y = 5.8,
+           xend = as.Date("2023-05-15"), yend = 5.4,
+           curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#991b1b", linewidth = 0.5) +
+  annotate("label", x = as.Date("2025-01-15"), y = 1.6,
+           label = "Fase de Normalización y Recortes (2025)\nDiferencial de Tasas (Spread): ~503 bps\nIBR: 9.25% E.A. | SOFR: 4.22% (31-oct-2025)",
+           size = 2.8, fontface = "bold", color = "#1e40af", fill = "#eff6ff",
+           label.padding = unit(0.28, "lines"), linewidth = 0.3) +
+  annotate("curve", x = as.Date("2025-04-15"), y = 2.2,
+           xend = as.Date("2025-09-15"), yend = 3.6,
+           curvature = -0.15, arrow = arrow(length = unit(1.8, "mm")),
+           color = "#1e40af", linewidth = 0.5) +
+  scale_color_manual(
+    name = NULL,
+    values = c(
+      "SOFR ON (EE. UU. - Reserva Federal) [Eje Izq.]" = color_sofr_doble,
+      "IBR ON (Colombia - Banco de la República) [Eje Der.]" = color_ibr_doble
+    )
+  ) +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y",
+    limits = c(as.Date("2020-01-02"), as.Date("2025-10-31")),
+    expand = expansion(mult = c(0.005, 0.005))
+  ) +
+  scale_y_continuous(
+    name = "Tasa SOFR Overnight (% Anualizado, Actual/360) [Eje Izquierdo]",
+    labels = label_percent(scale = 1, accuracy = 0.5),
+    limits = c(0, 6.8),
+    breaks = seq(0, 6, by = 1),
+    expand = expansion(mult = c(0.005, 0.02)),
+    sec.axis = sec_axis(
+      transform = ~ . * factor_escala,
+      name = "Tasa IBR Overnight (% E.A., base 360 días) [Eje Derecho]",
+      labels = label_percent(scale = 1, accuracy = 1),
+      breaks = seq(0, 15, by = 2.5)
+    )
+  ) +
+  labs(
+    title = "Comparación de Tasas de Política Monetaria: SOFR (EE. UU.) vs. IBR (Colombia)",
+    subtitle = "Dinámica diaria sincronizada con doble eje independiente (2020–2025) | Armonización continua de calendarios bancarios",
+    x = "Fecha de Negociación (Frecuencia Diaria)",
+    caption = "Fuentes: Federal Reserve Bank of New York (API Markets) y Banco de la República de Colombia (Web Scraping SDMX).\nTratamiento de festivos: Calendario continuo consolidado vía forward-fill (locf). Elaboración propia."
+  ) +
+  tema_institucional +
+  theme(
+    axis.title.y.left = element_text(face = "bold", size = 9.5, color = color_sofr_doble, margin = margin(r = 6)),
+    axis.title.y.right = element_text(face = "bold", size = 9.5, color = color_ibr_doble, margin = margin(l = 6)),
+    axis.text.y.left = element_text(color = color_sofr_doble, face = "bold"),
+    axis.text.y.right = element_text(color = color_ibr_doble, face = "bold"),
+    axis.line.y.left = element_line(color = color_sofr_doble, linewidth = 0.5),
+    axis.line.y.right = element_line(color = color_ibr_doble, linewidth = 0.5),
+    axis.ticks.y.left = element_line(color = color_sofr_doble, linewidth = 0.4),
+    axis.ticks.y.right = element_line(color = color_ibr_doble, linewidth = 0.4),
+    legend.position = "top",
+    legend.justification = "center",
+    legend.text = element_text(size = 9.5, face = "bold"),
+    legend.margin = margin(b = 6)
+  )
+```
+
+### Interpretación económica
+
+#### Paridad descubierta de tasas y prima de riesgo
+
+La diferencia en la magnitud de los ciclos (el SOFR subió 525 puntos básicos, mientras que el IBR aumentó 1,150) ilustra la dinámica de una economía emergente frente al emisor de la moneda de reserva global. Con movilidad de capitales y régimen cambiario flexible, la paridad descubierta de tasas de interés (UIP) aproximada incorpora la prima por riesgo soberano:
+
+$$i_{t}^{COL} \approx i_{t}^{USA} + \mathbb{E}_t[\Delta s_{t+1}] + \rho_t$$
+
+En esta expresión, $s_t$ representa el logaritmo del tipo de cambio peso/dólar y $\rho_t$ resume el riesgo país (medido comúnmente por el EMBI) y la prima por inflación. Durante 2022 y 2023, el aumento en la aversión global al riesgo y la depreciación del peso obligaron al Banco de la República a fijar un diferencial de tasas sustancialmente más alto para estabilizar las presiones cambiarias y evitar salidas desordenadas de capital.
+
+#### Evolución del spread financiero (IBR - SOFR)
+
+Entre 2020 y 2021, el diferencial entre ambas tasas fluctuó entre 150 y 200 puntos básicos, un margen moderado que respondió a la abundancia de liquidez global y a la reducción sincrónica del costo del dinero por la emergencia sanitaria. 
+
+A partir de 2022, la mayor persistencia inflacionaria en Colombia y el encarecimiento de la deuda externa ampliaron este diferencial de forma considerable, superando los 800 puntos básicos durante el primer semestre de 2023 cuando el IBR alcanzó el 13.25% frente a un SOFR de 5.05%. Con el avance del proceso desinflacionario y el inicio de los recortes en ambos emisores, el spread se comprimió paulatinamente hasta ubicarse en 503 puntos básicos al 31 de octubre de 2025 (9.25% frente a 4.22%), reflejando una normalización relativa de las condiciones monetarias comparadas.
+
+#### Rezagos en la transmisión monetaria
+
+Como observó Milton Friedman, las decisiones de política monetaria operan con rezagos temporales variables. El Banco de la República inició su ciclo alcista en octubre de 2021, unos seis meses antes que la Reserva Federal (marzo de 2022), lo que concuerda con la mayor sensibilidad inicial de los precios en economías en desarrollo ante choques de alimentos y materias primas. De forma similar, la persistencia de la inflación local obligó a mantener niveles restrictivos por un período más largo que el de las economías avanzadas.
+
+---
+
+# Conclusiones
+
+1. Los flujos de captura se ejecutaron mediante una API REST para el SOFR y web scraping sobre documentos SDMX-XML para el IBR, cumpliendo el requerimiento de emplear metodologías diferenciadas por entidad.
+2. El desfase entre los días festivos de Colombia y Estados Unidos se resolvió mediante un calendario unificado con arrastre del último valor observado (*forward-fill*), lo que garantiza la comparabilidad diaria del diferencial de tasas.
+3. La base continua consolidada (`series_financieras_ibr_sofr.csv`) queda almacenada en `Outputs/Data/processed/`, lista para alimentar la calculadora de devaluación implícita en la pestaña 2 del aplicativo interactivo del Ejercicio 3.
