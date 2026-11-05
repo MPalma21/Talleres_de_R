@@ -17,6 +17,15 @@
 # [PAQUETE ADICIONAL]: sf (manejo de capas vectoriales Simple Features)
 # [PAQUETE ADICIONAL]: scales (formateo de escalas numéricas y monetarias)
 
+posibles_libs <- c(
+  file.path(getwd(), "librerias"),
+  file.path(getwd(), "..", "..", "..", "librerias")
+)
+dir_lib <- posibles_libs[dir.exists(posibles_libs)][1]
+if (!is.na(dir_lib)) {
+  .libPaths(c(normalizePath(dir_lib), .libPaths()))
+}
+
 library(shiny)
 library(bslib)
 library(leaflet)
@@ -96,15 +105,21 @@ ui <- page_navbar(
           choices = deptos_choices,
           selected = "Antioquia"
         ),
+        actionButton(
+          "btn_vista_nacional",
+          "Restablecer vista nacional",
+          icon = icon("globe-americas"),
+          class = "btn-outline-primary btn-sm mb-2"
+        ),
         hr(),
         card(
           card_header("Definición de Indicadores"),
           p(tags$b("Índice Departamental (Artificial):"), 
             "Media ponderada de los municipios del departamento usando como ponderador ",
             tags$code("w_i = (L_i * VA_i) / Σ(L_k * VA_k)"), 
-            ", donde L es población 2024 y VA es valor agregado proyectado 2024."),
-          p(tags$b("Índice Municipal:"), 
-            "Calificación oficial del Nuevo IDF asignada directamente por el DNP a cada municipio (escala 0 - 100)."),
+            ", donde L es población 2024 y VA es valor agregado proyectado 2024 (g = 8,27%)."),
+          p(tags$b("Índice Municipal (Vigencia 2024):"), 
+            "Calificación oficial del IDF asignada directamente por el DNP a cada municipio evaluado (escala 0 - 100)."),
           class = "text-muted small"
         )
       ),
@@ -138,14 +153,15 @@ ui <- page_navbar(
         col_widths = c(7, 5),
         card(
           full_screen = TRUE,
-          card_header("Mapa Departamental del IDF Ponderado"),
+          card_header("Mapa Departamental del IDF Ponderado (Vigencia 2024)"),
           leafletOutput("mapa_leaflet", height = "520px")
         ),
         card(
           card_header("Top 3 Municipios con Mayor IDF Municipal"),
           tableOutput("tabla_top3"),
+          uiOutput("nota_top3_depto"),
           tags$small(class = "text-muted",
-            "Ponderador w_i representa el peso relativo del municipio en la economía y población del departamento."
+            "Ponderador w_i representa el peso relativo del municipio en la economía y población del departamento (Σ w_i = 1 en el total departamental)."
           )
         )
       )
@@ -327,6 +343,39 @@ server <- function(input, output, session) {
       )
   }, striped = TRUE, hover = TRUE, bordered = TRUE, align = "c")
   
+  # Nota explicativa dinámica bajo la tabla Top 3
+  output$nota_top3_depto <- renderUI({
+    t3 <- top3_actual()
+    d  <- depto_actual()
+    if (nrow(t3) == 0 || nrow(d) == 0) return(NULL)
+    
+    n_ev   <- d$n_mpios[1]
+    sum_w3 <- sum(t3$w_i, na.rm = TRUE) * 100
+    
+    if (n_ev < 3) {
+      div(
+        class = "alert alert-info py-2 px-3 mb-2 small",
+        tags$b("Nota institucional: "),
+        sprintf(
+          "%s cuenta únicamente con %d %s en la medición municipal del IDF 2024 del DNP (los demás territorios corresponden a Áreas No Municipalizadas o régimen departamental especial), por lo que acumula el %.2f%% del ponderador departamental.",
+          d$nom_dpto[1],
+          n_ev,
+          ifelse(n_ev == 1, "municipio evaluado", "municipios evaluados"),
+          sum_w3
+        )
+      )
+    } else {
+      div(
+        class = "bg-light border rounded py-2 px-3 mb-2 small text-secondary",
+        tags$b("Peso acumulado del Top 3: "),
+        sprintf(
+          "Estos 3 municipios concentran el %.2f%% del ponderador demográfico-económico (w_i) entre los %d municipios evaluados de %s.",
+          sum_w3, n_ev, d$nom_dpto[1]
+        )
+      )
+    }
+  })
+  
   # Mapa Leaflet interactivo
   output$mapa_leaflet <- renderLeaflet({
     pal <- colorNumeric(
@@ -366,12 +415,43 @@ server <- function(input, output, session) {
       )
   })
   
-  # Interacción: clic en el mapa actualiza el dropdown
+  # Interacción bidireccional 1: clic en el mapa actualiza el selector desplegable
   observeEvent(input$mapa_leaflet_shape_click, {
     click_id <- input$mapa_leaflet_shape_click$id
     if (!is.null(click_id) && click_id %in% deptos_choices) {
       updateSelectInput(session, "depto_sel", selected = click_id)
     }
+  })
+  
+  # Interacción bidireccional 2: cambio en el selector resalta el polígono departamental y enfoca en el mapa
+  observeEvent(input$depto_sel, {
+    req(input$depto_sel)
+    pol_sel <- shp_dpto_simp %>% filter(nom_dpto == input$depto_sel)
+    if (nrow(pol_sel) > 0) {
+      bb <- as.numeric(st_bbox(pol_sel))
+      leafletProxy("mapa_leaflet") %>%
+        clearGroup("depto_seleccionado") %>%
+        addPolygons(
+          data = pol_sel,
+          group = "depto_seleccionado",
+          fill = FALSE,
+          color = "#f59e0b",
+          weight = 3.5,
+          opacity = 1
+        ) %>%
+        flyToBounds(
+          lng1 = bb[1] - 0.25,
+          lat1 = bb[2] - 0.25,
+          lng2 = bb[3] + 0.25,
+          lat2 = bb[4] + 0.25
+        )
+    }
+  }, ignoreInit = TRUE)
+  
+  # Botón para restablecer el encuadre nacional
+  observeEvent(input$btn_vista_nacional, {
+    leafletProxy("mapa_leaflet") %>%
+      setView(lng = -74.297333, lat = 4.570868, zoom = 5)
   })
   
   # ============================================================================

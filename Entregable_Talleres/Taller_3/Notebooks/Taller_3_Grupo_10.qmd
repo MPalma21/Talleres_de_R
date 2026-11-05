@@ -170,17 +170,29 @@ execute:
 #| label: setup
 #| include: false
 
+posibles_libs <- c(
+  file.path(getwd(), "librerias"),
+  file.path(getwd(), "..", "..", "..", "librerias")
+)
+dir_lib <- posibles_libs[dir.exists(posibles_libs)][1]
+if (!is.na(dir_lib)) {
+  .libPaths(c(normalizePath(dir_lib), .libPaths()))
+}
+
 library(tidyverse)
 library(scales)
 library(lubridate)
 library(here)
 library(knitr)
-library(kableExtra)
+if (requireNamespace("kableExtra", quietly = TRUE)) {
+  library(kableExtra)
+}
 
 dir_taller3 <- here("Entregable_Talleres", "Taller_3")
 dir_scripts <- file.path(dir_taller3, "Scripts", "Punto_2")
 dir_proc    <- file.path(dir_taller3, "Outputs", "Data", "processed")
 dir_images  <- file.path(dir_taller3, "Outputs", "Images")
+dir_shiny   <- file.path(dir_taller3, "Scripts", "Punto_3", "data_shiny")
 
 # Tema visual institucional
 tema_institucional <- theme_minimal(base_size = 11) +
@@ -212,9 +224,9 @@ El taller comprende tres ejercicios interconectados, sintetizados en la @tbl-alc
 
 | Ejercicio | Módulo | Puntos | Estado | Función en el taller |
 | :---------------- | :----------------------------- | :-------: | :-----------: | :----------------------------------------------------------------- |
-| Ejercicio 1 | Datos geoespaciales (IDF y DANE) | 1.5 | Pendiente | Estimación del IDF ponderado departamental y generación de mapas con shapefiles, insumo para la pestaña 1 del aplicativo interactivo. |
+| Ejercicio 1 | Datos geoespaciales (IDF y DANE) | 1.5 | Completado | Estimación del IDF ponderado departamental (Vigencia 2024), auditoría de llaves DIVIPOLA y generación de mapas con shapefiles (incluyendo Bono 1), insumo para la pestaña 1 del aplicativo interactivo. |
 | Ejercicio 2 | Web scraping y API | 2.0 | Completado | Extracción de series diarias de IBR (Banco de la República) y SOFR (Fed de Nueva York), validación con boletines oficiales, análisis comparativo y consolidación de series_financieras_ibr_sofr.csv. |
-| Ejercicio 3 | Aplicativo interactivo en Shiny | 1.5 | Pendiente | Tablero con tres componentes: mapa departamental del IDF (Ejercicio 1), cálculo de devaluación implícita con las tasas obtenidas (Ejercicio 2) y una visualización en Plotly. |
+| Ejercicio 3 | Aplicativo interactivo en Shiny | 1.5 | Pestaña 1 completada | Tablero con tres componentes: mapa departamental del IDF y Top 3 municipal (Pestaña 1 completada), cálculo de devaluación implícita con las tasas obtenidas (Ejercicio 2) y una visualización en Plotly. |
 
 : Alcance temático y ponderación de los ejercicios del Taller 3.
 :::
@@ -231,7 +243,11 @@ flowchart TD
     subgraph Fuentes["Fuentes Externas Oficiales"]
         F1["Federal Reserve Bank of New York<br/>(Markets Data API)"]
         F2["Banco de la República de Colombia<br/>(SUAMECA / Feed SDMX-XML)"]
-        F3["DNP & DANE Geoportal<br/>(IDF, Proyecciones y Shapefiles)"]
+        F3["DNP (CIFFIT) & DANE Geoportal<br/>(IDF 2024, VA 2023, Pob 2024 y Shapefiles)"]
+    end
+
+    subgraph ScriptsP1["Scripts Punto 1 (Completado)"]
+        SP1["01_procesamiento_geoespacial_idf.R<br/>(Ponderadores w_i, Shapefiles y Bono 1)"]
     end
 
     subgraph ScriptsP2["Scripts Punto 2 (Completado)"]
@@ -245,19 +261,25 @@ flowchart TD
         R2[("ibr_raw.xml<br/>& ibr_diaria_2020_2025.csv")]
     end
 
-    subgraph DatosProc["Datos Procesados Finales (processed/)"]
+    subgraph DatosProc["Datos Procesados Finales (processed/ y data_shiny/)"]
+        PG1[("idf_departamental_2024.csv<br/>idf_municipal_ponderado_2024.csv<br/>shp_dpto_simp.rds & df_top3.rds")]
         P1[("series_financieras_ibr_sofr.csv<br/>(Archivo Único Final + Spread)")]
     end
 
     subgraph Salidas["Salidas y Entregables"]
+        G0["Outputs/Images/<br/>(1_1 y 1_2 en 300 DPI)"]
         G1["Outputs/Images/<br/>(2_a, 2_b, 2_c en 300 DPI)"]
         QMD["Notebooks/Taller_3_Grupo_10.html<br/>(Informe Quarto Reproducible)"]
+        SHINY1["Scripts/Punto_3/app.R<br/>• Pestaña 1 (Completada): Mapa IDF Dpto y Top 3<br/>• Pestaña 2 y 3: Calculadora y Plotly"]
     end
 
-    subgraph Pendientes["Módulos Pendientes"]
-        PUNTO1["Ejercicio 1: Datos Geoespaciales<br/>[En Desarrollo]"]
-        SHINY["Ejercicio 3: Aplicativo Shiny<br/>[En Desarrollo]<br/>• Pestaña 1: Mapa IDF Dpto/Mpio<br/>• Pestaña 2: Calculadora Devaluación Implícita<br/>• Pestaña 3: Gráfico Libre Plotly"]
-    end
+    %% Relaciones Punto 1
+    F3 -->|"Excel & Shapefiles MGN"| SP1
+    SP1 -->|"Tablas y RDS"| PG1
+    SP1 -->|"Mapas estáticos"| G0
+    PG1 --> QMD
+    G0 --> QMD
+    PG1 -->|"Insumo Geoespacial IDF"| SHINY1
 
     %% Relaciones Punto 2
     F1 -->|"API JSON"| S1
@@ -272,18 +294,213 @@ flowchart TD
     S3 -->|"Figuras"| G1
     P1 --> QMD
     G1 --> QMD
-
-    %% Articulación con pendientes
-    F3 -.-> PUNTO1
-    PUNTO1 -.->|"Insumo Geoespacial IDF"| SHINY
-    P1 -.->|"Insumo Series Financieras (Tasa id e ie)"| SHINY
+    P1 -.->|"Insumo Series Financieras (Tasa id e ie)"| SHINY1
 
     style Fuentes fill:#f1f3f5,stroke:#495057,stroke-width:1.5px
+    style ScriptsP1 fill:#e7f5ff,stroke:#1971c2,stroke-width:2px
     style ScriptsP2 fill:#e7f5ff,stroke:#1971c2,stroke-width:2px
     style DatosProc fill:#e6fcf5,stroke:#0ca678,stroke-width:2px
     style Salidas fill:#fff3bf,stroke:#f59f00,stroke-width:2px
-    style Pendientes fill:#f8f9fa,stroke:#868e96,stroke-dasharray: 5 5,stroke-width:1.5px
 ```
+
+---
+
+# Ejercicio 1: Datos geoespaciales y desempeño fiscal
+
+En este primer eje se construye un indicador sintético del Índice de Desempeño Fiscal (IDF) a nivel departamental para la vigencia 2024 a partir de las calificaciones municipales publicadas por el Departamento Nacional de Planeación (DNP), ponderadas conjuntamente por el tamaño demográfico y el valor agregado proyectado de cada municipio según las estadísticas oficiales del DANE. Adicionalmente, se cartografían los resultados tanto a escala departamental (Literal 1.A) como municipal (Literal 1.B y Bono 1), alimentando los insumos espaciales de la primera pestaña del aplicativo Shiny.
+
+## Fuentes oficiales e identificación de paquetes adicionales
+
+Todas las bases primarias ubicadas en `Datos/Taller_3/` se procesaron directamente desde R en el script [`01_procesamiento_geoespacial_idf.R`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_1/01_procesamiento_geoespacial_idf.R){target="_blank"} sin realizar modificaciones manuales previas sobre los archivos fuente:
+
+1. **DANE — PIB por departamento (Valor Agregado Municipal 2023):** archivo `anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx` (hoja `Cuadro 1`, columna `2023`), que reporta el valor agregado municipal por actividad económica a precios corrientes en miles de millones de pesos.
+2. **DANE — Proyecciones de Población Municipal (2024):** archivo `PPED-AreaMun-2018-2042_VP.xlsx` (hoja `PobMunicipal`), filtrando programáticamente `AÑO == 2024` y `ÁREA GEOGRÁFICA == "Total"`.
+3. **DNP — Información Fiscal y Financiera (IDF Municipal, Vigencia 2024):** archivo `ResultadosIDF_DNP.xlsx` descargado del [portal oficial CIFFIT del DNP](https://ciffit.dnp.gov.co/CIFFIT/ConsultasIDF){target="_blank"} (vigencia 2024), que evalúa 1,103 municipios bajo la metodología del Nuevo IDF.
+4. **DANE Geoportal — Marco Geoestadístico Nacional (MGN):** archivos vectoriales `MGN_DPTO_POLITICO.shp` (33 departamentos, incluido Bogotá D. C.) y `MGN_MPIO_POLITICO.shp` (1,122 polígonos municipales y áreas no municipalizadas).
+
+Siguiendo la instrucción del taller de identificar explícitamente mediante comentarios los paquetes adicionales no vistos en clase, el script de procesamiento geoespacial y la pestaña 1 del tablero emplean las siguientes librerías especializadas:
+
+```r
+# [PAQUETE ADICIONAL]: readxl (lectura directa de hojas de cálculo Excel .xlsx sin modificar archivos fuente)
+# [PAQUETE ADICIONAL]: readr (exportación eficiente de tablas procesadas y auditoría en CSV UTF-8)
+# [PAQUETE ADICIONAL]: sf (lectura, unión espacial y transformación de coordenadas Simple Features)
+# [PAQUETE ADICIONAL]: rmapshaper (simplificación topológica Visvalingam-Whyatt para el Bono 1)
+# [PAQUETE ADICIONAL]: stringr (estandarización de llaves DIVIPOLA con ceros a la izquierda)
+# [PAQUETE ADICIONAL]: scales (reescalado cromático no lineal por cuantiles y formateo numérico)
+# [PAQUETE ADICIONAL]: httr (descarga programática de respaldos oficiales desde portales DANE/DNP)
+# [PAQUETE ADICIONAL]: leaflet (cartografía web interactiva para la Pestaña 1 del aplicativo Shiny)
+```
+
+## Revisión de llaves, correcciones realizadas y evidencia de unión auditada
+
+Antes de integrar las tablas tabulares y espaciales, se ejecutó una auditoría de llaves sobre los códigos de la División Político-Administrativa de Colombia (DIVIPOLA):
+
+1. **Estandarización de ceros a la izquierda y detección dinámica de encabezados:** los archivos Excel del DANE y del DNP contienen bloques de metadatos institucionales en las primeras filas (9 filas en `Cuadro 1`, 7 filas en `PobMunicipal` y 9 filas en `ResultadosIDF_DNP.xlsx`). En lugar de recortar los archivos manualmente, el script detecta por expresiones regulares la fila exacta donde inician los encabezados (`Código Municipio`, `DP` y `Código Entidad`) y aplica `stringr::str_pad(..., width = 5, pad = "0")` sobre la llave municipal `cod_mpio` y `width = 2, pad = "0"` sobre la llave departamental `cod_dpto`. Esto corrige la pérdida de ceros iniciales en departamentos como Antioquia (`5` $\to$ `05`) y Atlántico (`8` $\to$ `08`).
+2. **Diagnóstico de diferencias de cobertura entre DANE y DNP (`anti_join`):** las bases de Valor Agregado 2023 y Proyecciones de Población 2024 del DANE coinciden exactamente en **1,123 territorios** (discrepancia entre ambas fuentes DANE $= 0$, con unicidad verificada mediante `anyDuplicated(cod_mpio) == 0`). Por su parte, la medición municipal del IDF Vigencia 2024 del DNP comprende **1,103 municipios evaluados** (incluyendo a `27493` *Nuevo Belén de Bajirá*, erigido como municipio en Chocó mediante la Ordenanza 180 de 2023). Los **20 territorios** presentes en DANE que no figuran en el IDF municipal del DNP se clasifican en tres categorías institucionales verificadas mediante `anti_join`:
+   - **18 Áreas No Municipalizadas (ANM / corregimientos departamentales)** en Amazonas (9: El Encanto, La Chorrera, La Pedrera, La Victoria, Mirití-Paraná, Puerto Alegría, Puerto Arica, Santander y Tarapacá), Guainía (6: Cacahual, La Guadalupe, Morichal, Pana Pana, Puerto Colombia y San Felipe) y Vaupés (3: Pacoa, Papunahua y Yavaraté), las cuales carecen de alcaldía y presupuesto municipal autónomo bajo la Ley 617 de 2000.
+   - **Mapiripana (`94663`, Guainía):** antiguo corregimiento departamental integrado territorialmente a Inírida que registra valor agregado igual a cero en las cuentas municipales del DANE.
+   - **San Andrés (`88001`, Archipiélago de San Andrés, Providencia y Santa Catalina):** evaluado por el DNP dentro de la matriz de *departamentos* por su régimen administrativo especial, razón por la cual a escala municipal solo se califica al municipio de **Providencia (`88564`)** con $\text{IDF}_{2024} = 55.23$ puntos ($w_i = 1.0000$).
+3. **Estrategia de unión relacional y espacial:** para garantizar que los ponderadores municipales $w_i$ sumen exactamente $1$ sobre los $n_j$ municipios efectivamente evaluados de cada departamento $j$, la integración tabular entre Valor Agregado, Población e IDF se realiza mediante `inner_join(..., by = "cod_mpio")` sobre el universo de **1,103 municipios evaluados**. Posteriormente, la unión hacia las capas vectoriales `sf` (`MGN_DPTO_POLITICO.shp` y `MGN_MPIO_POLITICO.shp`) se ejecuta con `left_join`, conservando la totalidad de los polígonos cartográficos del país y representando en gris claro las áreas no municipalizadas.
+
+```{r}
+#| label: cargar-datos-ej1
+#| include: false
+
+df_idf_dpto <- read_csv(file.path(dir_proc, "idf_departamental_2024.csv"), show_col_types = FALSE)
+df_idf_mpio <- read_csv(file.path(dir_proc, "idf_municipal_ponderado_2024.csv"), show_col_types = FALSE)
+df_aud_ej1  <- read_csv(file.path(dir_proc, "auditoria_llaves_ejercicio_1.csv"), show_col_types = FALSE)
+```
+
+La @tbl-auditoria-ej1 presenta la evidencia de la unión revisada para cinco municipios testigo —encabezados por **Medellín (`05001`)** como caso principal de auditoría del Grupo 10—, verificando el cruce exacto de las cuatro fuentes y la consistencia del índice departamental resultante:
+
+```{r}
+#| label: tbl-auditoria-ej1
+#| tbl-cap: "Evidencia de unión revisada por llave DIVIPOLA (cod_mpio) y verificación de ponderadores en municipios testigo (Vigencia 2024)."
+#| echo: false
+
+df_aud_ej1 %>%
+  transmute(
+    `Código` = cod_mpio,
+    `Municipio` = nom_mpio,
+    `Departamento` = paste0(nom_dpto, " (", cod_dpto, ")"),
+    `VA 2023 (miles MM)` = number(va_2023, accuracy = 0.01, big.mark = ","),
+    `VA 2024 Proy.` = number(va_2024_proj, accuracy = 0.01, big.mark = ","),
+    `Población 2024` = number(pob_2024, accuracy = 1, big.mark = ","),
+    `IDF Mpio 2024` = number(idf_municipal, accuracy = 0.01),
+    `Peso w_i` = number(w_i, accuracy = 0.0001),
+    `IDF Dpto.` = number(idf_departamental, accuracy = 0.02)
+  ) %>%
+  kable(align = c("c", "l", "l", "r", "r", "r", "r", "r", "r"))
+```
+
+En particular, para **Medellín (`05001`)**, la llave estandarizada de cinco dígitos vincula sin ambigüedad un Valor Agregado 2023 de $84,087.02$ miles de millones de pesos corrientes ($\text{VA}_{2024}^{\text{proy}} = 91,041.02$ miles de millones), una población proyectada de $2,524,747$ habitantes en 2024 y un IDF municipal oficial de $69.73$ puntos en la vigencia 2024, lo que arroja un ponderador $w_i = 0.9243$ ($92.43\%$ del peso demográfico-económico de los 125 municipios de Antioquia) y conduce a un IDF departamental artificial para Antioquia de **$69.58$ puntos**.
+
+---
+
+## Literal 1.A: Proyección del Valor Agregado a 2024, ponderadores y mapa departamental
+
+### Revisión de precios y justificación de la tasa de crecimiento del PIB 2024
+
+Al inspeccionar el encabezado oficial del `Cuadro 1` en `anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx` (*"Valor agregado por municipio - Serie 2011-2024p — Miles de millones de pesos — Precios corrientes"*), se constata que las cifras municipales de Valor Agregado están expresadas en **precios corrientes (valores nominales)**.
+
+Para proyectar el Valor Agregado municipal de 2023 a 2024 preservando la consistencia de unidades nominales, se consultaron las Cuentas Nacionales Anuales del DANE para el cierre de 2024:
+
+- **Crecimiento del PIB nominal en 2024 (precios corrientes):** el Valor Agregado agregado nacional a precios corrientes pasó de $1,432,558$ miles de millones de pesos en 2023 a $1,550,974$ miles de millones en 2024p, equivalente a una variación nominal exacta de $8.2661\%$, que redondeada a dos cifras decimales en porcentaje corresponde a **$g_{\text{nominal}} = 8.27\%$**.
+- **Crecimiento del PIB real en 2024 (precios constantes / volumen encadenado):** **$g_{\text{real}} = 1.70\%$**.
+
+Dado que la base municipal de partida está valorada a precios corrientes de 2023, empleamos la tasa nominal **$g = 8.27\%$** ($\text{VA}_{i,2024} = \text{VA}_{i,2023} \times 1.0827$). Cabe demostrar analíticamente que, bajo una tasa de proyección nacional uniforme $g$, el ponderador relativo $w_i$ es **homogéneo de grado cero** respecto al factor escalar $(1 + g)$:
+
+$$w_i = \frac{L_{i,2024} \cdot \text{VA}_{i,2024}}{\sum_{k=1}^{n_j} L_{k,2024} \cdot \text{VA}_{k,2024}} = \frac{L_{i,2024} \cdot \text{VA}_{i,2023}(1 + g)}{(1 + g)\sum_{k=1}^{n_j} L_{k,2024} \cdot \text{VA}_{k,2023}} = \frac{L_{i,2024} \cdot \text{VA}_{i,2023}}{\sum_{k=1}^{n_j} L_{k,2024} \cdot \text{VA}_{k,2023}}$$
+
+El término común $(1 + g)$ se factoriza y cancela exactamente entre el numerador y el denominador de cada departamento $j$. En consecuencia, tanto los ponderadores municipales $w_i$ como el Índice de Desempeño Fiscal Departamental $\text{IDF}_j = \sum_{i=1}^{n_j} w_i \cdot \text{IDF}_i$ son matemáticamente invariantes frente a la elección entre la tasa nominal ($8.27\%$) o real ($1.70\%$).
+
+### Doble comprobación de consistencia matemática
+
+Siguiendo las reglas del enunciado, se verificó el cálculo del índice departamental mediante dos controles independientes en R:
+
+1. **Verificación de cierre unitario de los ponderadores ($\sum_{i=1}^{n_j} w_i = 1$):** en los 33 departamentos (32 departamentos y Bogotá D. C.), la suma de los ponderadores municipales es exactamente igual a $1.000000$, con una desviación máxima de punto flotante de $\max_j \left|\sum_{i=1}^{n_j} w_i - 1\right| = 2.22 \times 10^{-16}$.
+2. **Comprobación mediante un segundo procedimiento independiente:** se contrastó la suma manual de los productos $\sum_{i=1}^{n_j} (w_i \cdot \text{IDF}_i)$ calculada con el Valor Agregado proyectado a 2024 frente a la función nativa `stats::weighted.mean(idf_municipal, w = pob_2024 * va_2023)` aplicada directamente sobre el Valor Agregado de 2023 sin proyectar. La diferencia absoluta máxima entre ambos procedimientos en los 33 departamentos es exactamente **$0.000000$** ($< 10^{-15}$).
+
+### Mapa departamental del IDF artificial (Vigencia 2024)
+
+Para evitar que la concentración de departamentos en el rango intermedio ($54$ a $65$ puntos) produzca una visualización homogénea, la escala continua `viridis` se calibró pasando los cuantiles empíricos de la distribución departamental al argumento `values = scales::rescale(...)`, maximizando el contraste cromático a lo largo de todo el espectro observado ($42.11$ a $77.04$ puntos):
+
+```{r}
+#| label: fig-mapa-idf-dpto
+#| fig-cap: "Figura 1.1. Índice de Desempeño Fiscal (IDF) artificial por departamento en Colombia (Vigencia 2024), ponderado por población 2024 y valor agregado proyectado 2024."
+#| out-width: "88%"
+#| fig-align: "center"
+#| echo: false
+
+knitr::include_graphics(file.path(dir_images, "1_1_mapa_idf_departamental.png"))
+```
+
+La @tbl-ranking-idf-dpto sintetiza los resultados de los diez departamentos con mayor y menor calificación en el IDF departamental artificial de 2024, junto con la verificación de los dos procedimientos de cálculo:
+
+```{r}
+#| label: tbl-ranking-idf-dpto
+#| tbl-cap: "Clasificación departamental del IDF artificial ponderado (Vigencia 2024): Top 10 y Bottom 10 departamentos, con doble comprobación."
+#| echo: false
+
+df_top_bot_dpto <- bind_rows(
+  df_idf_dpto %>% arrange(desc(idf_departamental)) %>% slice_head(n = 10) %>% mutate(Grupo = "Top 10 (Mayor IDF)"),
+  df_idf_dpto %>% arrange(idf_departamental) %>% slice_head(n = 10) %>% arrange(desc(idf_departamental)) %>% mutate(Grupo = "Bottom 10 (Menor IDF)")
+)
+
+df_top_bot_dpto %>%
+  transmute(
+    `Segmento` = Grupo,
+    `Cód.` = cod_dpto,
+    `Departamento` = nom_dpto,
+    `Mpios (n_j)` = n_mpios,
+    `Σ w_i` = number(suma_ponderadores, accuracy = 0.0001),
+    `IDF Dpto. (Proc. 1)` = number(idf_departamental, accuracy = 0.02),
+    `IDF Alt. (Proc. 2)` = number(idf_proc_alternativo, accuracy = 0.02),
+    `|Dif.|` = number(diff_procedimientos, accuracy = 0.0001)
+  ) %>%
+  kable(align = c("l", "c", "l", "c", "r", "r", "r", "r"))
+```
+
+### Interpretación económica e institucional del mapa departamental
+
+Los resultados de la vigencia 2024 revelan tres patrones estructurales sobre la descentralización fiscal y la primacía urbana en Colombia:
+
+1. **Efecto de primacía urbana en la ponderación cuadrática ($L_i \times \text{VA}_i$):** debido a que el ponderador multiplica la población por el valor agregado municipal, las áreas metropolitanas donde convergen simultáneamente la mayor masa demográfica y la mayor producción agregada dominan el indicador departamental. En **Atlántico** ($2.^{\circ}$ lugar nacional con **$73.04$ puntos**), Barranquilla (`08001`, $\text{IDF} = 75.54$) concentra el $85.86\%$ del peso departamental ($w_i = 0.8586$); en **Antioquia** ($3.^{\text{er}}$ lugar con **$69.58$ puntos**), Medellín (`05001`, $\text{IDF} = 69.73$) representa el $92.43\%$ ($w_i = 0.9243$); y en **Valle del Cauca** ($16.^{\circ}$ lugar con **$58.30$ puntos**), Cali (`76001`, $\text{IDF} = 58.29$) aporta el $92.18\%$ ($w_i = 0.9218$). Así, el índice artificial captura fielmente la capacidad fiscal efectiva a la que está sujeta la gran mayoría de la actividad económica de cada departamento, encabezada a nivel nacional por **Bogotá, D. C.** (**$77.04$ puntos**, $w_i = 1.0000$).
+2. **Desempeño sobresaliente en departamentos con nodos industriales y energéticos intermedios:** **Córdoba** ($4.^{\circ}$ lugar con **$64.86$ puntos**, impulsado por Montería con $\text{IDF} = 69.25$ y $w_i = 0.7204$) y **Boyacá** ($5.^{\circ}$ lugar con **$64.54$ puntos** en 123 municipios) destacan en la parte alta de la distribución. En Boyacá, aunque el peso económico está más distribuido entre Tunja ($w_i = 0.2512$, $\text{IDF} = 65.17$), Sogamoso ($w_i = 0.2328$, $\text{IDF} = 75.72$) y Duitama ($w_i = 0.2249$, $\text{IDF} = 59.32$), la fortaleza tributaria e industrial del corredor central sostiene un promedio ponderado superior al de departamentos como Santander (**$62.20$ puntos**) o Cundinamarca (**$62.08$ puntos**).
+3. **Brecha centro-periferia y fragilidad fiscal en zonas de frontera:** el extremo inferior de la distribución se concentra en la Amazonía, la Orinoquía y el norte peninsular: **Caquetá** (**$42.12$ puntos**), **Vichada** (**$46.22$ puntos**), **La Guajira** (**$46.86$ puntos**), **Vaupés** (**$48.84$ puntos**) y **Amazonas** (**$49.80$ puntos**). En estos departamentos, la reducida base tributaria propia (predial e industria y comercio), la alta dependencia de las transferencias del Sistema General de Participaciones (SGP) y los rezagos en ejecución de inversión y gestión catastral de sus capitales —como Florencia en Caquetá ($\text{IDF} = 41.36$, $w_i = 0.8589$) o Riohacha en La Guajira ($\text{IDF} = 51.84$, $w_i = 0.4258$)— arrastran el indicador departamental hacia el rango de deterioro o riesgo fiscal.
+
+---
+
+## Literal 1.B y Bono 1: Mapa municipal del IDF y diagnóstico computacional
+
+### Problemas computacionales al graficar el nivel municipal y solución topológica (Bono 1)
+
+La representación cartográfica de los **1,122 polígonos municipales** del Marco Geoestadístico Nacional (MGN) plantea tres cuellos de botella computacionales cuando se procesa directamente con las geometrías crudas:
+
+1. **Sobrecarga de vértices y saturación de motores gráficos vectoriales:** en la cartografía oficial del DANE, los linderos municipales siguen con precisión milimétrica la sinuosidad de ríos, divorcios de aguas y costas, acumulando cientos de miles de pares de coordenadas. Al invocar `geom_sf()` sin optimización previa, el motor gráfico de R (`grid` / `Cairo`) debe teselar y trazar cada nodo individualmente, multiplicando el consumo de memoria RAM, incrementando el tiempo de renderizado y generando documentos pesados.
+2. **Fracturas topológicas con el algoritmo estándar de Douglas-Peucker (`sf::st_simplify`):** si se intenta aligerar la malla municipal mediante `sf::st_simplify()`, el algoritmo de Douglas-Peucker procesa cada polígono de manera **aislada** sin reconocer aristas compartidas. Como resultado, las fronteras comunes entre municipios colindantes se simplifican de forma asimétrica, provocando grietas blancas (*slivers*), superposiciones de polígonos e incluso la desaparición de municipios insulares o de reducida extensión territorial (como Providencia en San Andrés o Sabaneta en el Valle de Aburrá).
+3. **Solución técnica implementada para el Bono 1 (`rmapshaper::ms_simplify`):** en el script `01_procesamiento_geoespacial_idf.R` se implementó una simplificación **topológicamente consciente** basada en el algoritmo de **Visvalingam-Whyatt** a través de `rmapshaper::ms_simplify(..., keep_shapes = TRUE)`, con una fracción de retención adaptativa según la densidad inicial de vértices de la capa (`keep = 0.08` para mallas crudas de alta densidad $>100,000$ vértices y `keep = 0.85` para mallas pre-simplificadas, reduciendo los vértices de $13,815$ a $12,894$ en $0.93$ segundos sin pérdida de fidelidad visual) seguida de `st_make_valid()` y `st_cast("MULTIPOLYGON")`. Este flujo preserva intacta la contigüidad de las fronteras compartidas y garantiza que ningún municipio pequeño sea eliminado.
+
+```{r}
+#| label: fig-mapa-idf-mpio
+#| fig-cap: "Figura 1.2. Índice de Desempeño Fiscal (IDF) municipal en Colombia (Vigencia 2024) con simplificación topológica Visvalingam-Whyatt (Bono 1)."
+#| out-width: "88%"
+#| fig-align: "center"
+#| echo: false
+
+knitr::include_graphics(file.path(dir_images, "1_2_mapa_idf_municipal_bono.png"))
+```
+
+La @tbl-top10-mpios-nacional presenta los diez municipios con mayor calificación en el Índice de Desempeño Fiscal Municipal del DNP para la vigencia 2024 a nivel nacional:
+
+```{r}
+#| label: tbl-top10-mpios-nacional
+#| tbl-cap: "Top 10 municipios con mayor Índice de Desempeño Fiscal (IDF) en Colombia (Vigencia 2024)."
+#| echo: false
+
+df_idf_mpio %>%
+  arrange(desc(idf_municipal)) %>%
+  slice_head(n = 10) %>%
+  mutate(Posición = row_number()) %>%
+  transmute(
+    `#` = Posición,
+    `Cód. DIVIPOLA` = cod_mpio,
+    `Municipio` = nom_mpio,
+    `Departamento` = nom_dpto,
+    `IDF 2024 (pts)` = number(idf_municipal, accuracy = 0.02),
+    `Rango DNP` = rango_idf,
+    `Peso en su Dpto. (w_i)` = sprintf("%.4f (%.2f%%)", w_i, w_i * 100)
+  ) %>%
+  kable(align = c("c", "c", "l", "l", "r", "l", "r"))
+```
+
+### Interpretación económica y territorial del mapa municipal
+
+El mapa municipal de la vigencia 2024 (@fig-mapa-idf-mpio) permite desagregar la heterogeneidad interna que el promedio departamental suaviza:
+
+- **Liderazgo nacional de municipios con vocación industrial, minero-energética y metropolitana:** el primer lugar nacional en 2024 corresponde a **Samacá (`15646`, Boyacá)** con **$81.10$ puntos** (único municipio del país en el rango *5. Sostenible ($\ge 80$ puntos)* en la vigencia 2024), impulsado por su recaudo tributario industrial y carbonífero y su alta ejecución de inversión. Le siguen en el rango *4. Solvente ($\ge 70$ y $< 80$ puntos)* **Nariño (`52480`, Nariño)** con **$79.98$ puntos**, **Bogotá, D. C. (`11001`)** con **$77.04$ puntos**, **San Jerónimo (`05656`, Antioquia)** con **$76.72$ puntos**, **Hatonuevo (`44378`, La Guajira)** con **$76.34$ puntos**, **Saravena (`81736`, Arauca)** con **$76.26$ puntos**, **Sogamoso (`15759`, Boyacá)** con **$75.72$ puntos**, **Barranquilla (`08001`, Atlántico)** con **$75.54$ puntos**, **Cimitarra (`68190`, Santander)** con **$75.50$ puntos** y **Copacabana (`05212`, Antioquia)** con **$75.34$ puntos** (seguidos de cerca por polos industriales de la Sabana de Bogotá y el Valle de Aburrá como Tocancipá `25817` con $75.34$ pts e Itagüí `05360` con $75.06$ pts).
+- **Contraste intradepartamental entre nodos centrales y periferias rurales:** mientras que el corredor central andino (Sabana de Bogotá, eje Tunja-Duitama-Sogamoso, Valle de Aburrá y área metropolitana de Barranquilla) exhibe tonalidades cálidas claras ($>65$ puntos), los municipios periféricos del litoral Pacífico (Chocó, costa nariñense y caucana), el sur de Bolívar, Caquetá y la Orinoquía presentan tonalidades oscuras ($30$ a $48$ puntos), reflejando limitaciones estructurales en generación de recursos propios y actualización catastral.
+- **Diferenciación institucional de las Áreas No Municipalizadas (ANM):** los polígonos en gris claro en Amazonas, Guainía y Vaupés identifican con precisión las 18 Áreas No Municipalizadas y el antiguo corregimiento de Mapiripana, cuya administración fiscal recae directamente sobre las gobernaciones departamentales y que, por tanto, no son objeto de calificación municipal por parte del DNP.
 
 ---
 
@@ -898,8 +1115,49 @@ Como observó Milton Friedman, las decisiones de política monetaria operan con 
 
 ---
 
+# Ejercicio 3 — Literal A (Pestaña 1): Mapa interactivo del IDF departamental y Top 3 municipal
+
+El primer componente del aplicativo interactivo en Shiny ([`Scripts/Punto_3/app.R`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_3/app.R){target="_blank"}) integra los resultados geoespaciales del Ejercicio 1 en un tablero reactivo construido con `shiny`, `bslib` y `leaflet`.
+
+## Arquitectura reactiva y diferenciación de indicadores
+
+1. **Insumos pre-serializados (`Scripts/Punto_3/data_shiny/`):** el script `01_procesamiento_geoespacial_idf.R` exporta automáticamente tres objetos optimizados para carga instantánea en el servidor Shiny:
+   - `shp_dpto_simp.rds`: capa vectorial departamental simplificada topológicamente y transformada al sistema de coordenadas geográficas WGS84 (`EPSG:4326`), requerida por `leaflet`.
+   - `df_deptos.rds`: tabla resumen de los 33 departamentos con el IDF departamental artificial, número de municipios evaluados ($n_j$), población 2024 y valor agregado proyectado 2024.
+   - `df_top3.rds`: tabla con los 3 municipios de mayor calificación en el IDF municipal Vigencia 2024 dentro de cada departamento, junto con su ponderador relativo $w_i$.
+2. **Interacción bidireccional entre el selector y el mapa Leaflet:**
+   - Cuando el usuario hace clic sobre un polígono departamental en el mapa (`input$mapa_leaflet_shape_click`), un observador `observeEvent` actualiza automáticamente el menú desplegable (`updateSelectInput(session, "depto_sel", ...)`).
+   - Recíprocamente, cuando el usuario elige un departamento en el menú desplegable (`input$depto_sel`), un segundo observador invoca `leafletProxy("mapa_leaflet")` para trazar un contorno resaltado sobre el departamento seleccionado y ajustar suavemente el encuadre geográfico (`flyToBounds`), manteniendo sincronizados las tres tarjetas de indicadores (`value_box`), el mapa y la tabla del Top 3 municipal.
+3. **Diferenciación explícita de los dos indicadores y nota institucional:** la interfaz distingue claramente entre el **Índice Departamental (Artificial)** —media ponderada $\sum_{i=1}^{n_j} w_i \cdot \text{IDF}_i$ coloreada en el mapa— y el **Índice Municipal (Vigencia 2024)** —calificación directa del DNP mostrada en la tabla del Top 3 junto con el peso relativo $w_i$ de cada municipio—. Además, para departamentos con menos de tres municipios evaluados en la medición municipal del DNP (Bogotá D. C. con 1, Archipiélago de San Andrés con 1 —Providencia—, Amazonas con 2 y Guainía con 2), el tablero despliega dinámicamente una nota institucional explicando su estructura político-administrativa.
+
+```{r}
+#| label: tbl-top3-shiny-muestra
+#| tbl-cap: "Muestra de verificación de la Pestaña 1 del aplicativo Shiny: IDF departamental artificial y Top 3 municipal (con ponderadores w_i) en departamentos seleccionados (Vigencia 2024)."
+#| echo: false
+
+df_top3_shiny <- readRDS(file.path(dir_shiny, "df_top3.rds"))
+
+df_top3_shiny %>%
+  filter(cod_dpto %in% c("05", "08", "11", "15", "76", "88", "91")) %>%
+  left_join(df_idf_dpto %>% select(cod_dpto, idf_departamental, n_mpios), by = "cod_dpto") %>%
+  transmute(
+    `Departamento` = paste0(nom_dpto, " (", cod_dpto, ")"),
+    `IDF Dpto.` = number(idf_departamental, accuracy = 0.02),
+    `Mpios Ev.` = n_mpios,
+    `Pos. Top 3` = paste0("#", ranking_mpio),
+    `Municipio (Cód.)` = paste0(nom_mpio, " (", cod_mpio, ")"),
+    `IDF Mpio 2024` = number(idf_municipal, accuracy = 0.02),
+    `Ponderador (w_i)` = sprintf("%.4f (%.2f%%)", w_i, w_i * 100)
+  ) %>%
+  kable(align = c("l", "r", "c", "c", "l", "r", "r"))
+```
+
+---
+
 # Conclusiones
 
-1. Los flujos de captura se ejecutaron mediante una API REST para el SOFR y web scraping sobre documentos SDMX-XML para el IBR, cumpliendo el requerimiento de emplear metodologías diferenciadas por entidad.
-2. El desfase entre los días festivos de Colombia y Estados Unidos se resolvió mediante un calendario unificado con arrastre del último valor observado (*forward-fill*), lo que garantiza la comparabilidad diaria del diferencial de tasas.
-3. La base continua consolidada (`series_financieras_ibr_sofr.csv`) queda almacenada en `Outputs/Data/processed/`, lista para alimentar la calculadora de devaluación implícita en la pestaña 2 del aplicativo interactivo del Ejercicio 3.
+1. En el componente geoespacial (Ejercicio 1), la estandarización programática de las llaves DIVIPOLA de cinco dígitos (`cod_mpio`) permitió integrar sin alteraciones manuales las cuentas de Valor Agregado 2023 y Proyecciones de Población 2024 del DANE (1,123 territorios) con el Índice de Desempeño Fiscal Municipal Vigencia 2024 del DNP (1,103 municipios evaluados), identificando con exactitud las 18 Áreas No Municipalizadas, Mapiripana y San Andrés Isla.
+2. Se demostró analítica y computacionalmente que el ponderador demográfico-económico $w_i$ es homogéneo de grado cero frente a la tasa de proyección del PIB ($g = 8.27\%$ nominal en 2024), verificando que $\sum_{i=1}^{n_j} w_i = 1$ en los 33 departamentos y que la discrepancia frente al procedimiento alternativo (`weighted.mean` sobre el Valor Agregado de 2023) es exactamente cero. Asimismo, la simplificación topológica de Visvalingam-Whyatt (`rmapshaper::ms_simplify`, Bono 1) optimizó el trazado de los 1,122 polígonos municipales sin fracturar fronteras colindantes, alimentando la Pestaña 1 del aplicativo Shiny.
+3. Los flujos de captura financiera (Ejercicio 2) se ejecutaron mediante una API REST para el SOFR y web scraping sobre documentos SDMX-XML para el IBR, cumpliendo el requerimiento de emplear metodologías diferenciadas por entidad.
+4. El desfase entre los días festivos de Colombia y Estados Unidos se resolvió mediante un calendario unificado con arrastre del último valor observado (*forward-fill*), lo que garantiza la comparabilidad diaria del diferencial de tasas.
+5. La base continua consolidada (`series_financieras_ibr_sofr.csv`) queda almacenada en `Outputs/Data/processed/`, lista para alimentar la calculadora de devaluación implícita en la pestaña 2 del aplicativo interactivo del Ejercicio 3.

@@ -40,7 +40,10 @@ Entregable_Talleres/Taller_3/
 │   │   │   ├── ibr_raw.xml
 │   │   │   ├── sofr_diaria_2020_2025.csv
 │   │   │   └── ibr_diaria_2020_2025.csv
-│   │   └── processed/                          # Base consolidada final del taller
+│   │   └── processed/                          # Bases consolidadas finales del taller
+│   │       ├── idf_departamental_2024.csv
+│   │       ├── idf_municipal_ponderado_2024.csv
+│   │       ├── auditoria_llaves_ejercicio_1.csv
 │   │       └── series_financieras_ibr_sofr.csv
 │   └── Images/                                 # Gráficas y mapas temáticos vectoriales/raster a 300 DPI
 │       ├── 1_1_mapa_idf_departamental.png
@@ -65,7 +68,7 @@ La estructura de revisión, verificación técnica y sustentación del Taller 3 
 
 | Eje Temático | Integrante Líder | Componentes del Eje (Código + Informe + Shiny + Auditoría) | Responsabilidad de Revisión y Sustentación |
 | :--- | :--- | :--- | :--- |
-| **Eje 1: Datos Geoespaciales y Desempeño Fiscal** | **Sergio López** <br> *(Código: `202111932`)* | **• Ejercicio 1 Completo (Literales A y B)**<br>**• Bono 1 (Mapa Municipal Optimizado)**<br>**• Pestaña 1 del Shiny (`leaflet` + Top 3)**<br>**• Auditoría de Unión Territorial** | • Integración de las 4 fuentes oficiales (DNP IDF 2024, DANE MGN Shapefiles, DANE Población 2024 y DANE Valor Agregado 2023) por código DIVIPOLA (`cod_mpio`).<br>• Proyección de VA 2023 a 2024 a precios corrientes (8.27%), demostración de homogeneidad de $w_i$, comprobación $\sum w_i = 1$ y mapa departamental.<br>• Diagnóstico computacional y simplificación topológica Visvalingam-Whyatt (`rmapshaper::ms_simplify`) para los ~1.120 municipios (Bono 1).<br>• Pestaña 1 interactiva con selector reactivo, clic sobre polígono y tabla del Top 3 municipal, más auditoría de Medellín (`05001`). |
+| **Eje 1: Datos Geoespaciales y Desempeño Fiscal** | **Sergio López** <br> *(Código: `202111932`)* | **• Ejercicio 1 Completo (Literales A y B)**<br>**• Bono 1 (Mapa Municipal Optimizado)**<br>**• Pestaña 1 del Shiny (`leaflet` + Top 3)**<br>**• Auditoría de Unión Territorial** | • Integración de las 4 fuentes oficiales (DNP IDF Vigencia 2024, DANE MGN Shapefiles, DANE Población 2024 y DANE Valor Agregado 2023) por código DIVIPOLA (`cod_mpio`).<br>• Proyección de VA 2023 a 2024 a precios corrientes (8.27%), demostración de homogeneidad de $w_i$, comprobación $\sum w_i = 1$, segundo procedimiento (`weighted.mean`) y mapa departamental.<br>• Diagnóstico computacional y simplificación topológica Visvalingam-Whyatt (`rmapshaper::ms_simplify`) para los ~1.122 polígonos municipales (Bono 1).<br>• Pestaña 1 interactiva con selector reactivo bidireccional (`leafletProxy`), clic sobre polígono y tabla del Top 3 municipal, más auditoría de Medellín (`05001`). |
 | **Eje 2: Web Scraping, APIs y Series Financieras** | **Miguelangel Palma** <br> *(Código: `202621481`)* | **• Ejercicio 2 Completo (Literales A, B y C)**<br>**• Pestaña 2 del Shiny (Doble Eje y $\pi$)**<br>**• Auditoría de Tasas y Paridad** | • Extracción vía **Web Scraping** de la tasa IBR Overnight (2020–2025) desde el portal SUAMECA del Banco de la República (parseo XML SDMX con `xml2`, convención % E.A.).<br>• Extracción vía **API REST** de la tasa SOFR Overnight (2020–2025) desde la Markets Data API de la Reserva Federal de Nueva York (parseo JSON con `jsonlite`).<br>• Armonización de calendarios financieros (`full_join` + *forward-fill*), gráfico estático e interactivo de doble eje y análisis del ciclo monetario.<br>• Pestaña 2 de Shiny con consulta por fecha, cálculo de devaluación implícita $\pi = (1+i_d)/(1+i_e)-1$, alerta en días no hábiles y contraste oficial del 15/03/2024. |
 | **Eje 3: Diseño Libre, Arquitectura Shiny e Integridad Reproducible** | **Juan José Echeverry** <br> *(Código: `202616233`)* | **• Ejercicio 3 (Literal C - Diseño Libre)**<br>**• Pestaña 3 y Arquitectura UI `bslib` (Bono Diseño)**<br>**• Script Maestro, Compilación Quarto y Anexo IA** | • Construcción y exportación de `datos_ejercicio_3c_laboral.csv` y visualización interactiva en `plotly` sobre dualismo laboral departamental (informalidad vs. ingreso mediano) con filtros reactivos.<br>• Arquitectura integral de `app.R` con `bslib` (tema Bootstrap 5 `cosmo`/`flatly`, `page_navbar`, `value_box`) para optar al Bono de Mejor Diseño.<br>• Verificación de ejecución modular autónoma, compilación de `Taller_3_Grupo_10.qmd` a HTML y PDF formal e inclusión de matriz de auditoría. |
 
@@ -110,7 +113,7 @@ En estricto apego a las instrucciones de entrega, se documentan las comprobacion
 
 | Evidencia Solicitada | Caso Auditado | Valor Obtenido en el Taller | Fuente Oficial Primaria | Estado de Verificación |
 | :--- | :--- | :--- | :--- | :--- |
-| **1. Unión revisada** | Medellín (`05001`) | IDF: 69.78 \| Peso $w_i$: 0.9243 | DNP CIFFIT / DANE Cuentas Nal. | **COINCIDENCIA EXACTA** |
+| **1. Unión revisada** | Medellín (`05001`) | IDF 2024: 69.73 \| Peso $w_i$: 0.9243 \| IDF Antioquia: 69.58 | DNP CIFFIT (Vigencia 2024) / DANE Cuentas Nal. | **COINCIDENCIA EXACTA** |
 | **2. Contraste de tasa IBR** | 15 de marzo de 2024 | 12.750% E.A. | Boletín Oficial BanRep SUAMECA | **COINCIDENCIA EXACTA** |
 | **3. Contraste de tasa SOFR** | 15 de marzo de 2024 | 5.310% | Markets Data Release NY Fed | **COINCIDENCIA EXACTA** |
 | **4. Cálculo analítico** | Devaluación implícita ($\pi$) | 7.065% | $(1 + 0.1275)/(1 + 0.0531) - 1$ | **COMPROBADO** |
