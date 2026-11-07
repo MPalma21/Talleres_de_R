@@ -55,14 +55,16 @@ Talleres_de_R/
         │   │   ├── 02_extraer_ibr_banrep.R            # Web scraping XML BanRep
         │   │   └── 03_analisis_financiero_punto_2.R   # Armonización, spread y gráficos
         │   └── Punto_3/
-        │       ├── app.R                              # Aplicativo interactivo Shiny (bslib)
-        │       ├── datos_ejercicio_3c_laboral.csv     # Base departamental Literal C
+        │       ├── 01_preparar_datos_shiny.R          # Preparación reproducible de RDS y cruce GEIH-IDF
+        │       ├── app.R                              # Orquestador modular Shiny (bslib Bootstrap 5)
+        │       ├── R/                                 # Módulos Shiny encapsulados (NS / moduleServer)
+        │       ├── datos_ejercicio_3c_laboral.csv     # Base departamental Literal C (GEIH + IDF 2024)
         │       └── data_shiny/                        # RDS serializados para carga rápida
         ├── Outputs/
         │   ├── Data/
         │   │   ├── raw/                               # Respaldos crudos JSON/XML y CSVs
         │   │   └── processed/                         # Base consolidada final (series_financieras)
-        │   └── Images/                                # Mapas y figuras a 300 DPI (1_1, 1_2, 2_a, 2_b, 2_c)
+        │   └── Images/                                # Mapas y figuras a 300 DPI (1_1, 1_2, 2_a, 2_b, 2_c, 3_c)
         └── Notebooks/
             ├── Taller_3_Grupo_10.qmd                  # Cuaderno maestro Quarto
             ├── Taller_3_Grupo_10.html                 # Versión interactiva para Posit Connect

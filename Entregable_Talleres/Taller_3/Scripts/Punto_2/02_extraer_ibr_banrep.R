@@ -8,6 +8,11 @@
 #          en la carpeta Outputs/Data/raw/.
 # ==============================================================================
 
+# Paquetes adicionales identificados explícitamente con [PAQUETE ADICIONAL]:
+# [PAQUETE ADICIONAL]: httr (peticiones HTTP con configuración SSL y cabeceras SDMX)
+# [PAQUETE ADICIONAL]: xml2 (navegación DOM y consultas XPath para web scraping XML)
+# [PAQUETE ADICIONAL]: readr (exportación de series tratadas en formato CSV UTF-8)
+
 library(tidyverse)
 library(httr)
 library(xml2)

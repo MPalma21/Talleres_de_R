@@ -6,6 +6,10 @@
 #            derivar el spread, exportar el archivo final único en processed/ y graficar.
 # ==============================================================================
 
+# Paquetes adicionales identificados explícitamente con [PAQUETE ADICIONAL]:
+# [PAQUETE ADICIONAL]: scales (formateo porcentual y escalas secundarias en ggplot2)
+# [PAQUETE ADICIONAL]: readr (lectura y escritura de series temporales en CSV)
+
 # 1. Carga de librerías --------------------------------------------------------
 library(tidyverse)
 library(scales)

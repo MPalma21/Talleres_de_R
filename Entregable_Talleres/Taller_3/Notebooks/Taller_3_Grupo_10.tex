@@ -109,7 +109,6 @@
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \usepackage{longtable,booktabs,array}
-\newcounter{none} % for unnumbered tables
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -149,6 +148,20 @@
  
 
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{caption}
@@ -206,12 +219,8 @@
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
-% fallback for those not using the hyperref driver hyperxmp:
-\makeatletter
-\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
-\makeatother
 \hypersetup{
-  pdftitle={Taller 3: Web Scraping{,} APIs y Aplicaciones Interactivas},
+  pdftitle={Taller 3: Web Scraping, APIs y Aplicaciones Interactivas},
   pdfauthor={Grupo 10},
   colorlinks=true,
   linkcolor={blue},
@@ -231,12 +240,13 @@
 \subtitle{Taller de Programación en R (2026-2), Facultad de Economía,
 Universidad de los Andes}
 \author{Grupo 10}
-\date{2026-11-05}
+\date{2026-11-07}
 \begin{document}
 \maketitle
 
 \renewcommand*\contentsname{Índice de contenido}
 {
+\hypersetup{linkcolor=}
 \setcounter{tocdepth}{2}
 \tableofcontents
 }
@@ -298,10 +308,11 @@ Ejercicio 2 & Web scraping y API & 2.0 & Completado & Extracción de
 series diarias de IBR (Banco de la República) y SOFR (Fed de Nueva
 York), validación con boletines oficiales, análisis comparativo y
 consolidación de series\_financieras\_ibr\_sofr.csv. \\
-Ejercicio 3 & Aplicativo interactivo en Shiny & 1.5 & Pestaña 1
-completada & Tablero con tres componentes: mapa departamental del IDF y
-Top 3 municipal (Pestaña 1 completada), cálculo de devaluación implícita
-con las tasas obtenidas (Ejercicio 2) y una visualización en Plotly. \\
+Ejercicio 3 & Aplicativo interactivo en Shiny & 1.5 & Completado &
+Tablero modular en \texttt{bslib} (Bootstrap 5) con tres pestañas: mapa
+departamental del IDF y Top 3 municipal (3.A), serie de doble eje y
+calculadora de devaluación implícita \(\pi\) (3.B), y visualización
+libre en Plotly sobre dualismo laboral e IDF (3.C). \\
 \end{longtable}
 
 \subsection{Flujo de trabajo del
@@ -315,7 +326,7 @@ taller:
 
 \centering{
 
-\includegraphics[width=19.83in,height=14.71in]{Taller_3_Grupo_10_files/figure-latex/mermaid-figure-1.png}
+\includegraphics[width=23.01in,height=19.77in]{Taller_3_Grupo_10_files/figure-latex/mermaid-figure-1.png}
 
 }
 
@@ -351,28 +362,27 @@ sin realizar modificaciones manuales previas sobre los archivos fuente:
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  \textbf{DANE --- PIB por departamento (Valor Agregado Municipal
-  2023):} archivo \texttt{anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx}
-  (hoja \texttt{Cuadro\ 1}, columna \texttt{2023}), que reporta el valor
+  \textbf{DANE (PIB por departamento y Valor Agregado Municipal 2023):}
+  archivo \texttt{anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx} (hoja
+  \texttt{Cuadro\ 1}, columna \texttt{2023}), que reporta el valor
   agregado municipal por actividad económica a precios corrientes en
   miles de millones de pesos.
 \item
-  \textbf{DANE --- Proyecciones de Población Municipal (2024):} archivo
+  \textbf{DANE (Proyecciones de Población Municipal 2024):} archivo
   \texttt{PPED-AreaMun-2018-2042\_VP.xlsx} (hoja \texttt{PobMunicipal}),
   filtrando programáticamente \texttt{AÑO\ ==\ 2024} y
   \texttt{ÁREA\ GEOGRÁFICA\ ==\ "Total"}.
 \item
-  \textbf{DNP --- Información Fiscal y Financiera (IDF Municipal,
-  Vigencia 2024):} archivo \texttt{ResultadosIDF\_DNP.xlsx} descargado
-  del \href{https://ciffit.dnp.gov.co/CIFFIT/ConsultasIDF}{portal
-  oficial CIFFIT del DNP} (vigencia 2024), que evalúa 1,103 municipios
-  bajo la metodología del Nuevo IDF.
+  \textbf{DNP (Información Fiscal y Financiera, IDF Municipal Vigencia
+  2024):} archivo \texttt{ResultadosIDF\_DNP.xlsx} descargado del
+  \href{https://ciffit.dnp.gov.co/CIFFIT/ConsultasIDF}{portal oficial
+  CIFFIT del DNP} (vigencia 2024), que evalúa 1,103 municipios bajo la
+  metodología del Nuevo IDF.
 \item
-  \textbf{DANE Geoportal --- Marco Geoestadístico Nacional (MGN):}
-  archivos vectoriales \texttt{MGN\_DPTO\_POLITICO.shp} (33
-  departamentos, incluido Bogotá D. C.) y
-  \texttt{MGN\_MPIO\_POLITICO.shp} (1,122 polígonos municipales y áreas
-  no municipalizadas).
+  \textbf{DANE Geoportal (Marco Geoestadístico Nacional, MGN):} archivos
+  vectoriales \texttt{MGN\_DPTO\_POLITICO.shp} (33 departamentos,
+  incluido Bogotá D. C.) y \texttt{MGN\_MPIO\_POLITICO.shp} (1,122
+  polígonos municipales y áreas no municipalizadas).
 \end{enumerate}
 
 Siguiendo la instrucción del taller de identificar explícitamente
@@ -470,12 +480,10 @@ Político-Administrativa de Colombia (DIVIPOLA):
 \end{enumerate}
 
 La Table~\ref{tbl-auditoria-ej1} presenta la evidencia de la unión
-revisada para cinco municipios testigo ---encabezados por
-\textbf{Medellín (\texttt{05001})} como caso principal de auditoría del
-Grupo 10---, verificando el cruce exacto de las cuatro fuentes y la
-consistencia del índice departamental resultante:
-
-{
+revisada para cinco municipios testigo (encabezados por \textbf{Medellín
+(\texttt{05001})} como caso principal de auditoría del Grupo 10),
+verificando el cruce exacto de las cuatro fuentes y la consistencia del
+índice departamental resultante:
 
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 16\tabcolsep) * \real{0.0650}}
@@ -531,8 +539,6 @@ IDF Dpto.
 
 \end{longtable}
 
-}
-
 En particular, para \textbf{Medellín (\texttt{05001})}, la llave
 estandarizada de cinco dígitos vincula sin ambigüedad un Valor Agregado
 2023 de \(84,087.02\) miles de millones de pesos corrientes
@@ -556,9 +562,9 @@ crecimiento del PIB
 
 Al inspeccionar el encabezado oficial del \texttt{Cuadro\ 1} en
 \texttt{anex-PIBDep-ValorAgreMuni-2011-2024p.xlsx} (\emph{``Valor
-agregado por municipio - Serie 2011-2024p --- Miles de millones de pesos
---- Precios corrientes''}), se constata que las cifras municipales de
-Valor Agregado están expresadas en \textbf{precios corrientes (valores
+agregado por municipio - Serie 2011-2024p, Miles de millones de pesos,
+Precios corrientes''}), se constata que las cifras municipales de Valor
+Agregado están expresadas en \textbf{precios corrientes (valores
 nominales)}.
 
 Para proyectar el Valor Agregado municipal de 2023 a 2024 preservando la
@@ -653,8 +659,6 @@ departamentos con mayor y menor calificación en el IDF departamental
 artificial de 2024, junto con la verificación de los dos procedimientos
 de cálculo:
 
-{
-
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1864}}
   >{\centering\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0508}}
@@ -736,8 +740,6 @@ Bottom 10 (Menor IDF) & 18 & Caquetá & 16 & 1.0000 & 42.12 & 42.12 &
 
 \end{longtable}
 
-}
-
 \subsubsection{Interpretación económica e institucional del mapa
 departamental}\label{interpretaciuxf3n-econuxf3mica-e-institucional-del-mapa-departamental}
 
@@ -791,9 +793,9 @@ sobre la descentralización fiscal y la primacía urbana en Colombia:
   tributaria propia (predial e industria y comercio), la alta
   dependencia de las transferencias del Sistema General de
   Participaciones (SGP) y los rezagos en ejecución de inversión y
-  gestión catastral de sus capitales ---como Florencia en Caquetá
-  (\(\text{IDF} = 41.36\), \(w_i = 0.8589\)) o Riohacha en La Guajira
-  (\(\text{IDF} = 51.84\), \(w_i = 0.4258\))--- arrastran el indicador
+  gestión catastral de sus capitales (como Florencia en Caquetá con
+  \(\text{IDF} = 41.36\) y \(w_i = 0.8589\), o Riohacha en La Guajira
+  con \(\text{IDF} = 51.84\) y \(w_i = 0.4258\)) arrastran el indicador
   departamental hacia el rango de deterioro o riesgo fiscal.
 \end{enumerate}
 
@@ -870,8 +872,6 @@ La Table~\ref{tbl-top10-mpios-nacional} presenta los diez municipios con
 mayor calificación en el Índice de Desempeño Fiscal Municipal del DNP
 para la vigencia 2024 a nivel nacional:
 
-{
-
 \begin{longtable}[]{@{}
   >{\centering\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0367}}
   >{\centering\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1376}}
@@ -928,8 +928,6 @@ y \textless80) & 0.0017 (0.17\%) \\
 (\textgreater=70 y \textless80) & 0.0009 (0.09\%) \\
 
 \end{longtable}
-
-}
 
 \subsubsection{Interpretación económica y territorial del mapa
 municipal}\label{interpretaciuxf3n-econuxf3mica-y-territorial-del-mapa-municipal}
@@ -1447,12 +1445,12 @@ UU., hábil Colombia) & SOFR: \texttt{NA}, IBR: 4.250\% & Forward-fill:
 SOFR mantiene \textbf{1.55\%} (del 2020-01-17) & Convención bancaria
 internacional estándar (\emph{last observation carried forward}). \\
 \texttt{2024-07-04} & \textbf{Independence Day} (Festivo EE. UU., hábil
-Colombia) & SOFR: \texttt{NA}, IBR: 11.230\% & Forward-fill: SOFR
-mantiene \textbf{5.34\%} (del 2024-07-03) & Conserva la integridad
+Colombia) & SOFR: \texttt{NA}, IBR: 11.255\% & Forward-fill: SOFR
+mantiene \textbf{5.33\%} (del 2024-07-03) & Conserva la integridad
 temporal de la base continua (1,500 observaciones de mercado). \\
-\texttt{2024-07-20} & \textbf{Grito de Independencia} (Festivo Colombia,
-hábil EE. UU.) & SOFR: 5.34\%, IBR: \texttt{NA} & Forward-fill: IBR
-mantiene \textbf{11.230\%} (del 2024-07-19) & Evita truncamientos
+\texttt{2025-08-07} & \textbf{Batalla de Boyacá} (Festivo Colombia,
+hábil EE. UU.) & SOFR: 4.35\%, IBR: \texttt{NA} & Forward-fill: IBR
+mantiene \textbf{9.250\%} (del 2025-08-06) & Evita truncamientos
 artificiales en el vector diario del spread financiero. \\
 \end{longtable}
 
@@ -1810,18 +1808,106 @@ restrictivos por un período más largo que el de las economías avanzadas.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\section{Ejercicio 3 --- Literal A (Pestaña 1): Mapa interactivo del IDF
+\section{Ejercicio 3: Aplicativo interactivo modular en
+Shiny}\label{ejercicio-3-aplicativo-interactivo-modular-en-shiny}
+
+El tercer ejercicio del taller integra los resultados espaciales del
+Ejercicio 1, las series diarias de tasas interbancarias del Ejercicio 2
+y los indicadores departamentales del mercado laboral en un aplicativo
+interactivo desarrollado en \texttt{shiny} y \texttt{bslib}. Para
+facilitar la lectura, el mantenimiento y la auditoría del código por
+parte del equipo docente, el aplicativo se estructuró de manera modular
+dentro del directorio
+\href{https://github.com/MPalma21/Talleres_de_R/tree/main/Entregable_Talleres/Taller_3/Scripts/Punto_3}{\texttt{Scripts/Punto\_3/}}.
+
+\subsection{\texorpdfstring{Arquitectura modular del aplicativo y diseño
+en \texttt{bslib} (Bono de
+Diseño)}{Arquitectura modular del aplicativo y diseño en bslib (Bono de Diseño)}}\label{arquitectura-modular-del-aplicativo-y-diseuxf1o-en-bslib-bono-de-diseuxf1o}
+
+Siguiendo las convenciones nativas de Shiny (que carga automáticamente
+todo archivo \texttt{.R} ubicado en la subcarpeta \texttt{R/} antes de
+ejecutar \texttt{app.R}), la lógica del tablero se separó en cinco
+componentes independientes con espacios de nombres encapsulados mediante
+\texttt{shiny::NS()} y \texttt{shiny::moduleServer()}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{\texttt{Scripts/Punto\_3/01\_preparar\_datos\_shiny.R}:}
+  script reproducible previo al despliegue que construye y actualiza los
+  insumos serializados en \texttt{Scripts/Punto\_3/data\_shiny/},
+  cruzando las series brutas y armonizadas de tasas (\texttt{sofr\_raw},
+  \texttt{ibr\_raw}, \texttt{falta\_sofr}, \texttt{falta\_ibr},
+  \texttt{sofr\_ea}, \texttt{pi\_directa}, \texttt{pi\_ea} en
+  \texttt{df\_rates.rds}) y unificando los indicadores laborales de la
+  GEIH/EMICRON 2024 con el IDF departamental 2024 en
+  \texttt{datos\_ejercicio\_3c\_laboral.csv} y \texttt{df\_labor.rds}.
+\item
+  \textbf{\texttt{Scripts/Punto\_3/R/00\_tema\_y\_datos.R}:} centraliza
+  la función \texttt{localizar\_dir\_shiny()} para resolver rutas desde
+  cualquier directorio de trabajo, la carga defensiva de los cinco
+  archivos \texttt{.rds} (\texttt{cargar\_datos\_shiny()}) y la
+  configuración del tema visual Bootstrap 5
+  (\texttt{crear\_tema\_app()}).
+\item
+  \textbf{\texttt{Scripts/Punto\_3/R/mod\_tab1\_idf.R}:} módulo
+  \texttt{mod\_tab1\_idf\_ui()} / \texttt{mod\_tab1\_idf\_server()} para
+  el Literal 3.A (mapa interactivo \texttt{leaflet} del IDF
+  departamental artificial y tabla reactiva del Top 3 municipal).
+\item
+  \textbf{\texttt{Scripts/Punto\_3/R/mod\_tab2\_tasas.R}:} módulo
+  \texttt{mod\_tab2\_tasas\_ui()} / \texttt{mod\_tab2\_tasas\_server()}
+  para el Literal 3.B (gráfico interactivo \texttt{plotly} de doble eje
+  para SOFR e IBR y calculadora de devaluación implícita \(\pi\)).
+\item
+  \textbf{\texttt{Scripts/Punto\_3/R/mod\_tab3\_libre.R}:} módulo
+  \texttt{mod\_tab3\_libre\_ui()} / \texttt{mod\_tab3\_libre\_server()}
+  para el Literal 3.C (explorador en \texttt{plotly} y tabla \texttt{DT}
+  sobre dualismo laboral y capacidad fiscal departamental).
+\item
+  \textbf{\texttt{Scripts/Punto\_3/app.R}:} orquestador ligero
+  (\textasciitilde115 líneas) que declara explícitamente las librerías
+  adicionales mediante comentarios
+  \texttt{\#\ {[}PAQUETE\ ADICIONAL{]}}, construye la barra de
+  navegación superior (\texttt{bslib::page\_navbar()}) con conmutador de
+  modo claro/oscuro (\texttt{bslib::input\_dark\_mode()}) e invoca los
+  tres servidores modulares.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Identificación explícita de paquetes adicionales en Scripts/Punto\_3/app.R:}
+\CommentTok{\# [PAQUETE ADICIONAL]: shiny (framework de aplicaciones web interactivas y módulos NS/moduleServer)}
+\CommentTok{\# [PAQUETE ADICIONAL]: bslib (arquitectura de interfaz Bootstrap 5, tarjetas, value\_box y modo oscuro)}
+\CommentTok{\# [PAQUETE ADICIONAL]: leaflet (cartografía web interactiva para polígonos espaciales)}
+\CommentTok{\# [PAQUETE ADICIONAL]: plotly (gráficos interactivos con zoom, hover y doble eje)}
+\CommentTok{\# [PAQUETE ADICIONAL]: DT (tablas interactivas paginadas para auditoría de datos)}
+\CommentTok{\# [PAQUETE ADICIONAL]: sf (manejo de capas vectoriales Simple Features)}
+\CommentTok{\# [PAQUETE ADICIONAL]: scales (formateo de escalas numéricas y monetarias)}
+\end{Highlighting}
+\end{Shaded}
+
+Para optar al \textbf{bono de mejor diseño}, la interfaz emplea un tema
+Bootstrap 5 personalizado
+(\texttt{bslib::bs\_theme(version\ =\ 5,\ preset\ =\ "shiny",\ primary\ =\ "\#1e3d59",\ secondary\ =\ "\#0f766e")})
+con tipografías institucionales (\texttt{Montserrat},
+\texttt{Nunito\ Sans} y \texttt{Fira\ Code}), contenedores de
+indicadores
+\texttt{bslib::layout\_column\_wrap(width\ =\ 1/3,\ fill\ =\ FALSE)} con
+\texttt{bslib::value\_box()}, tarjetas expandibles a pantalla completa
+(\texttt{full\_screen\ =\ TRUE}) y paneles con pestañas subrayadas
+(\texttt{bslib::navset\_card\_underline()}).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Literal 3.A (Pestaña 1): Mapa interactivo del IDF
 departamental y Top 3
-municipal}\label{ejercicio-3-literal-a-pestauxf1a-1-mapa-interactivo-del-idf-departamental-y-top-3-municipal}
+municipal}\label{literal-3.a-pestauxf1a-1-mapa-interactivo-del-idf-departamental-y-top-3-municipal}
 
-El primer componente del aplicativo interactivo en Shiny
-(\href{https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/Scripts/Punto_3/app.R}{\texttt{Scripts/Punto\_3/app.R}})
-integra los resultados geoespaciales del Ejercicio 1 en un tablero
-reactivo construido con \texttt{shiny}, \texttt{bslib} y
-\texttt{leaflet}.
-
-\subsection{Arquitectura reactiva y diferenciación de
-indicadores}\label{arquitectura-reactiva-y-diferenciaciuxf3n-de-indicadores}
+El primer módulo del aplicativo (\texttt{R/mod\_tab1\_idf.R}) integra
+los resultados geoespaciales del Ejercicio 1 en un tablero reactivo
+construido con \texttt{leaflet} y \texttt{bslib}:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -1865,24 +1951,22 @@ indicadores}\label{arquitectura-reactiva-y-diferenciaciuxf3n-de-indicadores}
     invoca \texttt{leafletProxy("mapa\_leaflet")} para trazar un
     contorno resaltado sobre el departamento seleccionado y ajustar
     suavemente el encuadre geográfico (\texttt{flyToBounds}),
-    manteniendo sincronizados las tres tarjetas de indicadores
+    manteniendo sincronizadas las tres tarjetas de indicadores
     (\texttt{value\_box}), el mapa y la tabla del Top 3 municipal.
   \end{itemize}
 \item
   \textbf{Diferenciación explícita de los dos indicadores y nota
   institucional:} la interfaz distingue claramente entre el
-  \textbf{Índice Departamental (Artificial)} ---media ponderada
-  \(\sum_{i=1}^{n_j} w_i \cdot \text{IDF}_i\) coloreada en el mapa--- y
-  el \textbf{Índice Municipal (Vigencia 2024)} ---calificación directa
-  del DNP mostrada en la tabla del Top 3 junto con el peso relativo
-  \(w_i\) de cada municipio---. Además, para departamentos con menos de
-  tres municipios evaluados en la medición municipal del DNP (Bogotá D.
-  C. con 1, Archipiélago de San Andrés con 1 ---Providencia---, Amazonas
-  con 2 y Guainía con 2), el tablero despliega dinámicamente una nota
+  \textbf{Índice Departamental (Artificial)} (media ponderada
+  \(\sum_{i=1}^{n_j} w_i \cdot \text{IDF}_i\) coloreada en el mapa) y el
+  \textbf{Índice Municipal (Vigencia 2024)} (calificación directa del
+  DNP mostrada en la tabla del Top 3 junto con el peso relativo \(w_i\)
+  de cada municipio). Además, para departamentos con menos de tres
+  municipios evaluados en la medición municipal del DNP (Bogotá D. C.
+  con 1, Archipiélago de San Andrés con 1 en Providencia, Amazonas con 2
+  y Guainía con 2), el tablero despliega dinámicamente una nota
   institucional explicando su estructura político-administrativa.
 \end{enumerate}
-
-{
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.4150}}
@@ -1955,7 +2039,383 @@ Amazonas (91) & 49.80 & 2 & \#2 & Puerto Nariño (91540) & 37.74 & 0.0317
 
 \end{longtable}
 
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{\texorpdfstring{Literal 3.B (Pestaña 2): Serie diaria de
+doble eje y calculadora de devaluación implícita
+(\(\pi\))}{Literal 3.B (Pestaña 2): Serie diaria de doble eje y calculadora de devaluación implícita (\textbackslash pi)}}\label{literal-3.b-pestauxf1a-2-serie-diaria-de-doble-eje-y-calculadora-de-devaluaciuxf3n-impluxedcita-pi}
+
+El segundo módulo (\texttt{R/mod\_tab2\_tasas.R}) conecta la base
+consolidada del Ejercicio 2 con un visor interactivo de series de tiempo
+en \texttt{plotly} y una calculadora financiera de paridad descubierta
+de tasas de interés.
+
+\subsubsection{Especificación matemática, unidades y convención de
+comparabilidad}\label{especificaciuxf3n-matemuxe1tica-unidades-y-convenciuxf3n-de-comparabilidad}
+
+Para cada fecha \(t\) seleccionada por el usuario en el control
+\texttt{dateInput}, el servidor transforma las tasas porcentuales
+anuales a su expresión en decimales (\(i_d = \text{IBR}_t / 100\) para
+Colombia e \(i_e = \text{SOFR}_t / 100\) para Estados Unidos) y evalúa
+la ecuación exacta de la tasa de devaluación implícita anualizada
+(\(\pi_t\)):
+
+\[\pi_t = \frac{1 + i_{d,t}}{1 + i_{e,t}} - 1\]
+
+El resultado \(\pi_t\) se reporta tanto en \textbf{porcentaje efectivo
+anualizado (\% anual)} como en \textbf{decimales}, acompañado del
+diferencial simple en puntos básicos
+(\(\text{Spread}_t = (i_{d,t} - i_{e,t}) \times 10,000\)).
+Adicionalmente, dado que el Banco de la República publica el IBR
+Overnight como tasa Efectiva Anual (\texttt{\%\ E.A.}, base 360)
+mientras que la Reserva Federal de Nueva York publica la SOFR como tasa
+nominal anualizada (\emph{Simple Interest}, \texttt{Actual/360}), la
+calculadora ofrece un selector (\texttt{radioButtons}) con dos
+convenciones transparentes:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Convención directa sobre tasas publicadas en decimales:}
+  utiliza \(i_d = \text{IBR}_{\text{EA}}/100\) e
+  \(i_e = \text{SOFR}_{\text{nom}}/100\) directamente de las fuentes
+  oficiales.
+\item
+  \textbf{Convención homogeneizada en Efectiva Anual (\texttt{\%\ E.A.},
+  base 360):} capitaliza primero la tasa diaria de Estados Unidos a
+  Efectiva Anual mediante
+  \(i_{e,\text{EA}} = \left(1 + \frac{i_{e,\text{nom}}}{360}\right)^{360} - 1\)
+  antes de evaluar
+  \(\pi_t^{\text{EA}} = \frac{1 + i_{d,\text{EA}}}{1 + i_{e,\text{EA}}} - 1\).
+\end{enumerate}
+
+\subsubsection{Detección explícita de fechas sin cotización primaria
+(fines de semana y festivos
+asimétricos)}\label{detecciuxf3n-expluxedcita-de-fechas-sin-cotizaciuxf3n-primaria-fines-de-semana-y-festivos-asimuxe9tricos}
+
+Para cumplir rigurosamente la instrucción del Literal 3.B de informar al
+usuario si falta alguna de las tasas en la fecha elegida, el objeto
+\texttt{df\_rates.rds} conserva tanto las series crudas
+(\texttt{sofr\_raw}, \texttt{ibr\_raw}) como los indicadores lógicos
+\texttt{falta\_sofr} y \texttt{falta\_ibr} y las series con arrastre del
+último día hábil (\texttt{sofr\_on}, \texttt{ibr\_on}). De este modo, el
+banner reactivo \texttt{banner\_alerta\_fecha} distingue cuatro estados:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Cotización primaria verificada:} ambos bancos centrales
+  publicaron tasa oficial en la fecha seleccionada.
+\item
+  \textbf{Festivo bancario en Colombia (\texttt{falta\_ibr\ ==\ TRUE}):}
+  día hábil en Estados Unidos pero feriado nacional en Colombia (74 días
+  en la muestra, p.~ej., \texttt{2025-08-07}, Batalla de Boyacá). El
+  aplicativo informa que falta la observación primaria de IBR y muestra
+  el cálculo empleando la última tasa oficial vigente
+  (\emph{forward-fill}).
+\item
+  \textbf{Feriado federal en Estados Unidos
+  (\texttt{falta\_sofr\ ==\ TRUE}):} día hábil en Colombia pero festivo
+  en el mercado del Tesoro estadounidense (42 días en la muestra,
+  p.~ej., \texttt{2024-07-04}, Día de la Independencia de EE. UU.). El
+  aplicativo avisa que falta la observación primaria de SOFR y emplea el
+  último registro hábil.
+\item
+  \textbf{Fin de semana o feriado simultáneo
+  (\texttt{nrow(reg)\ ==\ 0}):} ningún mercado operó en esa fecha
+  (p.~ej., sábado \texttt{2024-10-12}); el tablero despliega una alerta
+  amarilla e indica cuál fue el último día hábil previo disponible.
+\end{itemize}
+
+La Table~\ref{tbl-verificacion-pestana2} documenta la verificación
+numérica de la calculadora de la Pestaña 2 en seis fechas de control
+representativas:
+
+\begin{longtable}[]{@{}
+  >{\centering\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0822}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.2466}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1096}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0959}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0959}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1712}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1986}}@{}}
+
+\caption{\label{tbl-verificacion-pestana2}Verificación de la calculadora
+de devaluación implícita (\(\pi\)) en la Pestaña 2 bajo ambas
+convenciones y diagnóstico de disponibilidad primaria.}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+Fecha
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Estado de Cotización
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+IBR ON (\% E.A.)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+SOFR Pub. (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+SOFR (\% E.A.)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Deval. Directa (\% anual)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Deval. Homog. E.A. (\% anual)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+2020-01-02 & Primaria en ambos mercados & 4.259\% & 1.54\% & 1.552\% &
+2.678\% & 2.666\% \\
+2023-04-28 & Primaria en ambos mercados & 13.027\% & 4.81\% & 4.927\% &
+7.840\% & 7.719\% \\
+2024-03-15 & Primaria en ambos mercados & 12.747\% & 5.31\% & 5.453\% &
+7.062\% & 6.917\% \\
+2024-07-04 & Festivo EE. UU. (Forward-fill SOFR) & 11.255\% & 5.33\% &
+5.474\% & 5.625\% & 5.481\% \\
+2025-08-07 & Festivo Col (Forward-fill IBR) & 9.250\% & 4.35\% & 4.446\%
+& 4.696\% & 4.600\% \\
+2025-10-31 & Primaria en ambos mercados & 9.250\% & 4.22\% & 4.310\% &
+4.826\% & 4.736\% \\
+
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Literal 3.C (Pestaña 3): Diseño libre en Plotly sobre
+dualismo laboral y desempeño
+fiscal}\label{literal-3.c-pestauxf1a-3-diseuxf1o-libre-en-plotly-sobre-dualismo-laboral-y-desempeuxf1o-fiscal}
+
+Para la tercera pestaña del aplicativo (\texttt{R/mod\_tab3\_libre.R}),
+el Grupo 10 diseñó una visualización interactiva en \texttt{plotly} que
+articula los indicadores departamentales del mercado laboral construidos
+por el equipo en los talleres previos a partir de los microdatos de la
+\textbf{GEIH y EMICRON 2024 (DANE)} con el \textbf{Índice de Desempeño
+Fiscal (IDF) Departamental Artificial 2024 (DNP)} estimado en el
+Ejercicio 1. La base integrada se exporta de forma reproducible en
+\texttt{Scripts/Punto\_3/datos\_ejercicio\_3c\_laboral.csv} y
+\texttt{Scripts/Punto\_3/data\_shiny/df\_labor.rds} para los 24 dominios
+departamentales representativos de la GEIH.
+
+\subsubsection{Diseño visual y controles
+interactivos}\label{diseuxf1o-visual-y-controles-interactivos}
+
+El gráfico de burbujas en \texttt{plotly} codifica cuatro dimensiones
+económicas simultáneas y ofrece cinco controles interactivos en la barra
+lateral:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Eje horizontal (\(X\)):} Tasa de Informalidad Laboral
+  departamental (\%, definición DANE).
+\item
+  \textbf{Eje vertical seleccionable (\(Y\)):} mediante un
+  \texttt{selectInput}, el usuario puede alternar entre la
+  \textbf{Mediana del Ingreso Laboral Mensual (COP)} y el \textbf{IDF
+  Departamental Artificial 2024 (puntos)}.
+\item
+  \textbf{Tamaño y color de las burbujas:} el área de cada marcador es
+  proporcional al volumen de \textbf{ocupados expandidos} del
+  departamento y el color identifica las \textbf{seis regiones
+  geográficas} (\texttt{Región\ Central}, \texttt{Caribe},
+  \texttt{Pacífica}, \texttt{Oriental}, \texttt{Bogotá\ D.C.} y
+  \texttt{Orinoquía-Amazonía}), filtrables mediante un
+  \texttt{checkboxGroupInput}, un botón de restablecimiento rápido y un
+  \texttt{sliderInput} de tamaño mínimo del mercado laboral.
+\item
+  \textbf{Capas analíticas activables (\texttt{bslib::input\_switch}):}
+  dos interruptores permiten superponer en tiempo real la recta de
+  ajuste por Mínimos Cuadrados Ordinarios (MCO) y las líneas punteadas
+  que dividen el plano en cuatro cuadrantes según el promedio nacional
+  de informalidad y de la variable elegida en el eje vertical.
+\item
+  \textbf{Tarjetas reactivas (\texttt{value\_box}) y pestaña de
+  auditoría (\texttt{DT}):} la parte superior recalcula dinámicamente la
+  informalidad media (simple y ponderada por ocupados), el promedio de
+  la variable vertical seleccionada y el coeficiente de correlación
+  lineal de Pearson (\(r\)) para el subconjunto filtrado, mientras que
+  la pestaña secundaria en \texttt{navset\_card\_underline()} permite
+  inspeccionar, ordenar y buscar los registros exactos en una tabla
+  interactiva \texttt{DT}.
+\end{enumerate}
+
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics[width=0.92\linewidth,height=\textheight,keepaspectratio]{../Outputs/Images/3_c_dualismo_laboral_idf.png}
+
 }
+
+\caption{\label{fig-dualismo-3c}Figura 3.C. Dualismo laboral y capacidad
+fiscal departamental en Colombia (2024): relación entre informalidad
+laboral (GEIH/EMICRON) e ingreso laboral mediano mensual, ponderada por
+ocupados expandidos.}
+
+\end{figure}%
+
+\subsubsection{Explicación económica de los datos y
+hallazgos}\label{explicaciuxf3n-econuxf3mica-de-los-datos-y-hallazgos}
+
+La Table~\ref{tbl-resumen-3c} sintetiza el comportamiento agregado por
+región geográfica a partir de la base integrada del Literal 3.C:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1557}}
+  >{\centering\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0656}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1803}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1885}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2295}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1803}}@{}}
+
+\caption{\label{tbl-resumen-3c}Síntesis regional de informalidad
+laboral, ingreso laboral mediano e Índice de Desempeño Fiscal (IDF)
+departamental artificial (2024).}
+
+\tabularnewline
+
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Región Geográfica
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+Dptos.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ocupados Exp. (miles)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Informalidad Pond. (\%)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Ingreso Mediano Prom. (COP)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+IDF Dpto. Prom. (pts)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Bogotá D.C. & 1 & 4,228.9 & 34.6\% & \$1,500,000 & 77.04 \\
+Central & 6 & 5,422.6 & 52.4\% & \$1,316,667 & 59.32 \\
+Oriental & 4 & 3,874.0 & 53.8\% & \$1,275,000 & 61.40 \\
+Amazonía/Orinoquía & 2 & 687.9 & 62.9\% & \$1,250,000 & 51.30 \\
+Pacífica & 4 & 3,807.4 & 66.9\% & \$1,125,000 & 58.96 \\
+Caribe & 7 & 4,806.1 & 71.0\% & \$1,015,357 & 60.76 \\
+
+\end{longtable}
+
+El cruce empírico entre los indicadores laborales y fiscales de 2024
+pone de relieve dos mecanismos estructurales del desarrollo regional
+colombiano:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Penalización salarial de la informalidad (\(r = -0.81\)):}
+  existe una fuerte asociación negativa entre la tasa de informalidad
+  departamental y la mediana del ingreso laboral mensual. Mientras que
+  \textbf{Bogotá D. C.} (\(34.6\%\) de informalidad, \(\$1,500,000\) COP
+  de ingreso mediano) y \textbf{Antioquia} (\(48.1\%\) de informalidad,
+  \(\$1,400,000\) COP) se ubican en el cuadrante superior izquierdo de
+  alta formalidad y mayor remuneración, departamentos periféricos como
+  \textbf{Nariño} (\(82.6\%\), \(\$833,000\) COP), \textbf{Sucre}
+  (\(82.1\%\), \(\$840,000\) COP), \textbf{Córdoba} (\(80.5\%\),
+  \(\$925,000\) COP) y \textbf{La Guajira} (\(79.4\%\), \(\$800,000\)
+  COP) concentran cerca de cuatro de cada cinco ocupados en unidades
+  informales de subsistencia con ingresos inferiores al salario mínimo
+  legal.
+\item
+  \textbf{Vínculo entre tejido empresarial formal y capacidad fiscal
+  local (\(r = -0.52\)):} al conmutar el eje vertical hacia el IDF
+  Departamental Artificial 2024, se confirma que los departamentos con
+  menor informalidad laboral exhiben también una mayor solidez en sus
+  finanzas públicas territoriales. La formalidad empresarial y laboral
+  amplía la base gravable del Impuesto de Industria y Comercio (ICA) y
+  fortalece la cultura tributaria del impuesto predial en las capitales
+  y nodos industriales (Bogotá D. C. con \(77.04\) puntos, Atlántico con
+  \(73.04\) y Antioquia con \(69.58\)), mientras que las economías
+  departamentales con alta informalidad enfrentan severas restricciones
+  de recaudo propio y mayor dependencia de las transferencias nacionales
+  (La Guajira con \(46.86\) puntos y Caquetá con \(42.12\) puntos).
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Matriz consolidada de verificación antes de
+entregar}\label{matriz-consolidada-de-verificaciuxf3n-antes-de-entregar}
+
+En cumplimiento de la sección \emph{``Verificación antes de entregar''}
+del enunciado del Taller 3, la Table~\ref{tbl-matriz-verificacion-final}
+consolida las cuatro evidencias de auditoría y doble comprobación
+ejecutadas sobre los datos y cálculos del proyecto:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\caption{Matriz de verificación integral del Taller 3 (Grupo
+10).}\label{tbl-matriz-verificacion-final}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Requisito de Verificación (Enunciado)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evidencia Documentada en el Taller
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Resultado Auditado
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Requisito de Verificación (Enunciado)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evidencia Documentada en el Taller
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Resultado Auditado
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{1. Evidencia de al menos 1 unión revisada (Ejercicio 1)} & Cruce
+de las 4 fuentes oficiales (VA 2023 DANE, Población 2024 DANE, IDF 2024
+DNP y MGN Shapefiles) por llave \texttt{cod\_mpio} de 5 dígitos en
+\texttt{auditoria\_llaves\_ejercicio\_1.csv} y
+Table~\ref{tbl-auditoria-ej1}. & \textbf{Medellín (\texttt{05001}):}
+\(\text{VA}_{2023} = 84,087.02\) miles MM,
+\(\text{VA}_{2024}^{\text{proy}} = 91,041.02\) miles MM,
+\(\text{Pob}_{2024} = 2,524,747\), \(\text{IDF}_{\text{mpio}} = 69.73\),
+\(w_i = 0.9243\), \(\text{IDF}_{\text{Antioquia}} = 69.58\) pts. \\
+\textbf{2. Evidencia de que IBR corresponde a la serie oficial
+(Ejercicio 2)} & Contraste de los nodos extraídos vía web scraping
+SDMX-XML (\texttt{ibr\_raw.xml}, serie \texttt{241}) frente al visor
+oficial SUAMECA del Banco de la República en la
+Table~\ref{tbl-validacion-boletines}. & Coincidencia exacta a 3
+decimales: \texttt{2020-01-02} (\(4.259\%\) E.A.), \texttt{2023-04-28}
+(\(13.250\%\) E.A.), \texttt{2024-03-15} (\(12.747\%\) E.A.) y
+\texttt{2025-10-31} (\(9.250\%\) E.A.). \\
+\textbf{3. Evidencia de que SOFR corresponde a la serie oficial
+(Ejercicio 2)} & Contraste del payload REST API JSON
+(\texttt{sofr\_raw.json}, endpoint \texttt{520}) frente al boletín
+oficial de la Reserva Federal de Nueva York en la
+Table~\ref{tbl-validacion-boletines}. & Coincidencia exacta a 2
+decimales: \texttt{2020-01-02} (\(1.54\%\)), \texttt{2023-07-27}
+(\(5.30\%\)), \texttt{2024-03-15} (\(5.31\%\)) y \texttt{2025-10-31}
+(\(4.22\%\)). \\
+\textbf{4. Comprobación de índices mediante un procedimiento alternativo
+(Ejercicios 1, 2 y 3)} & (a) Ejercicio 1: suma manual con VA proyectado
+2024 vs.~\texttt{stats::weighted.mean()} sobre VA 2023
+(Table~\ref{tbl-ranking-idf-dpto}).(b) Ejercicios 2 y 3: devaluación
+implícita \(\pi\) directa vs.~convención homogeneizada en
+\texttt{\%\ E.A.} base 360 (Table~\ref{tbl-verificacion-pestana2}). &
+(a) \(\sum w_i = 1.0000\) en los 33 departamentos y discrepancia máxima
+entre ambos métodos \(= 0.000000\) (\(< 10^{-15}\)).(b) Al
+\texttt{2025-10-31}: \(\pi_{\text{directa}} = 4.826\%\) anual y
+\(\pi_{\text{EA}} = 4.736\%\) anual (con
+\(\text{SOFR}_{\text{EA}} = 4.310\%\)). \\
+\end{longtable}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1965,42 +2425,135 @@ Amazonas (91) & 49.80 & 2 & \#2 & Puerto Nariño (91540) & 37.74 & 0.0317
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
-  En el componente geoespacial (Ejercicio 1), la estandarización
-  programática de las llaves DIVIPOLA de cinco dígitos
-  (\texttt{cod\_mpio}) permitió integrar sin alteraciones manuales las
-  cuentas de Valor Agregado 2023 y Proyecciones de Población 2024 del
-  DANE (1,123 territorios) con el Índice de Desempeño Fiscal Municipal
-  Vigencia 2024 del DNP (1,103 municipios evaluados), identificando con
-  exactitud las 18 Áreas No Municipalizadas, Mapiripana y San Andrés
-  Isla.
+  \textbf{Integración geoespacial y homogeneidad del ponderador fiscal
+  (Ejercicio 1):} la estandarización programática de las llaves DIVIPOLA
+  de cinco dígitos (\texttt{cod\_mpio}) permitió cruzar sin alteraciones
+  manuales las cuentas de Valor Agregado 2023 y Proyecciones de
+  Población 2024 del DANE (1,123 territorios) con el Índice de Desempeño
+  Fiscal Municipal Vigencia 2024 del DNP (1,103 municipios evaluados),
+  identificando con exactitud las 18 Áreas No Municipalizadas,
+  Mapiripana y San Andrés Isla. Se demostró analítica y
+  computacionalmente que el ponderador demográfico-económico \(w_i\) es
+  homogéneo de grado cero frente a la tasa de proyección del PIB
+  (\(g = 8.27\%\) nominal en 2024), con cierre exacto
+  \(\sum_{i=1}^{n_j} w_i = 1\) en los 33 departamentos y discrepancia
+  nula frente al cálculo alternativo. Asimismo, la simplificación
+  topológica de Visvalingam-Whyatt (\texttt{rmapshaper::ms\_simplify},
+  Bono 1) optimizó el renderizado de los 1,122 polígonos municipales sin
+  fracturar fronteras colindantes.
 \item
-  Se demostró analítica y computacionalmente que el ponderador
-  demográfico-económico \(w_i\) es homogéneo de grado cero frente a la
-  tasa de proyección del PIB (\(g = 8.27\%\) nominal en 2024),
-  verificando que \(\sum_{i=1}^{n_j} w_i = 1\) en los 33 departamentos y
-  que la discrepancia frente al procedimiento alternativo
-  (\texttt{weighted.mean} sobre el Valor Agregado de 2023) es
-  exactamente cero. Asimismo, la simplificación topológica de
-  Visvalingam-Whyatt (\texttt{rmapshaper::ms\_simplify}, Bono 1)
-  optimizó el trazado de los 1,122 polígonos municipales sin fracturar
-  fronteras colindantes, alimentando la Pestaña 1 del aplicativo Shiny.
+  \textbf{Captura programática diferenciada y armonización de
+  calendarios financieros (Ejercicio 2):} la extracción automatizada
+  mediante API REST JSON para la tasa SOFR (Fed de Nueva York) y web
+  scraping sobre documentos SDMX-XML para el IBR Overnight (Banco de la
+  República) garantizó la trazabilidad primaria de las 1,500
+  observaciones hábiles entre enero de 2020 y octubre de 2025. La
+  consolidación en calendario continuo con arrastre del último valor
+  hábil (\emph{forward-fill}) corrigió las asimetrías de 74 festivos
+  bancarios colombianos y 42 feriados estadounidenses, permitiendo
+  cuantificar la ampliación del diferencial de tasas durante el ciclo
+  inflacionario pospandemia (superando los 800 puntos básicos en 2023) y
+  su posterior convergencia hacia 503 puntos básicos al cierre de
+  octubre de 2025.
 \item
-  Los flujos de captura financiera (Ejercicio 2) se ejecutaron mediante
-  una API REST para el SOFR y web scraping sobre documentos SDMX-XML
-  para el IBR, cumpliendo el requerimiento de emplear metodologías
-  diferenciadas por entidad.
-\item
-  El desfase entre los días festivos de Colombia y Estados Unidos se
-  resolvió mediante un calendario unificado con arrastre del último
-  valor observado (\emph{forward-fill}), lo que garantiza la
-  comparabilidad diaria del diferencial de tasas.
-\item
-  La base continua consolidada
-  (\texttt{series\_financieras\_ibr\_sofr.csv}) queda almacenada en
-  \texttt{Outputs/Data/processed/}, lista para alimentar la calculadora
-  de devaluación implícita en la pestaña 2 del aplicativo interactivo
-  del Ejercicio 3.
+  \textbf{Arquitectura modular en Shiny, paridad cambiaria y dualismo
+  territorial (Ejercicio 3):} la estructuración del tablero interactivo
+  en módulos independientes (\texttt{R/00\_tema\_y\_datos.R},
+  \texttt{R/mod\_tab1\_idf.R}, \texttt{R/mod\_tab2\_tasas.R} y
+  \texttt{R/mod\_tab3\_libre.R}) bajo \texttt{bslib} (Bootstrap 5)
+  permitió articular en una sola herramienta auditable la exploración
+  cartográfica del IDF (Pestaña 1), la simulación diaria de la
+  devaluación implícita \(\pi_t = (1 + i_d)/(1 + i_e) - 1\) con
+  detección explícita de festivos y selector de convención efectiva
+  anual (Pestaña 2), y el análisis multidimensional en \texttt{plotly}
+  del vínculo entre informalidad laboral, ingresos medianos y desempeño
+  fiscal departamental (Pestaña 3).
 \end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Anexo: Declaración de uso de Inteligencia Artificial Generativa
+(Nivel 3
+Uniandes)}\label{anexo-declaraciuxf3n-de-uso-de-inteligencia-artificial-generativa-nivel-3-uniandes}
+
+En cumplimiento de la directriz expresa del enunciado del Taller 3 y de
+los \emph{Lineamientos para el uso de Inteligencia Artificial Generativa
+(IAG) en la Universidad de los Andes} (\textbf{Nivel 3: Uso con
+modificaciones importantes}), el \textbf{Grupo 10} declara de manera
+transparente el protocolo de asistencia tecnológica empleado durante el
+desarrollo del proyecto:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Herramienta y alcance del apoyo:} se utilizó \textbf{Google
+  Gemini (Antigravity IDE Coding Assistant)} como asistente de
+  programación en pareja (\emph{pair programming}) para: (i) estructurar
+  las peticiones HTTP GET (\texttt{httr::GET}) y el parseo de nodos
+  XPath (\texttt{xml2::xml\_find\_all}) en el Ejercicio 2; (ii)
+  parametrizar la simplificación topológica de polígonos con
+  \texttt{rmapshaper::ms\_simplify} y el reescalado cromático por
+  cuantiles en el Ejercicio 1; y (iii) refactorizar el aplicativo Shiny
+  del Ejercicio 3 en módulos nativos (\texttt{NS} /
+  \texttt{moduleServer}) con diseño \texttt{bslib} (Bootstrap 5).
+\item
+  \textbf{Autoría intelectual humana y validación empírica:} la
+  totalidad de la interpretación económica (primacía urbana en el IDF
+  departamental, transmisión monetaria comparada bajo paridad
+  descubierta de tasas de interés y dualismo laboral centro-periferia),
+  así como la verificación cruzada de cada cifra frente a las fuentes
+  primarias del DANE, DNP, Banco de la República y Reserva Federal de
+  Nueva York, fueron realizadas directamente por los tres integrantes
+  del Grupo 10.
+\item
+  \textbf{Registro de auditoría y descarte de alucinaciones:} durante
+  las sesiones de trabajo se identificaron, auditaron y descartaron
+  cuatro propuestas iniciales de la herramienta que presentaban
+  inconsistencias técnicas o metodológicas:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Alucinación 1 (Paquete inexistente \texttt{banrepR}):} el
+    modelo sugirió inicialmente descargar el IBR mediante una librería
+    ficticia llamada \texttt{banrepR}. Se descartó por completo y se
+    implementó web scraping directo sobre el flujo XML-SDMX oficial de
+    SUAMECA (\texttt{serie\ 241}).
+  \item
+    \emph{Alucinación 2 (Uso de \texttt{inner\_join} en series diarias
+    con festivos asimétricos):} una versión preliminar proponía cruzar
+    SOFR e IBR mediante \texttt{inner\_join}, lo que eliminaba 116 días
+    hábiles donde operó uno de los dos mercados (74 festivos en Colombia
+    y 42 en EE. UU.). Se reemplazó por un calendario continuo de días
+    hábiles (\texttt{wday\ \%in\%\ 2:6}) con imputación explícita por
+    \emph{forward-fill} (\texttt{tidyr::fill(.direction\ =\ "down")}) y
+    banderas de auditoría (\texttt{falta\_ibr}, \texttt{falta\_sofr})
+    para la Pestaña 2 de Shiny.
+  \item
+    \emph{Alucinación 3 (Simplificación geométrica con
+    \texttt{sf::st\_simplify} sin preservar topología):} para el Bono 1,
+    se evaluó inicialmente el algoritmo de Douglas-Peucker
+    (\texttt{st\_simplify}), el cual generaba brechas y traslapes entre
+    municipios colindantes. Se sustituyó por el algoritmo topológico de
+    Visvalingam-Whyatt
+    (\texttt{rmapshaper::ms\_simplify(keep\ =\ 0.05,\ keep\_shapes\ =\ TRUE)}),
+    preservando los 1,122 polígonos municipales.
+  \item
+    \emph{Alucinación 4 (Iconos no válidos en FontAwesome Free):} en la
+    construcción del módulo de la Pestaña 3, se corrigieron nombres de
+    iconos inexistentes en la versión gratuita de FontAwesome
+    (\texttt{chart-scatter} y \texttt{chart-bubble}) por identificadores
+    válidos (\texttt{braille} y \texttt{circle-nodes}), verificando la
+    ausencia de advertencias mediante pruebas unitarias con
+    \texttt{shiny::testServer()}.
+  \end{itemize}
+\end{enumerate}
+
+El detalle ampliado de los \emph{prompts} representativos y la
+trazabilidad por eje se encuentran documentados en la carpeta
+\href{https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/evidencias_IA/README.md}{\texttt{evidencias\_IA/README.md}}
+del repositorio.
 
 
 

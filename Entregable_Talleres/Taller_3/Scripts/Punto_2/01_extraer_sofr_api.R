@@ -8,6 +8,11 @@
 #          en la carpeta Outputs/Data/raw/.
 # ==============================================================================
 
+# Paquetes adicionales identificados explícitamente con [PAQUETE ADICIONAL]:
+# [PAQUETE ADICIONAL]: httr (cliente HTTP para consumo de APIs RESTful y cabeceras)
+# [PAQUETE ADICIONAL]: jsonlite (parseo y serialización de estructuras JSON)
+# [PAQUETE ADICIONAL]: readr (exportación rápida de tablas en formato CSV UTF-8)
+
 library(tidyverse)
 library(httr)
 library(jsonlite)
