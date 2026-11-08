@@ -10,6 +10,7 @@ Thumbs.db
 # Archivos temporales de editores
 *~
 *.swp
+~$*
 
 # Archivos de trabajo temporal y auxiliares
 scratch/

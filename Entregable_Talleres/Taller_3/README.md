@@ -64,6 +64,9 @@ Entregable_Talleres/Taller_3/
 │   ├── Taller_3_Grupo_10.html                  # Informe interactivo (publicable en Posit Connect Cloud)
 │   └── Taller_3_Grupo_10.pdf                   # Informe académico formal (artículo sin desbordes de margen)
 │
+├── uso de IA/
+│   └── Anexo_Uso_IA_Taller_3_Grupo_10.docx      # Anexo formal Word de uso auxiliar de IA y autoría humana
+│
 └── README.md                                   # Guía de reproducción, división de responsabilidades y auditoría
 ```
 
@@ -132,4 +135,4 @@ En estricto apego a las instrucciones de entrega, se documentan las comprobacion
 
 ## 5. Declaración de Cumplimiento de Lineamientos de IA
 
-De acuerdo con la reglamentación de la Universidad de los Andes (Nivel 3 de IAG), las herramientas de inteligencia artificial se emplearon exclusivamente como apoyo técnico para la optimización de código, estructuración modular y maquetación de informes reproducibles. La totalidad de las interpretaciones, análisis económicos y decisiones metodológicas fueron concebidas y redactadas por los integrantes del Grupo 10.
+De acuerdo con la reglamentación de la Universidad de los Andes (Nivel 3 de IAG) y el enunciado del curso, las herramientas de inteligencia artificial se emplearon exclusivamente como apoyo técnico para la optimización de código, estructuración modular y depuración de errores sintácticos. La totalidad de las interpretaciones, análisis económicos, formulaciones metodológicas y arquitectura del aplicativo Shiny fueron concebidas y redactadas por los integrantes del Grupo 10. El anexo formal en formato Word requerido por el enunciado se encuentra en [`uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](./uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx).
