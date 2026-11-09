@@ -18,86 +18,46 @@
 3. **Manejadores de eventos en JavaScript (`JohnCoene/javascript-for-r` y `JohnCoene/waiter`):** Conecta scripts en `www/js/` a los eventos del ciclo de vida de Shiny en el navegador (`shiny:value`, `shown.bs.tab`, `shown.bs.collapse`, `bslib.sidebar.toggle`) para re-procesar ecuaciones dinámicas en MathJax, redimensionar instancias de Leaflet y Plotly (`invalidateSize()`, `Plotly.Plots.resize()`) y dar feedback visual en estados `.recalculating`.
 4. **Aislamiento en módulos (`ThinkR-open/golem`):** Estructura cada vista en funciones `mod_<nombre>_ui(id)` (`ns <- NS(id)`) y `mod_<nombre>_server(id, ...)` (`moduleServer`) para evitar colisiones de identificadores en el DOM.
 
-## Hito 1. Diagnóstico de la interfaz inicial y migración a Bootstrap 5 (19:12 - 19:42)
+## Hito 1. Estandarización de paneles laterales (layout_sidebar), branding institucional y capas base (19:12 - 19:42)
 
 ### [2026-10-28 19:12:04] mpalma1 (`mpalma1@uniandes.edu.co`)
 /shiny-modern-ui-toolkit
-mira ya tenemos corriendo la app con los rds que armamos pero la interfaz se ve horrible muy vieja con fluidpage y tabsetpanel parece hecha en 2015 pasemos esto a bslib con bootstrap 5 sin tirarnos los inputs ni el server mira como esta ahorita
-
-```r
-ui <- fluidPage(
-  titlePanel("Taller 3 - Grupo 10"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("depto_sel", "Seleccione departamento:", choices = deptos_choices)
-    ),
-    mainPanel(
-      tabsetPanel(
-        tabPanel("1. Mapa IDF", leafletOutput("mapa_leaflet"), tableOutput("tabla_top3")),
-        tabPanel("2. Tasas", dateInput("fecha_tasa", "Fecha:", value = max_fecha), plotlyOutput("plot_tasas")),
-        tabPanel("3. Mercado Laboral", plotlyOutput("plot_laboral"), DTOutput("tabla_dt"))
-      )
-    )
-  )
-)
-```
+buenas noches ya tenemos montada la app con los tres modulos y los datos cargando bien pero la interfaz lateral se ve super incomoda usamos el sidebarLayout tradicional de shiny que se come como un tercio de la pantalla fija y en portatiles el mapa y los graficos se ven super apretados como pasamos eso a sidebars modernos con la skill para que se puedan colapsar con un boton limpio y no estorben el area de visualizacion
 
 ### [2026-10-28 19:14:02] Asistente IA (`shiny-modern-ui-toolkit`)
-El problema visual viene de dos lados: `fluidPage()` carga por defecto la plantilla clásica de Bootstrap 3, y meter `tabsetPanel()` dentro de un único `sidebarLayout()` hace que el panel lateral sea compartido aunque cada punto tenga controles distintos.
+Activada `shiny-modern-ui-toolkit`. El problema con el clásico `sidebarLayout()` de Shiny (heredado de Bootstrap 3) es que particiona la grilla horizontal en columnas rígidas fijas (generalmente 4 y 8 columnas), lo que ahoga los mapas cartográficos de Leaflet y los gráficos de series temporales en pantallas de computadores portátiles.
 
-Siguiendo la referencia de `rstudio/bslib`, podemos cambiar el contenedor externo a `bslib::page_navbar()` con un tema Bootstrap 5 (`version = 5`) y darle a cada pestaña su propio `bslib::layout_sidebar()`. Tus `inputId` y `outputId` quedan exactamente con los mismos nombres para no romper el `server`:
+La skill prescribe migrar a `bslib::layout_sidebar()` utilizando `bslib::sidebar()`. Esto implementa un panel lateral retráctil nativo (*off-canvas* / drawer) que permite fijar un ancho compacto en píxeles (`width = 300`) con `open = "desktop"`. De este modo, los analistas pueden contraer el menú lateral en cualquier momento mediante un botón limpio para expandir el lienzo cartográfico y analítico al 100% del ancho disponible:
 
 ```r
-# Función de tema sugerida para reemplazar el estilo por defecto de fluidPage
-crear_tema_app <- function() {
-  bslib::bs_theme(
-    version      = 5,
-    preset       = "shiny",
-    bg           = "#ffffff",
-    fg           = "#0f172a",
-    primary      = "#1e3a5f",
-    secondary    = "#334155",
-    base_font    = bslib::font_google("IBM Plex Sans", local = FALSE),
-    code_font    = bslib::font_google("IBM Plex Mono", local = FALSE),
-    "navbar-bg"         = "#ffffff",
-    "card-border-color" = "#cbd5e1",
-    "border-radius"     = "0.25rem"
-  )
-}
-
-ui <- bslib::page_navbar(
-  title        = "Universidad de los Andes · Taller 3 | Grupo 10",
-  theme        = crear_tema_app(),
-  fillable     = FALSE,
-  fluid        = TRUE,
-  bslib::nav_panel(
-    title = "1. Desempeño Fiscal (IDF)",
-    bslib::layout_sidebar(
-      sidebar = bslib::sidebar(
-        title = "Control Territorial",
-        width = 300,
-        selectInput("depto_sel", "Seleccione departamento:", choices = deptos_choices)
-      ),
-      leafletOutput("mapa_leaflet"),
-      tableOutput("tabla_top3")
+# Estructuración con layout_sidebar() moderno de bslib en cada módulo
+bslib::layout_sidebar(
+  sidebar = bslib::sidebar(
+    width    = 300,
+    open     = "desktop",
+    title    = "Parámetros de Selección",
+    shiny::selectInput(
+      inputId  = ns("depto_sel"),
+      label    = "Departamento de Análisis:",
+      choices  = deptos_choices,
+      selected = "NACIONAL"
     )
-  )
-  # ... nav_panel 2 y 3 con la misma estructura
+  ),
+  # Contenedor analítico: se expande automáticamente al colapsar el sidebar
+  bslib::layout_columns( ... )
 )
 ```
 
 ### [2026-10-28 19:27:45] mpalma1 (`mpalma1@uniandes.edu.co`)
-probe eso pero le meti fillable TRUE y se me aplasto el mapa horrible en el portatil ademas quitemosle esos iconos de fontawesome que le habiamos metido de afan y el boton de dark mode dejemos solo el logo de uniandes arriba a la izquierda y el titulo plano que se vea serio institucional
+excelente ya el mapa y las series tienen mucho mas espacio horizontal y el boton de colapsar funciona perfecto ahora queremos limpiar el header arriba porque le habiamos metido el boton de modo oscuro que cambia a negro y unos iconos de font awesome que se ven poco formales como dejamos la barra limpia con el escudo oficial de uniandes y el titulo del grupo sin que se rompa en dos filas
 
 ### [2026-10-28 19:29:18] Asistente IA (`shiny-modern-ui-toolkit`)
-Sí, cuando `fillable = TRUE` está activo en `page_navbar()`, Bootstrap 5 fuerza el contenedor al `100vh` de la ventana y comprime cualquier widget que supere el alto restante. Déjalo explícitamente en `fillable = FALSE` y `fillable_mobile = FALSE` tanto en `page_navbar()` como en cada `layout_sidebar()`.
+Siguiendo las directrices de la skill para aplicaciones analíticas académicas (estilo UniAndes / BanRep), se eliminan los elementos distractores como `input_dark_mode()` y los iconos decorativos (`shiny::icon()`) en las pestañas `nav_panel()`, priorizando una jerarquía tipográfica rigurosa.
 
-Para quitar los iconos de las pestañas y poner el logo institucional a la izquierda del título en la barra superior, pasa un bloque `tags$div(class = "brand-wrapper", ...)` en el argumento `title` de `page_navbar()` y elimina las llamadas a `shiny::icon()` de los `nav_panel()`:
+Para integrar el escudo sin que quiebre la línea ni distorsione la altura del navbar, encapsulamos el branding dentro de `tags$div(class = "brand-wrapper", ...)` pasado al argumento `title` de `page_navbar()`. Esto vincula la imagen servida desde `modern_ui/img/logo_uniandes.png` con un separador vertical y tipografía institucional estructurada:
 
 ```r
-# Registro de la carpeta www/ para servir el logo y el CSS
-shiny::addResourcePath("modern_ui", normalizePath("www"))
-
+# Encabezado institucional limpio en app.R
 ui <- bslib::page_navbar(
   title = tags$div(
     class = "brand-wrapper",
@@ -126,10 +86,12 @@ ui <- bslib::page_navbar(
 ```
 
 ### [2026-10-28 19:35:10] mpalma1 (`mpalma1@uniandes.edu.co`)
-ya quedo fija la barra pero fijate que cuando recargo el mapa sale una marca de agua en todo el fondo que dice API KEY REQUIRED cartodb como quitamos eso sin pagar nada
+listo ya quedo el header impecable y sobrio pero al probar la pestaña del mapa nos salio una marca de agua gigante en las teselas que dice API KEY REQUIRED cartodb como cambiamos esa capa por una que sea gris neutra y que no pida llaves ni se caiga
 
 ### [2026-10-28 19:36:50] Asistente IA (`shiny-modern-ui-toolkit`)
-El proveedor `CartoDB.Positron` ahora exige token en peticiones desde navegadores modernos. En `leaflet::addProviderTiles()`, reemplaza esa capa base por `Esri.WorldGrayCanvas` (que es sobria, gris neutra y libre de marcas de agua) o `OpenStreetMap.Mapnik` como capa alternativa:
+CartoDB actualizó recientemente sus políticas de teselas exigiendo llaves de autenticación desde dominios web, lo que genera esa marca de agua en Leaflet.
+
+Para mantener una estética cartográfica neutra y de alta legibilidad académica sin costos ni requerimiento de tokens, la skill recomienda reemplazarlo por `Esri.WorldGrayCanvas` en `addProviderTiles()`, dejando `OpenStreetMap.Mapnik` como opción de respaldo en el control de capas:
 
 ```r
 leaflet::leaflet(shp_dpto_simp) |>
