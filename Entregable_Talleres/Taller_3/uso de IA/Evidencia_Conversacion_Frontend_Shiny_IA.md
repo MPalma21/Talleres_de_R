@@ -18,7 +18,7 @@
 3. **Manejadores de eventos en JavaScript (`JohnCoene/javascript-for-r` y `JohnCoene/waiter`):** Conecta scripts en `www/js/` a los eventos del ciclo de vida de Shiny en el navegador (`shiny:value`, `shown.bs.tab`, `shown.bs.collapse`, `bslib.sidebar.toggle`) para re-procesar ecuaciones dinámicas en MathJax, redimensionar instancias de Leaflet y Plotly (`invalidateSize()`, `Plotly.Plots.resize()`) y dar feedback visual en estados `.recalculating`.
 4. **Aislamiento en módulos (`ThinkR-open/golem`):** Estructura cada vista en funciones `mod_<nombre>_ui(id)` (`ns <- NS(id)`) y `mod_<nombre>_server(id, ...)` (`moduleServer`) para evitar colisiones de identificadores en el DOM.
 
-## Hito 1. Estandarización de paneles laterales (layout_sidebar), branding institucional y capas base (19:12 - 19:42)
+## Hito 1. Estandarización de paneles laterales (layout_sidebar), branding y barra de navegación (19:12 - 19:42)
 
 ### [2026-10-28 19:12:04] mpalma1 (`mpalma1@uniandes.edu.co`)
 /shiny-modern-ui-toolkit
@@ -86,27 +86,48 @@ ui <- bslib::page_navbar(
 ```
 
 ### [2026-10-28 19:35:10] mpalma1 (`mpalma1@uniandes.edu.co`)
-listo ya quedo el header impecable y sobrio pero al probar la pestaña del mapa nos salio una marca de agua gigante en las teselas que dice API KEY REQUIRED cartodb como cambiamos esa capa por una que sea gris neutra y que no pida llaves ni se caiga
+listo ya quedo el header impecable y sobrio pero mira que en pantallas de portatil las tres pestañas se bajan a una segunda linea y la barra se ensancha tapando el contenido principal como obligamos con css a que el header quede siempre en una sola fila fija y que la pestaña activa tenga una linea sobria abajo en vez del fondo azul de bootstrap
 
 ### [2026-10-28 19:36:50] Asistente IA (`shiny-modern-ui-toolkit`)
-CartoDB actualizó recientemente sus políticas de teselas exigiendo llaves de autenticación desde dominios web, lo que genera esa marca de agua en Leaflet.
+En Bootstrap 5, la clase `.navbar-nav` permite por defecto el salto de línea (`flex-wrap: wrap`) cuando el contenedor de marca (`.navbar-brand`) y el logo consumen espacio horizontal, lo que deforma la altura del encabezado.
 
-Para mantener una estética cartográfica neutra y de alta legibilidad académica sin costos ni requerimiento de tokens, la skill recomienda reemplazarlo por `Esri.WorldGrayCanvas` en `addProviderTiles()`, dejando `OpenStreetMap.Mapnik` como opción de respaldo en el control de capas:
+Siguiendo el principio de gestión desacoplada de CSS de la skill (*Outstanding User Interfaces with Shiny*), controlamos el flexbox de la barra superior en `www/css/modern_ui.css`: forzamos `flex-wrap: nowrap !important` en `.navbar .container-fluid` y en `.navbar-nav`, establecemos `min-height: 68px` y estilizamos el estado activo (`.nav-link.active`) con un subrayado sobrio de `2px` en color institucional (`var(--inst-navy)`), eliminando cualquier fondo tipo píldora o transición brusca:
 
-```r
-leaflet::leaflet(shp_dpto_simp) |>
-  leaflet::addProviderTiles(
-    provider = "Esri.WorldGrayCanvas",
-    group    = "Gris Neutro (Esri)"
-  ) |>
-  leaflet::addProviderTiles(
-    provider = "OpenStreetMap.Mapnik",
-    group    = "OpenStreetMap"
-  ) |>
-  leaflet::addLayersControl(
-    baseGroups = c("Gris Neutro (Esri)", "OpenStreetMap"),
-    options    = leaflet::layersControlOptions(collapsed = TRUE)
-  )
+```css
+/* Barra de navegación superior de fila única en www/css/modern_ui.css */
+.navbar .container-fluid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.navbar-nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  flex-wrap: nowrap !important;
+  margin-left: auto !important;
+}
+
+.nav-link {
+  font-weight: 500 !important;
+  font-size: 0.86rem !important;
+  color: var(--inst-text-muted) !important;
+  white-space: nowrap !important;
+  padding: 0.4rem 0.85rem !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--inst-navy) !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid var(--inst-navy) !important;
+  background-color: transparent !important;
+}
 ```
 
 ## Hito 2. Reorganización de grillas, tarjetas y alturas en el Punto 1 (19:45 - 20:20)
