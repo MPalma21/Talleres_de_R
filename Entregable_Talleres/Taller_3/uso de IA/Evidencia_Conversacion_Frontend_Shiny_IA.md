@@ -464,12 +464,6 @@ if (mostrar_fases) {
 }
 ```
 
-### [2026-10-28 21:18:12] mpalma1 (`mpalma1@uniandes.edu.co`)
-oye y lo que decia de factor de escala 1 a 2.5 en el titulo de tasas si es verdad que hace falta ponerlo ahi o sobra
-
-### [2026-10-28 21:19:40] Asistente IA (`shiny-modern-ui-toolkit`)
-Sobra por completo. Ese factor de 2.5 solo era necesario en el script estático de ggplot2 porque `sec_axis()` no tiene un eje Y independiente y obligaba a dividir los datos del IBR entre 2.5 para graficar ambas series en una sola coordenada. En Plotly el eje izquierdo y el derecho son dos ejes reales e independientes, así que cada serie se dibuja con sus valores verdaderos.
-
 ### [2026-10-28 21:24:08] mpalma1 (`mpalma1@uniandes.edu.co`)
 bien ya salieron las anotaciones de tasas ahora en el modulo 3 de mercado laboral se nos perdieron casi todas las burbujas solo salen caribe y pacifica y en 1300000 cop hay varios departamentos con el mismo ingreso y los nombres se tapan unos con otros mira como teniamos los colores
 
@@ -506,36 +500,25 @@ df_plot$pos_texto <- dplyr::case_when(
 ```
 
 ### [2026-10-28 21:35:10] mpalma1 (`mpalma1@uniandes.edu.co`)
-y a esa grafica de dispersion le podemos meter la banda de confianza de la regresion mco para que no quede solo la linea pelada
+y en esa misma vista del modulo 3 como organizamos el contenedor para que la grafica de dispersion y la matriz de datos no queden apiladas verticalmente con un scroll larguisimo podemos meterles una tarjeta con subpestañas tipo navset_card_underline y habilitar el boton de pantalla completa para que la gente pueda maximizar el grafico interactivo si quiere examinarlo a fondo
 
 ### [2026-10-28 21:37:25] Asistente IA (`shiny-modern-ui-toolkit`)
-Claro, calculamos el intervalo de confianza al 95% con `predict(modelo_mco, interval = "confidence")` sobre una secuencia fina de X y lo agregamos como un listón sombreado con `plotly::add_ribbons()` antes de dibujar la línea punteada:
+Para organizar múltiples vistas analíticas sin forzar scroll vertical innecesario, la skill prescribe `bslib::navset_card_underline()`. Esta variante de Bootstrap 5 utiliza un subrayado minimalista para las sub-pestañas activas, integra un botón nativo de maximizar (`full_screen = TRUE`) y mantiene un título institucional con renderizado de fórmulas matemáticas mediante `shiny::HTML()`:
 
 ```r
-if (isTRUE(input$mostrar_tendencia) && nrow(df_plot) >= 3) {
-  modelo_mco <- stats::lm(yv ~ TASA_INFORMALIDAD, data = df_plot)
-  x_seq      <- seq(min(df_plot$TASA_INFORMALIDAD), max(df_plot$TASA_INFORMALIDAD), length.out = 80)
-  pred_df    <- as.data.frame(stats::predict(
-    modelo_mco,
-    newdata  = data.frame(TASA_INFORMALIDAD = x_seq),
-    interval = "confidence",
-    level    = 0.95
-  ))
-  pred_df$x <- x_seq
-
-  fig <- fig |>
-    plotly::add_ribbons(
-      data      = pred_df, x = ~x, ymin = ~lwr, ymax = ~upr,
-      name      = "IC 95% (MCO)",
-      fillcolor = "rgba(30, 58, 95, 0.10)",
-      line      = list(color = "rgba(30, 58, 95, 0.22)", width = 0.8)
-    ) |>
-    plotly::add_lines(
-      data = pred_df, x = ~x, y = ~fit,
-      name = "Ajuste lineal MCO",
-      line = list(color = "#0f172a", width = 2.2, dash = "dash")
-    )
-}
+# Organización en sub-pestañas con pantalla completa en R/mod_tab3_libre.R
+bslib::navset_card_underline(
+  full_screen = TRUE,
+  title       = shiny::HTML("Análisis Transversal de Dualismo Laboral y Capacidad Fiscal \\((2024)\\)"),
+  bslib::nav_panel(
+    title = "Dispersión y Ajuste MCO (Plotly)",
+    plotly::plotlyOutput(ns("grafico_libre_plotly"), height = "525px")
+  ),
+  bslib::nav_panel(
+    title = "Matriz de Datos Departamentales",
+    DT::DTOutput(ns("tabla_laboral_dt"))
+  )
+)
 ```
 
 ## Hito 5. Estado nacional en el Módulo 1 y notas técnicas desplegables (21:45 - 22:52)
