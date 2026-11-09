@@ -156,7 +156,8 @@
 \usepackage{float}
 \usepackage{colortbl}
 \usepackage{pdflscape}
-\usepackage{tabu}
+\usepackage{tabularx}
+\usepackage{xltabular}
 \usepackage{threeparttable}
 \usepackage{threeparttablex}
 \usepackage[normalem]{ulem}
@@ -240,7 +241,7 @@
 \subtitle{Taller de Programación en R (2026-2), Facultad de Economía,
 Universidad de los Andes}
 \author{Grupo 10}
-\date{2026-11-07}
+\date{2026-11-08}
 \begin{document}
 \maketitle
 
@@ -1866,10 +1867,16 @@ componentes independientes con espacios de nombres encapsulados mediante
   para el Literal 3.C (explorador en \texttt{plotly} y tabla \texttt{DT}
   sobre dualismo laboral y capacidad fiscal departamental).
 \item
-  \textbf{\texttt{Scripts/Punto\_3/app.R}:} orquestador ligero
-  (\textasciitilde115 líneas) que declara explícitamente las librerías
-  adicionales mediante comentarios
-  \texttt{\#\ {[}PAQUETE\ ADICIONAL{]}}, construye la barra de
+  \textbf{\texttt{Scripts/Punto\_3/www/}:} catálogo de activos estáticos
+  de interfaz moderna (\texttt{css/modern\_ui.css} con variables CSS
+  \texttt{:root}, animaciones de microinteracción y modo oscuro
+  dinámico; \texttt{js/modern\_ui.js} con mensajería bidireccional
+  Shiny-JS y toasts).
+\item
+  \textbf{\texttt{Scripts/Punto\_3/app.R}:} orquestador principal que
+  declara explícitamente las librerías adicionales mediante comentarios
+  \texttt{\#\ {[}PAQUETE\ ADICIONAL{]}}, inyecta los activos estáticos
+  vía \texttt{shiny::addResourcePath()}, construye la barra de
   navegación superior (\texttt{bslib::page\_navbar()}) con conmutador de
   modo claro/oscuro (\texttt{bslib::input\_dark\_mode()}) e invoca los
   tres servidores modulares.
@@ -1880,6 +1887,9 @@ componentes independientes con espacios de nombres encapsulados mediante
 \CommentTok{\# Identificación explícita de paquetes adicionales en Scripts/Punto\_3/app.R:}
 \CommentTok{\# [PAQUETE ADICIONAL]: shiny (framework de aplicaciones web interactivas y módulos NS/moduleServer)}
 \CommentTok{\# [PAQUETE ADICIONAL]: bslib (arquitectura de interfaz Bootstrap 5, tarjetas, value\_box y modo oscuro)}
+\CommentTok{\# [PAQUETE ADICIONAL]: shinyWidgets (controles interactivos avanzados: pickerInput con búsqueda, prettyRadioButtons, prettySwitch)}
+\CommentTok{\# [PAQUETE ADICIONAL]: shinyjs (utilidades de JavaScript reactivo para interacción en cliente)}
+\CommentTok{\# [PAQUETE ADICIONAL]: waiter (pantallas y spinners de carga fluida para cómputos pesados)}
 \CommentTok{\# [PAQUETE ADICIONAL]: leaflet (cartografía web interactiva para polígonos espaciales)}
 \CommentTok{\# [PAQUETE ADICIONAL]: plotly (gráficos interactivos con zoom, hover y doble eje)}
 \CommentTok{\# [PAQUETE ADICIONAL]: DT (tablas interactivas paginadas para auditoría de datos)}
@@ -1888,16 +1898,29 @@ componentes independientes con espacios de nombres encapsulados mediante
 \end{Highlighting}
 \end{Shaded}
 
-Para optar al \textbf{bono de mejor diseño}, la interfaz emplea un tema
+Para optar al \textbf{bono de mejor diseño} y bajo los estándares de
+desarrollo de interfaces modernas de usuario (aplicando la arquitectura
+de componentes y diseño desacoplado), el aplicativo implementa un
+sistema visual integral y completamente adaptable a cualquier tamaño de
+pantalla (smartphones, tablets, laptops y pantallas Ultra-Wide): tema
 Bootstrap 5 personalizado
 (\texttt{bslib::bs\_theme(version\ =\ 5,\ preset\ =\ "shiny",\ primary\ =\ "\#1e3d59",\ secondary\ =\ "\#0f766e")})
-con tipografías institucionales (\texttt{Montserrat},
-\texttt{Nunito\ Sans} y \texttt{Fira\ Code}), contenedores de
-indicadores
-\texttt{bslib::layout\_column\_wrap(width\ =\ 1/3,\ fill\ =\ FALSE)} con
-\texttt{bslib::value\_box()}, tarjetas expandibles a pantalla completa
-(\texttt{full\_screen\ =\ TRUE}) y paneles con pestañas subrayadas
-(\texttt{bslib::navset\_card\_underline()}).
+con tipografías web (\texttt{Plus\ Jakarta\ Sans}, \texttt{Montserrat} y
+\texttt{Fira\ Code}), rejillas reactivas fluidas mediante
+\texttt{bslib::breakpoints()} que apilan las tarjetas
+\texttt{bslib::value\_box()} en móviles y las expanden en pantallas
+amplias, barras laterales colapsables en móviles
+(\texttt{open\ =\ "desktop"}) y redimensionables en escritorio
+(\texttt{resizable\ =\ TRUE}), controles avanzados
+(\texttt{shinyWidgets::pickerInput} con búsqueda en vivo,
+\texttt{prettyRadioButtons} y \texttt{prettySwitch}), pantallas de carga
+reactiva (\texttt{waiter::withWaiter}) para operaciones complejas,
+tarjetas expandibles a pantalla completa
+(\texttt{full\_screen\ =\ TRUE}), barras de progreso para rankings,
+tipografía fluida \texttt{clamp()} y diseño CSS modular en
+\texttt{www/css/modern\_ui.css} con enlace JavaScript para redibujado
+automático de mapas y gráficos (\texttt{invalidateSize()} y
+\texttt{Plotly.Plots.resize()}).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

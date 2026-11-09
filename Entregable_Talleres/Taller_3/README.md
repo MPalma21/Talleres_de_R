@@ -31,6 +31,9 @@ Entregable_Talleres/Taller_3/
 │       │   ├── mod_tab1_idf.R                  # Módulo Pestaña 1 (Mapa Leaflet IDF Dpto. y Top 3 Mpios)
 │       │   ├── mod_tab2_tasas.R                # Módulo Pestaña 2 (Doble eje SOFR/IBR y Calculadora π)
 │       │   └── mod_tab3_libre.R                # Módulo Pestaña 3 (Diseño libre en Plotly y tabla DT)
+│       ├── www/                                # Assets estáticos modernos (tokens CSS :root y puente JS)
+│       │   ├── css/modern_ui.css
+│       │   └── js/modern_ui.js
 │       ├── datos_ejercicio_3c_laboral.csv      # Base departamental integrada (GEIH/EMICRON 2024 + IDF 2024)
 │       └── data_shiny/                         # Capas espaciales y bases serializadas para Shiny
 │           ├── df_deptos.rds
@@ -102,12 +105,17 @@ Rscript Entregable_Talleres/Taller_3/Scripts/Punto_2/03_analisis_financiero_punt
 Rscript Entregable_Talleres/Taller_3/Scripts/Punto_3/01_preparar_datos_shiny.R
 ```
 
-### 3.2 Ejecución del Aplicativo Shiny
+### 3.2 Ejecución del Aplicativo Shiny y Adaptabilidad Multi-Dispositivo
 Para iniciar el aplicativo interactivo Shiny:
 ```r
 shiny::runApp("Entregable_Talleres/Taller_3/Scripts/Punto_3")
 ```
-El aplicativo abrirá una interfaz moderna con tres pestañas funcionales:
+El aplicativo abrirá una interfaz moderna y completamente **adaptable a cualquier tamaño de pantalla** (smartphones, tablets, laptops, monitores Ultra-Wide/4K y ventanas divididas):
+- **Diseño fluido y responsivo:** Viewport mobile configurado, `fillable_mobile = FALSE` para scroll vertical natural en pantallas táctiles, tipografía fluida con funciones CSS `clamp()`, y barras laterales colapsables automáticamente en móviles (`open = "desktop"`) y redimensionables manualmente por el usuario en escritorio (`resizable = TRUE`).
+- **Rejillas adaptativas por breakpoints:** Las tarjetas de indicadores (`bslib::value_box`) y gráficos utilizan `bslib::breakpoints()` para apilarse en 1 columna en móviles (`xs = 12`), 2 columnas en tablets (`sm = 6`) y 3 columnas en escritorio (`md = 4`), evitando desbordes o compresión de textos.
+- **Redibujado automático de mapas y gráficos:** Configuración de `responsive = TRUE` y `autosize = TRUE` en Plotly, y escuchadores JavaScript (`window.resize`, `orientationchange` y `bslib.sidebar.toggle`) que disparan `invalidateSize()` en Leaflet y resize en Plotly para adaptarse al instante a rotaciones de pantalla o cambios de ancho.
+
+Pestañas funcionales del aplicativo:
 1. **Desempeño Fiscal (IDF):** Mapa interactivo de Colombia en Leaflet con selección bidireccional de departamentos y desglose del Top 3 municipal.
 2. **Tasas y Devaluación ($\pi$):** Serie interactiva de doble eje en Plotly, selector de fecha histórica, selector de convención de comparabilidad (tasas publicadas vs. Efectiva Anual base 360) y calculadora de devaluación implícita con detección explícita de festivos asimétricos y fines de semana.
 3. **Diseño Libre (Plotly):** Explorador de burbujas en Plotly y tabla de auditoría `DT` sobre dualismo laboral departamental (informalidad vs. ingreso laboral mediano o IDF departamental 2024) con filtros regionales, umbral de ocupados, recta MCO y cuadrantes de promedio nacional.

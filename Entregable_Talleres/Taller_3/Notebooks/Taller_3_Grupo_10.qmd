@@ -1144,12 +1144,16 @@ Siguiendo las convenciones nativas de Shiny (que carga automáticamente todo arc
 3. **`Scripts/Punto_3/R/mod_tab1_idf.R`:** módulo `mod_tab1_idf_ui()` / `mod_tab1_idf_server()` para el Literal 3.A (mapa interactivo `leaflet` del IDF departamental artificial y tabla reactiva del Top 3 municipal).
 4. **`Scripts/Punto_3/R/mod_tab2_tasas.R`:** módulo `mod_tab2_tasas_ui()` / `mod_tab2_tasas_server()` para el Literal 3.B (gráfico interactivo `plotly` de doble eje para SOFR e IBR y calculadora de devaluación implícita $\pi$).
 5. **`Scripts/Punto_3/R/mod_tab3_libre.R`:** módulo `mod_tab3_libre_ui()` / `mod_tab3_libre_server()` para el Literal 3.C (explorador en `plotly` y tabla `DT` sobre dualismo laboral y capacidad fiscal departamental).
-6. **`Scripts/Punto_3/app.R`:** orquestador ligero (~115 líneas) que declara explícitamente las librerías adicionales mediante comentarios `# [PAQUETE ADICIONAL]`, construye la barra de navegación superior (`bslib::page_navbar()`) con conmutador de modo claro/oscuro (`bslib::input_dark_mode()`) e invoca los tres servidores modulares.
+6. **`Scripts/Punto_3/www/`:** catálogo de activos estáticos de interfaz moderna (`css/modern_ui.css` con variables CSS `:root`, animaciones de microinteracción y modo oscuro dinámico; `js/modern_ui.js` con mensajería bidireccional Shiny-JS y toasts).
+7. **`Scripts/Punto_3/app.R`:** orquestador principal que declara explícitamente las librerías adicionales mediante comentarios `# [PAQUETE ADICIONAL]`, inyecta los activos estáticos vía `shiny::addResourcePath()`, construye la barra de navegación superior (`bslib::page_navbar()`) con conmutador de modo claro/oscuro (`bslib::input_dark_mode()`) e invoca los tres servidores modulares.
 
 ```r
 # Identificación explícita de paquetes adicionales en Scripts/Punto_3/app.R:
 # [PAQUETE ADICIONAL]: shiny (framework de aplicaciones web interactivas y módulos NS/moduleServer)
 # [PAQUETE ADICIONAL]: bslib (arquitectura de interfaz Bootstrap 5, tarjetas, value_box y modo oscuro)
+# [PAQUETE ADICIONAL]: shinyWidgets (controles interactivos avanzados: pickerInput con búsqueda, prettyRadioButtons, prettySwitch)
+# [PAQUETE ADICIONAL]: shinyjs (utilidades de JavaScript reactivo para interacción en cliente)
+# [PAQUETE ADICIONAL]: waiter (pantallas y spinners de carga fluida para cómputos pesados)
 # [PAQUETE ADICIONAL]: leaflet (cartografía web interactiva para polígonos espaciales)
 # [PAQUETE ADICIONAL]: plotly (gráficos interactivos con zoom, hover y doble eje)
 # [PAQUETE ADICIONAL]: DT (tablas interactivas paginadas para auditoría de datos)
@@ -1157,7 +1161,7 @@ Siguiendo las convenciones nativas de Shiny (que carga automáticamente todo arc
 # [PAQUETE ADICIONAL]: scales (formateo de escalas numéricas y monetarias)
 ```
 
-Para optar al **bono de mejor diseño**, la interfaz emplea un tema Bootstrap 5 personalizado (`bslib::bs_theme(version = 5, preset = "shiny", primary = "#1e3d59", secondary = "#0f766e")`) con tipografías institucionales (`Montserrat`, `Nunito Sans` y `Fira Code`), contenedores de indicadores `bslib::layout_column_wrap(width = 1/3, fill = FALSE)` con `bslib::value_box()`, tarjetas expandibles a pantalla completa (`full_screen = TRUE`) y paneles con pestañas subrayadas (`bslib::navset_card_underline()`).
+Para optar al **bono de mejor diseño** y bajo los estándares de desarrollo de interfaces modernas de usuario (aplicando la arquitectura de componentes y diseño desacoplado), el aplicativo implementa un sistema visual integral y completamente adaptable a cualquier tamaño de pantalla (smartphones, tablets, laptops y pantallas Ultra-Wide): tema Bootstrap 5 personalizado (`bslib::bs_theme(version = 5, preset = "shiny", primary = "#1e3d59", secondary = "#0f766e")`) con tipografías web (`Plus Jakarta Sans`, `Montserrat` y `Fira Code`), rejillas reactivas fluidas mediante `bslib::breakpoints()` que apilan las tarjetas `bslib::value_box()` en móviles y las expanden en pantallas amplias, barras laterales colapsables en móviles (`open = "desktop"`) y redimensionables en escritorio (`resizable = TRUE`), controles avanzados (`shinyWidgets::pickerInput` con búsqueda en vivo, `prettyRadioButtons` y `prettySwitch`), pantallas de carga reactiva (`waiter::withWaiter`) para operaciones complejas, tarjetas expandibles a pantalla completa (`full_screen = TRUE`), barras de progreso para rankings, tipografía fluida `clamp()` y diseño CSS modular en `www/css/modern_ui.css` con enlace JavaScript para redibujado automático de mapas y gráficos (`invalidateSize()` y `Plotly.Plots.resize()`).
 
 ---
 

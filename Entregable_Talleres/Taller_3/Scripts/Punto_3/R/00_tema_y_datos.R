@@ -1,8 +1,8 @@
 # ==============================================================================
-# Módulo 00: Configuración de Tema Visual (bslib) y Carga Defensiva de Datos
+# Módulo 00: Configuración de Tema Institucional (bslib) y Carga de Datos
 # Archivo: R/00_tema_y_datos.R
 # Propósito: Centralizar la resolución de rutas, la validación de los objetos
-#            RDS pre-procesados y la definición del tema Bootstrap 5 del tablero.
+#            RDS pre-procesados, el tema Bootstrap 5 sobrio y componentes KPI.
 # ==============================================================================
 
 #' Localizar el directorio data_shiny desde cualquier ruta de ejecución
@@ -91,58 +91,49 @@ cargar_datos_shiny <- function() {
   )
 }
 
-#' Construir el tema Bootstrap 5 personalizado con bslib
+#' Construir el tema Bootstrap 5 institucional sobrio con bslib
 #' @noRd
 crear_tema_app <- function() {
   bslib::bs_theme(
     version      = 5,
     preset       = "shiny",
-    primary      = "#1e3d59",
-    secondary    = "#0f766e",
-    success      = "#15803d",
-    info         = "#0284c7",
-    warning      = "#d97706",
-    danger       = "#b91c1c",
+    bg           = "#ffffff",
+    fg           = "#0f172a",
+    primary      = "#1e3a5f",
+    secondary    = "#334155",
+    success      = "#1e3a5f",
+    info         = "#334155",
+    warning      = "#78350f",
+    danger       = "#7f1d1d",
     base_font    = bslib::font_collection(
-      bslib::font_google("Nunito Sans", local = FALSE),
+      bslib::font_google("IBM Plex Sans", wght = c(400, 500, 600, 700), local = FALSE),
       "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"
     ),
     heading_font = bslib::font_collection(
-      bslib::font_google("Montserrat", wght = c(600, 700), local = FALSE),
+      bslib::font_google("IBM Plex Sans", wght = c(600, 700), local = FALSE),
       "system-ui", "-apple-system", "Segoe UI", "sans-serif"
     ),
     code_font    = bslib::font_collection(
-      bslib::font_google("Fira Code", local = FALSE),
+      bslib::font_google("IBM Plex Mono", wght = c(400, 500), local = FALSE),
       "monospace"
     ),
-    "card-border-radius" = "0.65rem",
-    "btn-border-radius"  = "0.45rem"
-  ) |>
-    bslib::bs_add_rules("
-      .card {
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
-      }
-      .card-header {
-        font-weight: 600;
-        letter-spacing: 0.01em;
-      }
-      .bslib-value-box .value-box-title {
-        font-weight: 600;
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-      }
-      .bslib-value-box .value-box-value {
-        font-weight: 700;
-        font-size: 1.45rem;
-      }
-      .formula-box {
-        text-align: center;
-        font-weight: 700;
-        padding: 8px 10px;
-        background-color: var(--bs-tertiary-bg);
-        border: 1px solid var(--bs-border-color);
-        border-radius: 6px;
-      }
-    ")
+    "card-border-radius" = "0.375rem",
+    "btn-border-radius"  = "0.25rem"
+  )
+}
+
+#' Componente de tarjeta de indicador (KPI) institucional de fondo neutro
+#' @param titulo_ui Texto o etiqueta HTML/LaTeX del indicador
+#' @param valor_ui Output reactivo del valor principal
+#' @param sub_ui Output o texto secundario opcional
+#' @param acento Clase de borde lateral ("navy", "slate", "teal")
+#' @noRd
+kpi_card_institucional <- function(titulo_ui, valor_ui, sub_ui = NULL, acento = "navy") {
+  clase_acento <- paste0("kpi-institutional kpi-accent-", acento)
+  shiny::div(
+    class = clase_acento,
+    shiny::div(class = "kpi-label", titulo_ui),
+    shiny::div(class = "kpi-value", valor_ui),
+    if (!is.null(sub_ui)) shiny::div(class = "kpi-sub", sub_ui)
+  )
 }
