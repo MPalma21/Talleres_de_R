@@ -17,6 +17,7 @@
 # [PAQUETE ADICIONAL]: stringr (normalización de códigos DIVIPOLA de dos dígitos)
 # [PAQUETE ADICIONAL]: scales (formateo de escalas monetarias y porcentuales en gráficas)
 # [PAQUETE ADICIONAL]: ggrepel (etiquetas de texto sin solapamiento en visualizaciones estáticas)
+# [PAQUETE ADICIONAL]: here (resolución portable de rutas relativas a la raíz del proyecto)
 
 suppressPackageStartupMessages({
   library(dplyr)

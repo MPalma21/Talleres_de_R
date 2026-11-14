@@ -12,6 +12,8 @@
 # [PAQUETE ADICIONAL]: httr (cliente HTTP para consumo de APIs RESTful y cabeceras)
 # [PAQUETE ADICIONAL]: jsonlite (parseo y serialización de estructuras JSON)
 # [PAQUETE ADICIONAL]: readr (exportación rápida de tablas en formato CSV UTF-8)
+# [PAQUETE ADICIONAL]: lubridate (parseo y manejo estandarizado de fechas ISO-8601)
+# [PAQUETE ADICIONAL]: here (resolución portable de rutas relativas a la raíz del proyecto)
 
 library(tidyverse)
 library(httr)

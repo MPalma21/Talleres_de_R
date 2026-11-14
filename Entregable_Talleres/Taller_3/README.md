@@ -31,9 +31,10 @@ Entregable_Talleres/Taller_3/
 │       │   ├── mod_tab1_idf.R                  # Módulo Pestaña 1 (Mapa Leaflet IDF Dpto. y Top 3 Mpios)
 │       │   ├── mod_tab2_tasas.R                # Módulo Pestaña 2 (Doble eje SOFR/IBR y Calculadora π)
 │       │   └── mod_tab3_libre.R                # Módulo Pestaña 3 (Diseño libre en Plotly y tabla DT)
-│       ├── www/                                # Assets estáticos modernos (tokens CSS :root y puente JS)
+│       ├── www/                                # Activos estáticos institucionales (CSS, JS y logo Uniandes)
 │       │   ├── css/modern_ui.css
-│       │   └── js/modern_ui.js
+│       │   ├── js/modern_ui.js
+│       │   └── img/logo_uniandes.png
 │       ├── datos_ejercicio_3c_laboral.csv      # Base departamental integrada (GEIH/EMICRON 2024 + IDF 2024)
 │       └── data_shiny/                         # Capas espaciales y bases serializadas para Shiny
 │           ├── df_deptos.rds
@@ -143,4 +144,8 @@ En estricto apego a las instrucciones de entrega, se documentan las comprobacion
 
 ## 5. Declaración de Cumplimiento de Lineamientos de IA
 
-De acuerdo con la reglamentación de la Universidad de los Andes (Nivel 3 de IAG) y el enunciado del curso, las herramientas de inteligencia artificial se emplearon exclusivamente como apoyo técnico para la optimización de código, estructuración modular y depuración de errores sintácticos. La totalidad de las interpretaciones, análisis económicos, formulaciones metodológicas y arquitectura del aplicativo Shiny fueron concebidas y redactadas por los integrantes del Grupo 10. El anexo formal en formato Word requerido por el enunciado se encuentra en [`uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](./uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx).
+De acuerdo con los *Lineamientos para el uso de inteligencia artificial generativa (IAG) en la Universidad de los Andes* (octubre de 2024, Nivel 3: Edición, refinamiento y soporte técnico auxiliar) y el enunciado oficial del curso, las herramientas de inteligencia artificial se emplearon exclusivamente como apoyo técnico en consultas de sintaxis computacional (Función 4) y refinamiento de maquetación visual del frontend Shiny (Función 1). La totalidad de las interpretaciones económicas, formulaciones metodológicas y arquitectura del proyecto fueron concebidas y redactadas por los integrantes del Grupo 10.
+
+* **Anexo unificado en formato Word (entregable oficial):** [`uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](./uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx)
+* **Enlace público verificado · Sesión 1 (Soporte técnico en los 3 ejes temáticos):** <https://share.gemini.google/sRSea3dbMXqg>
+* **Enlace público verificado · Sesión 2 (Refinamiento del frontend UI de Shiny):** <https://share.gemini.google/NmaotI84oYiV>

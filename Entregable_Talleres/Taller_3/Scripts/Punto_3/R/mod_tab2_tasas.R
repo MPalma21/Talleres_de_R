@@ -120,7 +120,7 @@ mod_tab2_tasas_ui <- function(id, min_fecha, max_fecha) {
           ),
           shiny::span(
             class = "text-muted small fw-normal",
-            "Muestra diaria: 2020-01-02 a 2025-10-31 (N = 1,522 días hábiles)"
+            "Muestra diaria: 2020-01-02 a 2025-10-31 (N = 1,500 días hábiles)"
           )
         )
       ),
@@ -156,7 +156,7 @@ mod_tab2_tasas_ui <- function(id, min_fecha, max_fecha) {
           class = "mb-0",
           shiny::tags$strong("3. Lectura de las tres fases macroeconómicas y del doble eje de ordenadas: "),
           shiny::HTML(
-            "Dado que la tasa doméstica colombiana \\(\\left(\\text{IBR}_t \\in [1.70\\%,\\; 13.26\\%]\\right)\\) presenta un nivel estructural e inflacionario superior al de la tasa en dólares \\(\\left(\\text{SOFR}_t \\in [0.01\\%,\\; 5.40\\%]\\right)\\), el gráfico dispone de dos ejes verticales independientes: el eje izquierdo cuantifica la \\(\\text{SOFR}_t\\) y el eje derecho cuantifica el \\(\\text{IBR}_t\\), permitiendo contrastar la sincronización de tres regímenes monetarios: <b>(i) Estímulo monetario por COVID-19 (2020–2021)</b>, donde la Reserva Federal llevó la SOFR a su piso técnico \\((\\approx 0.05\\%)\\) y el Banco de la República redujo el IBR a su mínimo histórico \\((1.75\\%\\text{ E.A.})\\); <b>(ii) Ciclo contractivo anti-inflacionario (2021–2023)</b>, iniciado anticipadamente en Colombia en septiembre de 2021 hasta alcanzar el máximo de \\(13.25\\%\\text{ E.A.}\\) en abril de 2023 y de \\(5.30\\%\\) en EE. UU. en julio de 2023; y <b>(iii) Fase de normalización gradual (2024–2025)</b>, que al cierre de la muestra \\((31\\text{ de octubre de }2025)\\) ubica el diferencial en \\(\\Delta_t = 503.0\\text{ pb}\\), equivalente bajo paridad descubierta de tasas de interés (UIP) a una devaluación implícita esperada de \\(\\pi_t = 4.826\\%\\text{ anual}\\) en convención publicada \\(\\left(4.651\\%\\text{ anual en convención }\\text{E.A.}\\text{ homogeneizada}\\right)\\)."
+            "Dado que la tasa doméstica colombiana \\(\\left(\\text{IBR}_t \\in [1.70\\%,\\; 13.26\\%]\\right)\\) presenta un nivel estructural e inflacionario superior al de la tasa en dólares \\(\\left(\\text{SOFR}_t \\in [0.01\\%,\\; 5.40\\%]\\right)\\), el gráfico dispone de dos ejes verticales independientes: el eje izquierdo cuantifica la \\(\\text{SOFR}_t\\) y el eje derecho cuantifica el \\(\\text{IBR}_t\\), permitiendo contrastar la sincronización de tres regímenes monetarios: <b>(i) Estímulo monetario por COVID-19 (2020–2021)</b>, donde la Reserva Federal llevó la SOFR a su piso técnico \\((\\approx 0.05\\%)\\) y el Banco de la República redujo el IBR a su mínimo histórico \\((1.75\\%\\text{ E.A.})\\); <b>(ii) Ciclo contractivo anti-inflacionario (2021–2023)</b>, iniciado anticipadamente en Colombia en septiembre de 2021 hasta alcanzar el máximo de \\(13.25\\%\\text{ E.A.}\\) en abril de 2023 y de \\(5.30\\%\\) en EE. UU. en julio de 2023; y <b>(iii) Fase de normalización gradual (2024–2025)</b>, que al cierre de la muestra \\((31\\text{ de octubre de }2025)\\) ubica el diferencial en \\(\\Delta_t = 503.0\\text{ pb}\\), equivalente bajo paridad descubierta de tasas de interés (UIP) a una devaluación implícita esperada de \\(\\pi_t = 4.826\\%\\text{ anual}\\) en convención publicada \\(\\left(4.736\\%\\text{ anual en convención }\\text{E.A.}\\text{ homogeneizada}\\right)\\)."
           )
         )
       )

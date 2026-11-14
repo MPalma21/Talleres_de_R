@@ -146,7 +146,7 @@ mod_tab1_idf_ui <- function(id, deptos_choices) {
           class = "mb-0",
           shiny::tags$strong("2. Insumos de ponderación DANE y actualización a precios corrientes de 2024: "),
           shiny::HTML(
-            "El ponderador municipal \\(w_i = (L_i \\cdot \\text{VA}_i) / \\sum_{k=1}^{n_j} (L_k \\cdot \\text{VA}_k)\\) articula la población total proyectada por el DANE para 2024 \\((L_i)\\) con el Valor Agregado municipal \\((\\text{VA}_i)\\) de las Cuentas Nacionales Departamentales del DANE (base 2022), actualizado nominalmente a precios corrientes de 2024 mediante la tasa de crecimiento del PIB nominal nacional \\(g = 8.21\\%\\) reportada por el DANE \\(\\left(\\text{VA}_{i,2024} = \\text{VA}_{i,2022}(1+g)\\right)\\)."
+            "El ponderador municipal \\(w_i = (L_i \\cdot \\text{VA}_i) / \\sum_{k=1}^{n_j} (L_k \\cdot \\text{VA}_k)\\) articula la población total proyectada por el DANE para 2024 \\((L_i)\\) con el Valor Agregado municipal \\((\\text{VA}_i)\\) de las Cuentas Nacionales Departamentales del DANE (corte 2023 a precios corrientes), actualizado nominalmente a precios corrientes de 2024 mediante la tasa de crecimiento del PIB nominal nacional \\(g = 8.27\\%\\) reportada por el DANE \\(\\left(\\text{VA}_{i,2024} = \\text{VA}_{i,2023}(1+g)\\right)\\)."
           )
         )
       )
@@ -486,7 +486,7 @@ mod_tab1_idf_server <- function(id, shp_dpto_simp, df_deptos, df_top3, deptos_ch
 
     shiny::observeEvent(input$mapa_leaflet_shape_click, {
       click_id <- input$mapa_leaflet_shape_click$id
-      if (!is.null(click_id) && click_id %in% deptos_choices) {
+      if (!is.null(click_id) && click_id %in% deptos_choices && !identical(click_id, input$depto_sel)) {
         shiny::updateSelectizeInput(session, "depto_sel", selected = click_id)
       }
     })

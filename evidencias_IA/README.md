@@ -156,18 +156,29 @@ Para el desarrollo del Taller 3, el Grupo 10 mantuvo una adhesión estricta a lo
 
 ---
 
-## 4. Registro de Prompts Reales - Taller 3
+## 4. Registro de Sesiones Públicas y Prompts Reales - Taller 3
+
+* **Anexo formal consolidado (Word):** [`Entregable_Talleres/Taller_3/uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](../Entregable_Talleres/Taller_3/uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx)
+* **Sesión 1 – Soporte técnico en los 3 ejes temáticos (Google Gemini):** <https://share.gemini.google/sRSea3dbMXqg>
+* **Sesión 2 – Refinamiento del frontend UI del aplicativo Shiny (Google Gemini):** <https://share.gemini.google/NmaotI84oYiV>
 
 ### Caso 1: Parseo de Respuestas XML SDMX de BanRep
-* **Herramienta:** Antigravity / Gemini 3.8 Flash
+* **Herramienta:** Google Gemini (`https://share.gemini.google/sRSea3dbMXqg`)
 * **Prompt representativo:**
   > *"¿Cómo extraer de forma limpia los nodos `<generic:Obs>` con `ObsDimension` y `ObsValue` de un archivo XML con namespaces complejos en R usando la librería `xml2` sin perder las fechas en formato AAAAMMDD?"*
-* **Aporte práctico:** Proveyó la sintaxis para capturar los namespaces con `xml_ns()` y filtrar mediante XPath relativo `.//generic:Series[.//generic:Value[@id='SUBJECT' and @value='IRIBRM00']]`.
+* **Aporte práctico:** Proveyó la sintaxis independiente de prefijos mediante `local-name()` en XPath: `.//*[local-name()='Series'][.//*[local-name()='Value'][@value='IRIBRM00']]`.
 * **Supervisión humana:** El grupo verificó contra los boletines oficiales que la serie correspondiera a la convención Efectiva Anual (`UNIT_MEASURE = ER`).
 
 ### Caso 2: Manejo de Días No Hábiles en Series Cruzadas IBR–SOFR
-* **Herramienta:** Antigravity / Gemini 3.8 Flash
+* **Herramienta:** Google Gemini (`https://share.gemini.google/sRSea3dbMXqg`)
 * **Prompt representativo:**
   > *"Al fusionar series diarias de tasas de Colombia y Estados Unidos, los festivos bancarios difieren. ¿Cuál es la forma más limpia en `tidyr` para aplicar un forward-fill sobre las fechas faltantes manteniendo la serie diaria continua?"*
 * **Aporte práctico:** Sugirió el uso de `full_join()` ordenado por fecha seguido de `tidyr::fill(sofr_on, ibr_on, .direction = 'down')`.
-* **Supervisión humana:** Se validó que el método forward-fill refleja la práctica financiera estándar donde la última tasa de cierre se mantiene activa durante días feriados.
+* **Supervisión humana:** Se validó que el método forward-fill refleja la práctica financiera estándar donde la última tasa de cierre se mantiene activa durante días feriados, conservando banderas lógicas (`falta_ibr`, `falta_sofr`) para la calculadora de la Pestaña 2.
+
+### Caso 3: Refinamiento del Frontend UI y Re-renderizado Dinámico de MathJax en Shiny
+* **Herramienta:** Google Gemini (`https://share.gemini.google/NmaotI84oYiV`)
+* **Prompt representativo:**
+  > *"En la Pestaña 3 mostramos la ecuación de regresión ponderada en un `uiOutput`, pero al cambiar el indicador en el `selectInput` la fórmula aparece como código LaTeX crudo `\widehat{Y}_i = ...` sin compilar. ¿Cómo forzamos a MathJax a re-renderizar salidas dinámicas en Shiny?"*
+* **Aporte práctico:** Sugirió crear un controlador JavaScript en el cliente (`www/js/modern_ui.js`) enlazado a los eventos `shiny:value`, `shown.bs.tab` y `shown.bs.collapse` con *debounce* para invocar `MathJax.Hub.Queue(["Typeset", MathJax.Hub, target])`.
+* **Supervisión humana:** El equipo integró el script junto con las reglas de estilo tipo *booktabs* (`www/css/modern_ui.css`), el constructor de tarjetas neutras `kpi_card_institucional()` y el recorte programático del escudo institucional en `Scripts/Punto_3/`.

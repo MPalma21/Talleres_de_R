@@ -374,7 +374,7 @@ La @tbl-auditoria-ej1 presenta la evidencia de la unión revisada para cinco mun
 #| tbl-cap: "Evidencia de unión revisada por llave DIVIPOLA (cod_mpio) y verificación de ponderadores en municipios testigo (Vigencia 2024)."
 #| echo: false
 
-df_aud_ej1 %>%
+df_aud_ej1 |>
   transmute(
     `Código` = cod_mpio,
     `Municipio` = nom_mpio,
@@ -385,7 +385,7 @@ df_aud_ej1 %>%
     `IDF Mpio 2024` = number(idf_municipal, accuracy = 0.01),
     `Peso w_i` = number(w_i, accuracy = 0.0001),
     `IDF Dpto.` = number(idf_departamental, accuracy = 0.02)
-  ) %>%
+  ) |>
   kable(align = c("c", "l", "l", "r", "r", "r", "r", "r", "r"))
 ```
 
@@ -439,11 +439,11 @@ La @tbl-ranking-idf-dpto sintetiza los resultados de los diez departamentos con 
 #| echo: false
 
 df_top_bot_dpto <- bind_rows(
-  df_idf_dpto %>% arrange(desc(idf_departamental)) %>% slice_head(n = 10) %>% mutate(Grupo = "Top 10 (Mayor IDF)"),
-  df_idf_dpto %>% arrange(idf_departamental) %>% slice_head(n = 10) %>% arrange(desc(idf_departamental)) %>% mutate(Grupo = "Bottom 10 (Menor IDF)")
+  df_idf_dpto |> arrange(desc(idf_departamental)) |> slice_head(n = 10) |> mutate(Grupo = "Top 10 (Mayor IDF)"),
+  df_idf_dpto |> arrange(idf_departamental) |> slice_head(n = 10) |> arrange(desc(idf_departamental)) |> mutate(Grupo = "Bottom 10 (Menor IDF)")
 )
 
-df_top_bot_dpto %>%
+df_top_bot_dpto |>
   transmute(
     `Segmento` = Grupo,
     `Cód.` = cod_dpto,
@@ -453,7 +453,7 @@ df_top_bot_dpto %>%
     `IDF Dpto. (Proc. 1)` = number(idf_departamental, accuracy = 0.02),
     `IDF Alt. (Proc. 2)` = number(idf_proc_alternativo, accuracy = 0.02),
     `|Dif.|` = number(diff_procedimientos, accuracy = 0.0001)
-  ) %>%
+  ) |>
   kable(align = c("l", "c", "l", "c", "r", "r", "r", "r"))
 ```
 
@@ -494,10 +494,10 @@ La @tbl-top10-mpios-nacional presenta los diez municipios con mayor calificació
 #| tbl-cap: "Top 10 municipios con mayor Índice de Desempeño Fiscal (IDF) en Colombia (Vigencia 2024)."
 #| echo: false
 
-df_idf_mpio %>%
-  arrange(desc(idf_municipal)) %>%
-  slice_head(n = 10) %>%
-  mutate(Posición = row_number()) %>%
+df_idf_mpio |>
+  arrange(desc(idf_municipal)) |>
+  slice_head(n = 10) |>
+  mutate(Posición = row_number()) |>
   transmute(
     `#` = Posición,
     `Cód. DIVIPOLA` = cod_mpio,
@@ -506,7 +506,7 @@ df_idf_mpio %>%
     `IDF 2024 (pts)` = number(idf_municipal, accuracy = 0.02),
     `Rango DNP` = rango_idf,
     `Peso en su Dpto. (w_i)` = sprintf("%.4f (%.2f%%)", w_i, w_i * 100)
-  ) %>%
+  ) |>
   kable(align = c("c", "c", "l", "l", "r", "l", "r"))
 ```
 
@@ -1137,23 +1137,20 @@ El tercer ejercicio del taller integra los resultados espaciales del Ejercicio 1
 
 ## Arquitectura modular del aplicativo y diseño en `bslib` (Bono de Diseño)
 
-Siguiendo las convenciones nativas de Shiny (que carga automáticamente todo archivo `.R` ubicado en la subcarpeta `R/` antes de ejecutar `app.R`), la lógica del tablero se separó en cinco componentes independientes con espacios de nombres encapsulados mediante `shiny::NS()` y `shiny::moduleServer()`:
+Siguiendo las convenciones nativas de Shiny (que carga automáticamente todo archivo `.R` ubicado en la subcarpeta `R/` antes de ejecutar `app.R`), la lógica del tablero se separó en siete componentes modulares con espacios de nombres encapsulados mediante `shiny::NS()` y `shiny::moduleServer()`:
 
 1. **`Scripts/Punto_3/01_preparar_datos_shiny.R`:** script reproducible previo al despliegue que construye y actualiza los insumos serializados en `Scripts/Punto_3/data_shiny/`, cruzando las series brutas y armonizadas de tasas (`sofr_raw`, `ibr_raw`, `falta_sofr`, `falta_ibr`, `sofr_ea`, `pi_directa`, `pi_ea` en `df_rates.rds`) y unificando los indicadores laborales de la GEIH/EMICRON 2024 con el IDF departamental 2024 en `datos_ejercicio_3c_laboral.csv` y `df_labor.rds`.
-2. **`Scripts/Punto_3/R/00_tema_y_datos.R`:** centraliza la función `localizar_dir_shiny()` para resolver rutas desde cualquier directorio de trabajo, la carga defensiva de los cinco archivos `.rds` (`cargar_datos_shiny()`) y la configuración del tema visual Bootstrap 5 (`crear_tema_app()`).
-3. **`Scripts/Punto_3/R/mod_tab1_idf.R`:** módulo `mod_tab1_idf_ui()` / `mod_tab1_idf_server()` para el Literal 3.A (mapa interactivo `leaflet` del IDF departamental artificial y tabla reactiva del Top 3 municipal).
-4. **`Scripts/Punto_3/R/mod_tab2_tasas.R`:** módulo `mod_tab2_tasas_ui()` / `mod_tab2_tasas_server()` para el Literal 3.B (gráfico interactivo `plotly` de doble eje para SOFR e IBR y calculadora de devaluación implícita $\pi$).
+2. **`Scripts/Punto_3/R/00_tema_y_datos.R`:** centraliza la función `localizar_dir_shiny()` para resolver rutas desde cualquier directorio de trabajo, la carga defensiva de los cinco archivos `.rds` (`cargar_datos_shiny()`), la configuración del tema institucional Bootstrap 5 (`crear_tema_app()`) y el constructor de tarjetas sobrias de altura uniforme (`kpi_card_institucional()`).
+3. **`Scripts/Punto_3/R/mod_tab1_idf.R`:** módulo `mod_tab1_idf_ui()` / `mod_tab1_idf_server()` para el Literal 3.A (mapa interactivo `leaflet` del IDF departamental artificial con vista agregada `"Total Nacional (Colombia)" = "NACIONAL"` y tabla académica tipo *booktabs* del Top 3 municipal).
+4. **`Scripts/Punto_3/R/mod_tab2_tasas.R`:** módulo `mod_tab2_tasas_ui()` / `mod_tab2_tasas_server()` para el Literal 3.B (gráfico interactivo `plotly` de doble eje para SOFR e IBR y calculadora de devaluación implícita $\pi$ bajo convención directa y Efectiva Anual base 360).
 5. **`Scripts/Punto_3/R/mod_tab3_libre.R`:** módulo `mod_tab3_libre_ui()` / `mod_tab3_libre_server()` para el Literal 3.C (explorador en `plotly` y tabla `DT` sobre dualismo laboral y capacidad fiscal departamental).
-6. **`Scripts/Punto_3/www/`:** catálogo de activos estáticos de interfaz moderna (`css/modern_ui.css` con variables CSS `:root`, animaciones de microinteracción y modo oscuro dinámico; `js/modern_ui.js` con mensajería bidireccional Shiny-JS y toasts).
-7. **`Scripts/Punto_3/app.R`:** orquestador principal que declara explícitamente las librerías adicionales mediante comentarios `# [PAQUETE ADICIONAL]`, inyecta los activos estáticos vía `shiny::addResourcePath()`, construye la barra de navegación superior (`bslib::page_navbar()`) con conmutador de modo claro/oscuro (`bslib::input_dark_mode()`) e invoca los tres servidores modulares.
+6. **`Scripts/Punto_3/www/`:** activos estáticos de interfaz institucional (`css/modern_ui.css` con variables CSS `:root`, tablas estilo *booktabs* `.table-academic`, simetría de contenedores `.card-equal-height` y *media queries* responsivas; `js/modern_ui.js` con re-renderizado dinámico de ecuaciones MathJax en `shiny:value` y redimensionamiento automático de widgets; e `img/logo_uniandes.png` recortado programáticamente).
+7. **`Scripts/Punto_3/app.R`:** orquestador principal que declara explícitamente las librerías adicionales mediante comentarios `# [PAQUETE ADICIONAL]`, inyecta los activos estáticos con `withMathJax()`, construye la barra de navegación superior (`bslib::page_navbar()`) con el escudo de la Universidad de los Andes e invoca los tres servidores modulares.
 
 ```r
 # Identificación explícita de paquetes adicionales en Scripts/Punto_3/app.R:
 # [PAQUETE ADICIONAL]: shiny (framework de aplicaciones web interactivas y módulos NS/moduleServer)
-# [PAQUETE ADICIONAL]: bslib (arquitectura de interfaz Bootstrap 5, tarjetas, value_box y modo oscuro)
-# [PAQUETE ADICIONAL]: shinyWidgets (controles interactivos avanzados: pickerInput con búsqueda, prettyRadioButtons, prettySwitch)
-# [PAQUETE ADICIONAL]: shinyjs (utilidades de JavaScript reactivo para interacción en cliente)
-# [PAQUETE ADICIONAL]: waiter (pantallas y spinners de carga fluida para cómputos pesados)
+# [PAQUETE ADICIONAL]: bslib (arquitectura de interfaz Bootstrap 5, tarjetas y paneles colapsables)
 # [PAQUETE ADICIONAL]: leaflet (cartografía web interactiva para polígonos espaciales)
 # [PAQUETE ADICIONAL]: plotly (gráficos interactivos con zoom, hover y doble eje)
 # [PAQUETE ADICIONAL]: DT (tablas interactivas paginadas para auditoría de datos)
@@ -1161,7 +1158,7 @@ Siguiendo las convenciones nativas de Shiny (que carga automáticamente todo arc
 # [PAQUETE ADICIONAL]: scales (formateo de escalas numéricas y monetarias)
 ```
 
-Para optar al **bono de mejor diseño** y bajo los estándares de desarrollo de interfaces modernas de usuario (aplicando la arquitectura de componentes y diseño desacoplado), el aplicativo implementa un sistema visual integral y completamente adaptable a cualquier tamaño de pantalla (smartphones, tablets, laptops y pantallas Ultra-Wide): tema Bootstrap 5 personalizado (`bslib::bs_theme(version = 5, preset = "shiny", primary = "#1e3d59", secondary = "#0f766e")`) con tipografías web (`Plus Jakarta Sans`, `Montserrat` y `Fira Code`), rejillas reactivas fluidas mediante `bslib::breakpoints()` que apilan las tarjetas `bslib::value_box()` en móviles y las expanden en pantallas amplias, barras laterales colapsables en móviles (`open = "desktop"`) y redimensionables en escritorio (`resizable = TRUE`), controles avanzados (`shinyWidgets::pickerInput` con búsqueda en vivo, `prettyRadioButtons` y `prettySwitch`), pantallas de carga reactiva (`waiter::withWaiter`) para operaciones complejas, tarjetas expandibles a pantalla completa (`full_screen = TRUE`), barras de progreso para rankings, tipografía fluida `clamp()` y diseño CSS modular en `www/css/modern_ui.css` con enlace JavaScript para redibujado automático de mapas y gráficos (`invalidateSize()` y `Plotly.Plots.resize()`).
+Para optar al **bono de mejor diseño**, el aplicativo implementa un sistema visual institucional inspirado en reportes de banca central y publicaciones académicas, adaptable a cualquier tamaño de pantalla: tema Bootstrap 5 personalizado (`bslib::bs_theme(version = 5, primary = "#1e3a5f", secondary = "#334155")`) con tipografías `IBM Plex Sans` e `IBM Plex Mono`, tarjetas de indicadores de fondo blanco y altura fija (`kpi_card_institucional()` de `98px` con borde izquierdo de `4px`), barras laterales retráctiles (`bslib::layout_sidebar(width = 315, open = "desktop", resizable = TRUE)`), tablas HTML tipo *booktabs* (`.table-academic`), notas técnicas desplegables mediante `bslib::accordion(open = FALSE)` al pie de cada pestaña y un controlador JavaScript en el cliente (`www/js/modern_ui.js`) que re-compila en tiempo real las ecuaciones dinámicas de regresión en MathJax (`MathJax.Hub.Queue(["Typeset", ...])`) y redibuja los lienzos de `Leaflet` y `Plotly` ante cambios de ventana o colapso de paneles.
 
 ---
 
@@ -1185,9 +1182,9 @@ El primer módulo del aplicativo (`R/mod_tab1_idf.R`) integra los resultados geo
 
 df_top3_shiny <- readRDS(file.path(dir_shiny, "df_top3.rds"))
 
-df_top3_shiny %>%
-  filter(cod_dpto %in% c("05", "08", "11", "15", "76", "88", "91")) %>%
-  left_join(df_idf_dpto %>% select(cod_dpto, idf_departamental, n_mpios), by = "cod_dpto") %>%
+df_top3_shiny |>
+  filter(cod_dpto %in% c("05", "08", "11", "15", "76", "88", "91")) |>
+  left_join(df_idf_dpto |> select(cod_dpto, idf_departamental, n_mpios), by = "cod_dpto") |>
   transmute(
     `Departamento` = paste0(nom_dpto, " (", cod_dpto, ")"),
     `IDF Dpto.` = number(idf_departamental, accuracy = 0.02),
@@ -1196,7 +1193,7 @@ df_top3_shiny %>%
     `Municipio (Cód.)` = paste0(nom_mpio, " (", cod_mpio, ")"),
     `IDF Mpio 2024` = number(idf_municipal, accuracy = 0.02),
     `Ponderador (w_i)` = sprintf("%.4f (%.2f%%)", w_i, w_i * 100)
-  ) %>%
+  ) |>
   kable(align = c("l", "r", "c", "c", "l", "r", "r"))
 ```
 
@@ -1244,9 +1241,9 @@ fechas_control <- as.Date(c(
   "2025-10-31"
 ))
 
-df_rates_shiny %>%
-  filter(fecha %in% fechas_control) %>%
-  arrange(fecha) %>%
+df_rates_shiny |>
+  filter(fecha %in% fechas_control) |>
+  arrange(fecha) |>
   transmute(
     `Fecha` = format(fecha, "%Y-%m-%d"),
     `Estado de Cotización` = case_when(
@@ -1259,7 +1256,7 @@ df_rates_shiny %>%
     `SOFR (% E.A.)` = sprintf("%.3f%%", sofr_ea),
     `Deval. Directa (% anual)` = sprintf("%.3f%%", pi_directa),
     `Deval. Homog. E.A. (% anual)` = sprintf("%.3f%%", pi_ea)
-  ) %>%
+  ) |>
   kable(align = c("c", "l", "r", "r", "r", "r", "r"))
 ```
 
@@ -1300,8 +1297,8 @@ La @tbl-resumen-3c sintetiza el comportamiento agregado por región geográfica 
 
 df_labor_3c <- readRDS(file.path(dir_shiny, "df_labor.rds"))
 
-df_labor_3c %>%
-  group_by(REGION) %>%
+df_labor_3c |>
+  group_by(REGION) |>
   summarise(
     `Dptos.` = n(),
     `Ocupados Exp. (miles)` = number(sum(OCUPADOS_EXP) / 1000, accuracy = 0.1, big.mark = ","),
@@ -1309,9 +1306,9 @@ df_labor_3c %>%
     `Ingreso Mediano Prom. (COP)` = paste0("$", number(mean(INGRESO_MEDIANO), accuracy = 1, big.mark = ",")),
     `IDF Dpto. Prom. (pts)` = number(mean(IDF_DEPARTAMENTAL), accuracy = 0.02),
     .groups = "drop"
-  ) %>%
-  arrange(`Informalidad Pond. (%)`) %>%
-  rename(`Región Geográfica` = REGION) %>%
+  ) |>
+  arrange(`Informalidad Pond. (%)`) |>
+  rename(`Región Geográfica` = REGION) |>
   kable(align = c("l", "c", "r", "r", "r", "r"))
 ```
 
@@ -1350,14 +1347,15 @@ En cumplimiento de la sección *"Verificación antes de entregar"* del enunciado
 
 # Anexo: Declaración de uso de Inteligencia Artificial Generativa (Nivel 3 Uniandes)
 
-En cumplimiento de la directriz expresa del enunciado del Taller 3 y de los *Lineamientos para el uso de Inteligencia Artificial Generativa (IAG) en la Universidad de los Andes* (**Nivel 3: Uso con modificaciones importantes**), el **Grupo 10** declara de manera transparente el protocolo de asistencia tecnológica empleado durante el desarrollo del proyecto:
+En cumplimiento de la directriz expresa del enunciado del Taller 3 y de los *Lineamientos para el uso de Inteligencia Artificial Generativa (IAG) en la Universidad de los Andes* (octubre de 2024, **Nivel 3: Edición, refinamiento y soporte técnico auxiliar**), el **Grupo 10** declara de manera transparente el protocolo de asistencia tecnológica empleado durante el desarrollo del proyecto:
 
-1. **Herramienta y alcance del apoyo:** se utilizó **Google Gemini (Antigravity IDE Coding Assistant)** como asistente de programación en pareja (*pair programming*) para: (i) estructurar las peticiones HTTP GET (`httr::GET`) y el parseo de nodos XPath (`xml2::xml_find_all`) en el Ejercicio 2; (ii) parametrizar la simplificación topológica de polígonos con `rmapshaper::ms_simplify` y el reescalado cromático por cuantiles en el Ejercicio 1; y (iii) refactorizar el aplicativo Shiny del Ejercicio 3 en módulos nativos (`NS` / `moduleServer`) con diseño `bslib` (Bootstrap 5).
-2. **Autoría intelectual humana y validación empírica:** la totalidad de la interpretación económica (primacía urbana en el IDF departamental, transmisión monetaria comparada bajo paridad descubierta de tasas de interés y dualismo laboral centro-periferia), así como la verificación cruzada de cada cifra frente a las fuentes primarias del DANE, DNP, Banco de la República y Reserva Federal de Nueva York, fueron realizadas directamente por los tres integrantes del Grupo 10.
-3. **Registro de auditoría y descarte de alucinaciones:** durante las sesiones de trabajo se identificaron, auditaron y descartaron cuatro propuestas iniciales de la herramienta que presentaban inconsistencias técnicas o metodológicas:
-   - *Alucinación 1 (Paquete inexistente `banrepR`):* el modelo sugirió inicialmente descargar el IBR mediante una librería ficticia llamada `banrepR`. Se descartó por completo y se implementó web scraping directo sobre el flujo XML-SDMX oficial de SUAMECA (`serie 241`).
-   - *Alucinación 2 (Uso de `inner_join` en series diarias con festivos asimétricos):* una versión preliminar proponía cruzar SOFR e IBR mediante `inner_join`, lo que eliminaba 116 días hábiles donde operó uno de los dos mercados (74 festivos en Colombia y 42 en EE. UU.). Se reemplazó por un calendario continuo de días hábiles (`wday %in% 2:6`) con imputación explícita por *forward-fill* (`tidyr::fill(.direction = "down")`) y banderas de auditoría (`falta_ibr`, `falta_sofr`) para la Pestaña 2 de Shiny.
-   - *Alucinación 3 (Simplificación geométrica con `sf::st_simplify` sin preservar topología):* para el Bono 1, se evaluó inicialmente el algoritmo de Douglas-Peucker (`st_simplify`), el cual generaba brechas y traslapes entre municipios colindantes. Se sustituyó por el algoritmo topológico de Visvalingam-Whyatt (`rmapshaper::ms_simplify(keep = 0.05, keep_shapes = TRUE)`), preservando los 1,122 polígonos municipales.
-   - *Alucinación 4 (Iconos no válidos en FontAwesome Free):* en la construcción del módulo de la Pestaña 3, se corrigieron nombres de iconos inexistentes en la versión gratuita de FontAwesome (`chart-scatter` y `chart-bubble`) por identificadores válidos (`braille` y `circle-nodes`), verificando la ausencia de advertencias mediante pruebas unitarias con `shiny::testServer()`.
+1. **Herramienta, funciones institucionales y enlaces públicos verificados:** se utilizó **Google Gemini** exclusivamente en funciones de asistencia en programación (Función 4) y refinamiento de maquetación visual (Función 1). Las dos sesiones completas de trabajo se encuentran disponibles públicamente para verificación del equipo docente y consolidadas en el documento Word adjunto [`uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](../uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx):
+   - **Sesión 1 (Soporte técnico de sintaxis en los 3 ejes temáticos):** <https://share.gemini.google/sRSea3dbMXqg> — consultas puntuales sobre `rmapshaper::ms_simplify(keep_shapes = TRUE)`, expresiones XPath independientes de prefijos con `local-name()` en `xml2`, propagación `tidyr::fill()` con banderas de festivos, homogeneización a Efectiva Anual base 360 y reactividad con `leafletProxy()`.
+   - **Sesión 2 (Refinamiento del frontend UI del aplicativo Shiny):** <https://share.gemini.google/NmaotI84oYiV> — consultas sobre maquetación institucional en `bslib`, tarjetas `kpi_card_institucional()`, tablas CSS tipo *booktabs* (`www/css/modern_ui.css`), recorte programático del escudo institucional (`png::readPNG`/`writePNG`) y controlador JavaScript en cliente (`www/js/modern_ui.js`) para re-renderizar ecuaciones dinámicas en MathJax.
+2. **Autoría intelectual humana y validación empírica:** la totalidad de las interpretaciones económicas (primacía urbana en el IDF departamental, transmisión monetaria comparada bajo paridad descubierta de tasas de interés y dualismo laboral centro-periferia), así como la verificación cruzada de cada cifra frente a las fuentes primarias del DANE, DNP, Banco de la República y Reserva Federal de Nueva York, fueron realizadas y redactadas directamente por los tres integrantes del Grupo 10.
+3. **Registro de auditoría y descarte de alucinaciones:** durante las sesiones se identificaron, auditaron y descartaron propuestas iniciales que presentaban inconsistencias técnicas o metodológicas:
+   - *Simplificación geométrica aislada (`sf::st_simplify`):* generaba grietas (*slivers*) entre municipios vecinos; se reemplazó por el algoritmo topológico de Visvalingam-Whyatt (`rmapshaper::ms_simplify(keep = 0.08, keep_shapes = TRUE)`), preservando los 1,122 polígonos municipales.
+   - *Cruce temporal con `inner_join` en series con festivos asimétricos:* eliminaba 116 días hábiles donde operó solo uno de los dos mercados (74 festivos en Colombia y 42 en EE. UU.); se sustituyó por un calendario continuo de días hábiles (`N = 1,500`) con imputación explícita por *forward-fill* (`tidyr::fill(.direction = "down")`) y banderas de auditoría (`falta_ibr`, `falta_sofr`).
+   - *Truncamiento de fórmulas LaTeX y ecuaciones dinámicas en Shiny:* se corrigió el escape del símbolo `\%` dentro de delimitadores `\(...\)` y se implementó el escuchador del evento `shiny:value` en `www/js/modern_ui.js` para re-invocar `MathJax.Hub.Queue(["Typeset", ...])` al actualizar la ecuación MCO en la Pestaña 3.
 
-El detalle ampliado de los *prompts* representativos y la trazabilidad por eje se encuentran documentados en la carpeta [`evidencias_IA/README.md`](https://github.com/MPalma21/Talleres_de_R/blob/main/Entregable_Talleres/Taller_3/evidencias_IA/README.md){target="_blank"} del repositorio.
+El documento anexo completo en formato Word se encuentra en [`Entregable_Talleres/Taller_3/uso de IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx`](../uso%20de%20IA/Anexo_Uso_IA_Taller_3_Grupo_10.docx) y el resumen general del repositorio en [`evidencias_IA/README.md`](https://github.com/MPalma21/Talleres_de_R/blob/main/evidencias_IA/README.md){target="_blank"}.

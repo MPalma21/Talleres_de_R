@@ -12,6 +12,8 @@
 # [PAQUETE ADICIONAL]: httr (peticiones HTTP con configuración SSL y cabeceras SDMX)
 # [PAQUETE ADICIONAL]: xml2 (navegación DOM y consultas XPath para web scraping XML)
 # [PAQUETE ADICIONAL]: readr (exportación de series tratadas en formato CSV UTF-8)
+# [PAQUETE ADICIONAL]: lubridate (parseo y manejo estandarizado de fechas ISO-8601)
+# [PAQUETE ADICIONAL]: here (resolución portable de rutas relativas a la raíz del proyecto)
 
 library(tidyverse)
 library(httr)

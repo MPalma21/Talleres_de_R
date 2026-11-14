@@ -100,19 +100,19 @@ nombres_va <- str_trim(as.character(unlist(raw_va_all[fila_hdr_va, ])))
 raw_va <- raw_va_all[(fila_hdr_va + 1):nrow(raw_va_all), ]
 names(raw_va) <- make.unique(ifelse(is.na(nombres_va) | nombres_va == "", "col_na", nombres_va))
 
-df_va_2023 <- raw_va %>%
+df_va_2023 <- raw_va |>
   select(
     cod_mpio = `Código Municipio`,
     nom_mpio = `Municipio`,
     cod_dpto = `Código Departamento`,
     nom_dpto = `Departamento`,
     va_2023  = `2023`
-  ) %>%
+  ) |>
   mutate(
     cod_mpio = str_pad(str_trim(as.character(cod_mpio)), 5, pad = "0"),
     cod_dpto = str_pad(str_trim(as.character(cod_dpto)), 2, pad = "0"),
     va_2023  = as.numeric(va_2023)
-  ) %>%
+  ) |>
   filter(!is.na(cod_mpio), str_detect(cod_mpio, "^[0-9]{5}$"), !is.na(va_2023))
 
 ## 1.2 DANE Proyecciones de Población: Población Municipal de 2024 ----
@@ -131,7 +131,7 @@ nombres_pob <- str_trim(as.character(unlist(raw_pob_all[fila_hdr_pob, ])))
 raw_pob <- raw_pob_all[(fila_hdr_pob + 1):nrow(raw_pob_all), ]
 names(raw_pob) <- make.unique(ifelse(is.na(nombres_pob) | nombres_pob == "", "col_na", nombres_pob))
 
-df_pob_2024 <- raw_pob %>%
+df_pob_2024 <- raw_pob |>
   select(
     cod_dpto = DP,
     nom_dpto_pob = DPNOM,
@@ -140,14 +140,14 @@ df_pob_2024 <- raw_pob %>%
     ano      = `AÑO`,
     area     = `ÁREA GEOGRÁFICA`,
     total    = TOTAL
-  ) %>%
-  filter(as.character(ano) == "2024", area == "Total") %>%
+  ) |>
+  filter(as.character(ano) == "2024", area == "Total") |>
   mutate(
     cod_mpio = str_pad(str_trim(as.character(cod_mpio)), 5, pad = "0"),
     cod_dpto = str_pad(str_trim(as.character(cod_dpto)), 2, pad = "0"),
     pob_2024 = as.numeric(total)
-  ) %>%
-  filter(!is.na(cod_mpio), str_detect(cod_mpio, "^[0-9]{5}$"), !is.na(pob_2024)) %>%
+  ) |>
+  filter(!is.na(cod_mpio), str_detect(cod_mpio, "^[0-9]{5}$"), !is.na(pob_2024)) |>
   select(cod_mpio, pob_2024)
 
 ## 1.3 DNP Información Fiscal y Financiera: Resultados del IDF Municipal, Vigencia 2024 ----
@@ -184,14 +184,14 @@ leer_idf_dnp <- function(ruta_xlsx) {
   col_idf  <- names(datos)[str_detect(names(datos), "^(IDF|Nuevo\\s+IDF)$")][1]
   col_rng  <- names(datos)[str_detect(names(datos), "^(Rango|Rango\\s+IDF)")][1]
 
-  datos %>%
+  datos |>
     transmute(
       cod_mpio      = str_pad(str_trim(as.character(.data[[col_cod]])), 5, pad = "0"),
       nom_dpto_idf  = str_trim(as.character(.data[[col_dpto]])),
       nom_mpio_idf  = str_trim(as.character(.data[[col_mpio]])),
       idf_municipal = as.numeric(.data[[col_idf]]),
       rango_idf     = if (!is.na(col_rng)) str_trim(as.character(.data[[col_rng]])) else NA_character_
-    ) %>%
+    ) |>
     filter(!is.na(cod_mpio), str_detect(cod_mpio, "^[0-9]{5}$"), !is.na(idf_municipal))
 }
 
@@ -209,7 +209,7 @@ estandarizar_llaves_shp_dpto <- function(sf_obj) {
   nms <- names(sf_obj)
   col_dpto <- nms[str_detect(toupper(nms), "^DPTO_CCDGO$")][1]
   col_nom  <- nms[str_detect(toupper(nms), "^DPTO_CNMBR$")][1]
-  sf_obj %>%
+  sf_obj |>
     mutate(
       cod_dpto_shp = str_pad(str_trim(as.character(.data[[col_dpto]])), 2, pad = "0"),
       nom_dpto_shp = as.character(.data[[col_nom]])
@@ -222,13 +222,13 @@ estandarizar_llaves_shp_mpio <- function(sf_obj) {
   col_dpto  <- nms[str_detect(toupper(nms), "^DPTO_CCDGO$")][1]
   col_mpio  <- nms[str_detect(toupper(nms), "^MPIO_CCDGO$")][1]
   if (!is.na(col_cdpmp)) {
-    sf_obj %>%
+    sf_obj |>
       mutate(
         cod_mpio = str_pad(str_trim(as.character(.data[[col_cdpmp]])), 5, pad = "0"),
         cod_dpto_shp = substr(cod_mpio, 1, 2)
       )
   } else {
-    sf_obj %>%
+    sf_obj |>
       mutate(
         cod_dpto_shp = str_pad(str_trim(as.character(.data[[col_dpto]])), 2, pad = "0"),
         cod_mpio_3   = str_pad(str_trim(as.character(.data[[col_mpio]])), 3, pad = "0"),
@@ -238,16 +238,16 @@ estandarizar_llaves_shp_mpio <- function(sf_obj) {
 }
 
 shp_dpto <- suppressWarnings(
-  estandarizar_llaves_shp_dpto(shp_dpto_raw) %>%
-    st_make_valid() %>%
-    st_collection_extract("POLYGON") %>%
+  estandarizar_llaves_shp_dpto(shp_dpto_raw) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON") |>
     st_cast("MULTIPOLYGON")
 )
 
 shp_mpio <- suppressWarnings(
-  estandarizar_llaves_shp_mpio(shp_mpio_raw) %>%
-    st_make_valid() %>%
-    st_collection_extract("POLYGON") %>%
+  estandarizar_llaves_shp_mpio(shp_mpio_raw) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON") |>
     st_cast("MULTIPOLYGON")
 )
 
@@ -269,9 +269,9 @@ diff_va_pob <- setdiff(df_va_2023$cod_mpio, df_pob_2024$cod_mpio)
 diff_pob_va <- setdiff(df_pob_2024$cod_mpio, df_va_2023$cod_mpio)
 
 # Territorios en DANE (VA / Población: 1.123 registros) que no están en DNP (IDF Municipal: 1.103 registros)
-df_no_evaluados_idf <- df_va_2023 %>%
-  inner_join(df_pob_2024, by = "cod_mpio") %>%
-  anti_join(df_idf_muni, by = "cod_mpio") %>%
+df_no_evaluados_idf <- df_va_2023 |>
+  inner_join(df_pob_2024, by = "cod_mpio") |>
+  anti_join(df_idf_muni, by = "cod_mpio") |>
   mutate(
     motivo_exclusion_dnp = case_when(
       cod_mpio == "88001" ~ "San Andrés Isla reporta en CUIPO-DNP como departamento, no como municipio (solo se evalúa Providencia 88564 a nivel municipal)",
@@ -290,9 +290,9 @@ message(sprintf(
 # 2.3 Unión relacional sobre el universo de municipios evaluados en el IDF (1.103 municipios)
 # Al realizar inner_join sobre los municipios con IDF válido antes de calcular w_i, garantizamos que
 # la suma de los ponderadores Σ w_i recorra exactamente los n_j municipios evaluados del departamento j y sume 1.
-df_geo_completo <- df_va_2023 %>%
-  inner_join(df_pob_2024, by = "cod_mpio") %>%
-  inner_join(df_idf_muni %>% select(cod_mpio, idf_municipal, rango_idf), by = "cod_mpio")
+df_geo_completo <- df_va_2023 |>
+  inner_join(df_pob_2024, by = "cod_mpio") |>
+  inner_join(df_idf_muni |> select(cod_mpio, idf_municipal, rango_idf), by = "cod_mpio")
 
 message(paste("Municipios integrados exitosamente con llave unívoca cod_mpio:", nrow(df_geo_completo)))
 
@@ -314,21 +314,21 @@ message(paste("Municipios integrados exitosamente con llave unívoca cod_mpio:",
 #   numerador y denominador, dejando los ponderadores w_i invariantes ante la tasa agregada elegida.
 tasa_pib_2024 <- 8.27
 
-df_geo_weighted <- df_geo_completo %>%
+df_geo_weighted <- df_geo_completo |>
   mutate(
     va_2024_proj = va_2023 * (1 + tasa_pib_2024 / 100),
     l_va_pondera = pob_2024 * va_2024_proj
-  ) %>%
-  group_by(cod_dpto) %>%
+  ) |>
+  group_by(cod_dpto) |>
   mutate(
     w_i          = l_va_pondera / sum(l_va_pondera, na.rm = TRUE),
     weighted_idf = idf_municipal * w_i
-  ) %>%
+  ) |>
   ungroup()
 
 ## 3.2 Agregación Departamental y Doble Comprobación (Σ w_i = 1 y Procedimiento Alternativo) ----
-df_idf_departamental <- df_geo_weighted %>%
-  group_by(cod_dpto, nom_dpto) %>%
+df_idf_departamental <- df_geo_weighted |>
+  group_by(cod_dpto, nom_dpto) |>
   summarise(
     n_mpios              = n(),
     n_municipios         = n(),
@@ -341,7 +341,7 @@ df_idf_departamental <- df_geo_weighted %>%
     idf_proc_alternativo = stats::weighted.mean(idf_municipal, w = pob_2024 * va_2023, na.rm = TRUE),
     diff_procedimientos  = abs(idf_departamental - idf_proc_alternativo),
     .groups              = "drop"
-  ) %>%
+  ) |>
   arrange(desc(idf_departamental))
 
 # Comprobación 1: Todos los ponderadores departamentales suman exactamente 1
@@ -355,12 +355,12 @@ message("Comprobación doble superada: Σ w_i = 1 en los 33 departamentos y dife
 write_csv(df_idf_departamental, file.path(ruta_outputs_data, "idf_departamental_2024.csv"))
 write_csv(df_geo_weighted, file.path(ruta_outputs_data, "idf_municipal_ponderado_2024.csv"))
 
-df_auditoria_ej1 <- df_geo_weighted %>%
-  filter(cod_mpio %in% c("05001", "11001", "08001", "15646", "76001")) %>%
+df_auditoria_ej1 <- df_geo_weighted |>
+  filter(cod_mpio %in% c("05001", "11001", "08001", "15646", "76001")) |>
   left_join(
-    df_idf_departamental %>% select(cod_dpto, n_mpios, suma_ponderadores, idf_departamental, idf_proc_alternativo),
+    df_idf_departamental |> select(cod_dpto, n_mpios, suma_ponderadores, idf_departamental, idf_proc_alternativo),
     by = "cod_dpto"
-  ) %>%
+  ) |>
   select(
     cod_mpio, nom_mpio, cod_dpto, nom_dpto,
     va_2023, va_2024_proj, pob_2024, idf_municipal, rango_idf,
@@ -370,7 +370,7 @@ df_auditoria_ej1 <- df_geo_weighted %>%
 write_csv(df_auditoria_ej1, file.path(ruta_outputs_data, "auditoria_llaves_ejercicio_1.csv"))
 
 ## 3.3 Construcción y Exportación del Mapa Departamental (1_1_mapa_idf_departamental.png) ----
-mapa_dpto_sf <- shp_dpto %>%
+mapa_dpto_sf <- shp_dpto |>
   left_join(df_idf_departamental, by = c("cod_dpto_shp" = "cod_dpto"))
 
 # Reescalado cromático no lineal basado en cuantiles para maximizar el contraste visual
@@ -390,10 +390,10 @@ cods_etiquetas <- c(
   tail(df_idf_departamental$cod_dpto, 3)
 )
 pts_etiquetas_dpto <- suppressWarnings(
-  mapa_dpto_sf %>%
-    filter(cod_dpto_shp %in% cods_etiquetas) %>%
+  mapa_dpto_sf |>
+    filter(cod_dpto_shp %in% cods_etiquetas) |>
     st_point_on_surface()
-) %>%
+) |>
   mutate(
     coords = st_coordinates(geometry),
     x = coords[, 1],
@@ -463,9 +463,9 @@ message("Mapa departamental exportado a Outputs/Images/1_1_mapa_idf_departamenta
 #    adaptativa según la densidad inicial de vértices del shapefile para preservar la fidelidad geométrica
 #    sin deformar polígonos ni eliminar municipios pequeños.
 
-shp_mpio_joined <- shp_mpio %>%
+shp_mpio_joined <- shp_mpio |>
   left_join(
-    df_geo_weighted %>% select(cod_mpio, idf_municipal, w_i),
+    df_geo_weighted |> select(cod_mpio, idf_municipal, w_i),
     by = "cod_mpio"
   )
 
@@ -477,9 +477,9 @@ mem_orig_mb <- as.numeric(object.size(shp_mpio_joined)) / (1024^2)
 # retiene 8% (keep = 0.08); si ya viene pre-simplificado, retiene 85% (keep = 0.85) para evitar triangulación.
 keep_factor <- ifelse(n_vert_orig > 100000, 0.08, 0.85)
 shp_mpio_opt <- suppressWarnings(
-  ms_simplify(shp_mpio_joined, keep = keep_factor, keep_shapes = TRUE) %>%
-    st_make_valid() %>%
-    st_collection_extract("POLYGON") %>%
+  ms_simplify(shp_mpio_joined, keep = keep_factor, keep_shapes = TRUE) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON") |>
     st_cast("MULTIPOLYGON")
 )
 
@@ -556,22 +556,22 @@ message("Mapa municipal optimizado (Bono 1) exportado a Outputs/Images/1_2_mapa_
 # Preservamos una geometría departamental nítida en WGS84 (EPSG:4326) para Leaflet
 keep_dpto_shiny <- ifelse(nrow(st_coordinates(shp_dpto)) > 50000, 0.15, 0.90)
 shp_dpto_simp <- suppressWarnings(
-  ms_simplify(shp_dpto, keep = keep_dpto_shiny, keep_shapes = TRUE) %>%
-    st_make_valid() %>%
-    st_collection_extract("POLYGON") %>%
-    st_cast("MULTIPOLYGON") %>%
-    mutate(DPTO_CCDGO = cod_dpto_shp) %>%
-    left_join(df_idf_departamental, by = c("cod_dpto_shp" = "cod_dpto")) %>%
+  ms_simplify(shp_dpto, keep = keep_dpto_shiny, keep_shapes = TRUE) |>
+    st_make_valid() |>
+    st_collection_extract("POLYGON") |>
+    st_cast("MULTIPOLYGON") |>
+    mutate(DPTO_CCDGO = cod_dpto_shp) |>
+    left_join(df_idf_departamental, by = c("cod_dpto_shp" = "cod_dpto")) |>
     st_transform(crs = 4326)
 )
 
 # Tabla Top 3 municipios con mayor IDF municipal dentro de cada departamento
-df_top3 <- df_geo_weighted %>%
-  group_by(cod_dpto, nom_dpto) %>%
-  arrange(desc(idf_municipal), desc(w_i)) %>%
-  slice_head(n = 3) %>%
-  mutate(ranking_mpio = row_number()) %>%
-  ungroup() %>%
+df_top3 <- df_geo_weighted |>
+  group_by(cod_dpto, nom_dpto) |>
+  arrange(desc(idf_municipal), desc(w_i)) |>
+  slice_head(n = 3) |>
+  mutate(ranking_mpio = row_number()) |>
+  ungroup() |>
   select(
     cod_dpto, nom_dpto, ranking_mpio, cod_mpio, nom_mpio,
     idf_municipal, rango_idf, w_i, pob_2024, va_2023, va_2024_proj
