@@ -36,7 +36,6 @@ library(plotly)
 library(DT)
 library(dplyr)
 library(sf)
-library(readr)
 library(scales)
 
 # Registro de la ruta de activos estáticos (CSS institucional y controlador MathJax JS)

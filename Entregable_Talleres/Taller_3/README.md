@@ -72,8 +72,8 @@ Cada integrante se encargó de un eje completo (código, sección del informe, p
 | Eje | Responsable | Alcance técnico |
 | :--- | :--- | :--- |
 | Eje 1: Datos geoespaciales e IDF | Sergio López (`202111932`) | Unión de las 4 fuentes oficiales por código DIVIPOLA, proyección del VA 2023 a 2024 ($g = 8.27\%$), demostración de invarianza de $w_i$, comprobación $\sum w_i = 1$ frente a `weighted.mean()`, simplificación municipal con `rmapshaper::ms_simplify()` (Bono 1) y Pestaña 1 del Shiny. |
-| Eje 2: Web scraping, API y tasas | Miguelangel Palma (`202621481`) | Web scraping SDMX-XML del IBR Overnight (BanRep), consulta REST JSON de la SOFR Overnight (Fed de Nueva York), empalme de calendarios con *forward-fill*, contraste contra boletines oficiales, gráficos de doble eje y Pestaña 2 del Shiny. |
-| Eje 3: Diseño libre, Shiny y compilación | Juan José Echeverry (`202616233`) | Cruce departamental GEIH/EMICRON 2024 con IDF 2024 (`datos_ejercicio_3c_laboral.csv`), gráfico de burbujas en Plotly y tabla DT, módulos `NS`/`moduleServer` en `bslib` (`page_navbar`, `kpi_card_institucional`, CSS y MathJax en cliente), compilación Quarto y anexo de IA. |
+| Eje 2: Web scraping, API y tasas | Miguelangel Palma (`202621481`) | Web scraping SDMX-XML del IBR Overnight (BanRep), consulta REST JSON de la SOFR Overnight (Fed de Nueva York, fecha de consulta `2026-11-02`), empalme de calendarios con *forward-fill*, contraste contra boletines oficiales, gráficos de doble eje y Pestaña 2 del Shiny (con selector Nominal / `% E.A.` sincronizado en KPIs y gráfico Plotly e instrucciones visibles). |
+| Eje 3: Diseño libre, Shiny y compilación | Juan José Echeverry (`202616233`) | Cruce departamental GEIH/EMICRON 2024 con IDF 2024 (`datos_ejercicio_3c_laboral.csv`), gráfico de burbujas en Plotly y tabla DT, módulos `NS`/`moduleServer` en `bslib` (`page_navbar`, `kpi_card_institucional`, nota explicativa abierta en Pestaña 3, CSS y MathJax en cliente), compilación Quarto y anexo de IA. |
 
 ## 3. Instrucciones de ejecución
 
@@ -115,8 +115,8 @@ quarto render Notebooks/Taller_3_Grupo_10.qmd
 | Requisito | Caso revisado | Resultado en el taller | Fuente oficial | Estado |
 | :--- | :--- | :--- | :--- | :--- |
 | Unión revisada | Medellín (`05001`) | IDF 2024: `69.73`, $w_i = 0.9243$, IDF Antioquia: `69.58` | DNP CIFFIT (2024) y DANE Cuentas Nacionales | Coincide |
-| Contraste IBR | `2024-03-15` y `2025-10-31` | `12.747%` E.A. y `9.250%` E.A. | BanRep SUAMECA (serie `241`) | Coincide |
-| Contraste SOFR | `2024-03-15` y `2025-10-31` | `5.31%` y `4.22%` (`4.310%` E.A.) | Markets Data NY Fed (endpoint `520`) | Coincide |
+| Contraste IBR | `2024-03-15` y `2025-10-31` | `12.747%` E.A. y `9.250%` E.A. | BanRep SUAMECA (serie `241`, consulta `2026-11-02`) | Coincide |
+| Contraste SOFR | `2024-03-15` y `2025-10-31` | `5.31%` y `4.22%` (`4.310%` E.A.) | Markets Data NY Fed (endpoint `520`, consulta `2026-11-02`) | Coincide |
 | Procedimiento alternativo | IDF (`weighted.mean`) y $\pi$ | Diferencia máx. IDF = `0.0000`; al `31/10/2025`: $\pi_{\text{directa}} = 4.826\%$ y $\pi_{\text{EA}} = 4.736\%$ | Fórmulas con VA 2023 y convención E.A. base 360 | Verificado |
 
 ## 5. Uso de inteligencia artificial

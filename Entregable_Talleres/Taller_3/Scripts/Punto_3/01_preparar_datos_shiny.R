@@ -254,17 +254,40 @@ p_dualismo <- ggplot(
   ) +
   {
     if (requireNamespace("ggrepel", quietly = TRUE)) {
+      nudge_y_vec <- dplyr::case_when(
+        df_labor$NOMBRE_DPTO == "Bogotá D.C."        ~ 0.08,
+        df_labor$NOMBRE_DPTO == "Antioquia"          ~ 0.085,
+        df_labor$NOMBRE_DPTO == "Cundinamarca"       ~ -0.065,
+        df_labor$NOMBRE_DPTO == "Caldas"             ~ -0.095,
+        df_labor$NOMBRE_DPTO == "Risaralda"          ~ -0.055,
+        df_labor$NOMBRE_DPTO == "Quindío"            ~ -0.055,
+        df_labor$NOMBRE_DPTO == "Valle del Cauca"    ~ 0.075,
+        df_labor$NOMBRE_DPTO == "Santander"          ~ 0.068,
+        df_labor$NOMBRE_DPTO == "Meta"               ~ 0.075,
+        df_labor$NOMBRE_DPTO == "Boyacá"             ~ 0.062,
+        df_labor$NOMBRE_DPTO == "Tolima"             ~ 0.055,
+        df_labor$NOMBRE_DPTO == "Bolívar"            ~ -0.062,
+        df_labor$NOMBRE_DPTO == "Norte de Santander" ~ 0.055,
+        df_labor$NOMBRE_DPTO == "Magdalena"          ~ -0.115,
+        df_labor$NOMBRE_DPTO == "Cauca"              ~ 0.05,
+        TRUE                                         ~ 0
+      )
       ggrepel::geom_text_repel(
         aes(label = NOMBRE_DPTO),
         size = 2.75,
         fontface = "bold",
         color = "#1f2937",
-        box.padding = 0.35,
-        point.padding = 0.4,
+        nudge_y = nudge_y_vec,
+        box.padding = 0.45,
+        point.padding = 0.45,
+        force = 4,
+        force_pull = 0.35,
+        min.segment.length = 0.05,
         segment.color = "#6b7280",
-        segment.size = 0.3,
-        max.overlaps = 30,
-        seed = 10
+        segment.size = 0.35,
+        max.overlaps = Inf,
+        max.iter = 15000,
+        seed = 42
       )
     } else {
       geom_text(
@@ -290,7 +313,7 @@ p_dualismo <- ggplot(
   ) +
   scale_y_continuous(
     labels = label_dollar(prefix = "$", suffix = " M", accuracy = 0.1),
-    limits = c(0.72, 1.62),
+    limits = c(0.68, 1.65),
     breaks = seq(0.8, 1.6, by = 0.2)
   ) +
   labs(
@@ -325,8 +348,8 @@ p_dualismo <- ggplot(
 ggsave(
   filename = file.path(dir_images, "3_c_dualismo_laboral_idf.png"),
   plot = p_dualismo,
-  width = 9.8,
-  height = 5.8,
+  width = 10.4,
+  height = 6.1,
   dpi = 300
 )
 message("Figura estática exportada a Outputs/Images/3_c_dualismo_laboral_idf.png")

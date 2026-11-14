@@ -136,28 +136,28 @@ p_ibr <- ggplot(df_ibr, aes(x = fecha, y = tasa_ibr)) +
            label = "Mínimo Histórico: 1.75% E.A.\nFase de Estímulo y Alivio COVID-19\n(30 de septiembre de 2020)",
            size = 2.85, fontface = "bold", color = "#166534", fill = "#f0fdf4",
            label.padding = unit(0.28, "lines"), linewidth = 0.3) +
-  annotate("curve", x = as.Date("2021-02-15"), y = 4.2,
+  annotate("curve", x = as.Date("2021-02-15"), y = 4.05,
            xend = as.Date("2020-10-15"), yend = 1.95,
            curvature = 0.18, arrow = arrow(length = unit(1.8, "mm")),
            color = "#166534", linewidth = 0.5) +
   
   # Etiqueta 2: Pico contractivo (flota en espacio superior despejado sobre la meseta de 2023)
-  annotate("label", x = as.Date("2023-07-01"), y = 15.0,
+  annotate("label", x = as.Date("2023-07-01"), y = 15.35,
            label = "Pico Contractivo: 13.25% E.A.\nMáximo Ciclo Anti-inflacionario\n(28 de abril de 2023)",
            size = 2.85, fontface = "bold", color = "#991b1b", fill = "#fef2f2",
            label.padding = unit(0.28, "lines"), linewidth = 0.3) +
-  annotate("curve", x = as.Date("2023-05-15"), y = 14.3,
+  annotate("curve", x = as.Date("2023-05-15"), y = 14.05,
            xend = as.Date("2023-04-28"), yend = 13.45,
            curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
            color = "#991b1b", linewidth = 0.5) +
   
   # Etiqueta 3: Cierre de observación (ubicada en el cuadrante inferior derecho, sin tapar la bajada)
-  annotate("label", x = as.Date("2025-03-15"), y = 5.2,
+  annotate("label", x = as.Date("2025-02-01"), y = 5.2,
            label = "Cierre de Observación: 9.25% E.A.\nFase de Normalización y Recortes\n(31 de octubre de 2025)",
            size = 2.85, fontface = "bold", color = "#1e3a8a", fill = "#eff6ff",
            label.padding = unit(0.28, "lines"), linewidth = 0.3) +
-  annotate("curve", x = as.Date("2025-06-15"), y = 5.9,
-           xend = as.Date("2025-10-25"), yend = 9.0,
+  annotate("curve", x = as.Date("2025-05-15"), y = 6.38,
+           xend = as.Date("2025-10-25"), yend = 9.05,
            curvature = -0.18, arrow = arrow(length = unit(1.8, "mm")),
            color = "#1e3a8a", linewidth = 0.5) +
   
@@ -171,7 +171,7 @@ p_ibr <- ggplot(df_ibr, aes(x = fecha, y = tasa_ibr)) +
   scale_y_continuous(
     labels = label_percent(scale = 1, accuracy = 1),
     breaks = seq(0, 16, by = 2),
-    limits = c(0, 16.0),
+    limits = c(0, 16.8),
     expand = expansion(mult = c(0.005, 0.02))
   ) +
   labs(
@@ -232,21 +232,21 @@ p_sofr <- ggplot(df_sofr, aes(x = fecha, y = tasa_sofr)) +
            color = "#0369a1", linewidth = 0.5) +
   
   # Etiqueta 2: Pico Fed Funds (flota en espacio superior despejado sobre la meseta de 2023)
-  annotate("label", x = as.Date("2023-09-15"), y = 6.2,
+  annotate("label", x = as.Date("2023-09-15"), y = 6.42,
            label = "Pico Contractivo Fed: 5.30%\nMáximo Rango Objetivo (5.25%–5.50%)\n(27 de julio de 2023)",
            size = 2.85, fontface = "bold", color = "#991b1b", fill = "#fef2f2",
            label.padding = unit(0.28, "lines"), linewidth = 0.3) +
-  annotate("curve", x = as.Date("2023-07-15"), y = 5.85,
+  annotate("curve", x = as.Date("2023-07-15"), y = 5.82,
            xend = as.Date("2023-07-27"), yend = 5.42,
            curvature = 0.15, arrow = arrow(length = unit(1.8, "mm")),
            color = "#991b1b", linewidth = 0.5) +
   
   # Etiqueta 3: Cierre de observación (cuadrante inferior derecho despejado, sin tapar bajada)
-  annotate("label", x = as.Date("2025-03-15"), y = 2.0,
+  annotate("label", x = as.Date("2025-02-01"), y = 2.0,
            label = "Cierre de Observación: 4.22%\nFase de Flexibilización Monetaria\n(31 de octubre de 2025)",
            size = 2.85, fontface = "bold", color = color_acento_sofr, fill = "#f0fdfa",
            label.padding = unit(0.28, "lines"), linewidth = 0.3) +
-  annotate("curve", x = as.Date("2025-06-15"), y = 2.4,
+  annotate("curve", x = as.Date("2025-05-15"), y = 2.52,
            xend = as.Date("2025-10-25"), yend = 4.10,
            curvature = -0.18, arrow = arrow(length = unit(1.8, "mm")),
            color = color_acento_sofr, linewidth = 0.5) +
@@ -261,7 +261,7 @@ p_sofr <- ggplot(df_sofr, aes(x = fecha, y = tasa_sofr)) +
   scale_y_continuous(
     labels = label_percent(scale = 1, accuracy = 0.5),
     breaks = seq(0, 6, by = 1),
-    limits = c(0, 6.8),
+    limits = c(0, 7.1),
     expand = expansion(mult = c(0.005, 0.02))
   ) +
   labs(
@@ -363,7 +363,7 @@ p_doble_eje <- ggplot(df_consolidado, aes(x = fecha)) +
     sec.axis = sec_axis(
       transform = ~ . * factor_escala,
       name = "Tasa IBR Overnight (% E.A., base 360 días) [Eje Derecho]",
-      labels = label_percent(scale = 1, accuracy = 1),
+      labels = label_percent(scale = 1, accuracy = 0.1, drop0trailing = TRUE),
       breaks = seq(0, 15, by = 2.5)
     )
   ) +

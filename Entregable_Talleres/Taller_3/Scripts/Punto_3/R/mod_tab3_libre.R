@@ -112,7 +112,7 @@ mod_tab3_libre_ui <- function(id, regiones_choices) {
 
     bslib::accordion(
       id       = ns("acc_nota_tecnica_tab3"),
-      open     = FALSE,
+      open     = TRUE,
       multiple = TRUE,
       class    = "accordion-institutional",
       bslib::accordion_panel(

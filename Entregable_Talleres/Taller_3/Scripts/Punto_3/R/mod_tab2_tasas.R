@@ -53,6 +53,16 @@ mod_tab2_tasas_ui <- function(id, min_fecha, max_fecha) {
         value   = TRUE
       ),
       shiny::div(
+        class = "method-section mb-2",
+        shiny::div(class = "method-title", "Instrucciones de uso"),
+        shiny::tags$ul(
+          class = "mb-0 ps-3 small",
+          shiny::tags$li("Seleccione una fecha hábil o use los botones de auditoría para consultar las tasas y las alertas de calendario."),
+          shiny::tags$li("Alterne la convención (Nominal vs. % E.A. base 360) para actualizar las tarjetas, la paridad y la curva SOFR del gráfico."),
+          shiny::tags$li("Pase el cursor o haga zoom sobre la serie Plotly para inspeccionar cotizaciones diarias y diferenciales.")
+        )
+      ),
+      shiny::div(
         class = "method-section",
         shiny::div(class = "method-title", "Especificación Financiera"),
         shiny::p(
@@ -335,23 +345,52 @@ mod_tab2_tasas_server <- function(id, df_rates) {
     })
 
     output$grafico_tasas_plotly <- plotly::renderPlotly({
-      f_sel <- as.Date(input$fecha_tasa)
-      reg   <- registro_fecha()
+      f_sel  <- as.Date(input$fecha_tasa)
+      reg    <- registro_fecha()
+      es_ea  <- identical(input$convencion_tasa, "ea")
 
-      # Hitos clave idénticos a la Figura 2.c del taller
+      df_plot <- df_rates |>
+        dplyr::mutate(sofr_plot = if (es_ea) sofr_ea else sofr_on)
+
+      sofr_pico         <- df_plot$sofr_plot[df_plot$fecha == as.Date("2023-07-27")][1]
+      sofr_cierre       <- df_plot$sofr_plot[df_plot$fecha == as.Date("2025-10-31")][1]
+      sofr_piso         <- df_plot$sofr_plot[df_plot$fecha == as.Date("2021-02-15")][1]
+      spread_cierre_bps <- round((9.25 - sofr_cierre) * 100)
+
+      # Hitos clave idénticos a la Figura 2.c del taller (sincronizados con la convención activa)
       hitos_sofr <- data.frame(
         fecha     = as.Date(c("2023-07-27", "2025-10-31")),
-        valor     = c(5.30, 4.22),
-        etiqueta  = c("Pico SOFR (2023-07-27): 5.30%", "Cierre SOFR (2025-10-31): 4.22%")
+        valor     = c(sofr_pico, sofr_cierre),
+        etiqueta  = if (es_ea) {
+          sprintf(c("Pico SOFR E.A. (2023-07-27): %.3f%% E.A.", "Cierre SOFR E.A. (2025-10-31): %.3f%% E.A."), c(sofr_pico, sofr_cierre))
+        } else {
+          sprintf(c("Pico SOFR (2023-07-27): %.2f%%", "Cierre SOFR (2025-10-31): %.2f%%"), c(sofr_pico, sofr_cierre))
+        }
       )
+      ibr_hito_abr      <- df_plot$ibr_on[df_plot$fecha == as.Date("2023-04-28")][1]
+      ibr_hito_cierre   <- df_plot$ibr_on[df_plot$fecha == as.Date("2025-10-31")][1]
       hitos_ibr <- data.frame(
         fecha     = as.Date(c("2023-04-28", "2025-10-31")),
-        valor     = c(13.25, 9.25),
-        etiqueta  = c("Pico IBR (2023-04-28): 13.25% E.A.", "Cierre IBR (2025-10-31): 9.25% E.A.")
+        valor     = c(ibr_hito_abr, ibr_hito_cierre),
+        etiqueta  = c(
+          sprintf("Decisión Repo 13.25%% | IBR (2023-04-28): %.3f%% E.A.", ibr_hito_abr),
+          sprintf("Cierre IBR (2025-10-31): %.3f%% E.A.", ibr_hito_cierre)
+        )
       )
 
+      nombre_sofr <- if (es_ea) {
+        "SOFR ON E.A. (EE. UU. - Reserva Federal) [Eje Izq.]"
+      } else {
+        "SOFR ON (EE. UU. - Reserva Federal) [Eje Izq.]"
+      }
+      hover_sofr <- if (es_ea) {
+        "<b>SOFR ON E.A. (EE. UU.):</b> %{y:.3f}% E.A.<extra></extra>"
+      } else {
+        "<b>SOFR ON (EE. UU.):</b> %{y:.2f}%<extra></extra>"
+      }
+
       # Construcción del gráfico replicando exactamente la estética del Taller 3 (Figura 2.c)
-      fig <- plotly::plot_ly(df_rates, x = ~fecha) |>
+      fig <- plotly::plot_ly(df_plot, x = ~fecha) |>
         plotly::add_lines(
           y             = ~ibr_on,
           name          = "IBR ON (Colombia - Banco de la República) [Eje Der.]",
@@ -360,11 +399,11 @@ mod_tab2_tasas_server <- function(id, df_rates) {
           hovertemplate = "<b>IBR ON (Colombia):</b> %{y:.3f}% E.A.<extra></extra>"
         ) |>
         plotly::add_lines(
-          y             = ~sofr_on,
-          name          = "SOFR ON (EE. UU. - Reserva Federal) [Eje Izq.]",
+          y             = ~sofr_plot,
+          name          = nombre_sofr,
           line          = list(color = "#0f766e", width = 2.1),
           yaxis         = "y",
-          hovertemplate = "<b>SOFR ON (EE. UU.):</b> %{y:.2f}%<extra></extra>"
+          hovertemplate = hover_sofr
         ) |>
         plotly::add_markers(
           data          = hitos_ibr,
@@ -388,7 +427,12 @@ mod_tab2_tasas_server <- function(id, df_rates) {
         )
 
       # Si la fecha consultada tiene datos, resaltar puntos activos sobre ambas curvas
-      if (nrow(reg) > 0 && !is.na(reg$ibr_on[1]) && !is.na(reg$sofr_on[1])) {
+      sofr_reg_val <- if (nrow(reg) > 0) {
+        if (es_ea) reg$sofr_ea[1] else reg$sofr_on[1]
+      } else {
+        NA_real_
+      }
+      if (nrow(reg) > 0 && !is.na(reg$ibr_on[1]) && !is.na(sofr_reg_val)) {
         fig <- fig |>
           plotly::add_markers(
             x             = reg$fecha[1],
@@ -401,11 +445,15 @@ mod_tab2_tasas_server <- function(id, df_rates) {
           ) |>
           plotly::add_markers(
             x             = reg$fecha[1],
-            y             = reg$sofr_on[1],
+            y             = sofr_reg_val,
             yaxis         = "y",
             marker        = list(color = "#78350f", size = 9, symbol = "diamond", line = list(color = "#ffffff", width = 1.2)),
             showlegend    = FALSE,
-            hovertemplate = sprintf("<b>SOFR en t (%s):</b> %.2f%%<extra></extra>", format(f_sel, "%Y-%m-%d"), reg$sofr_on[1])
+            hovertemplate = sprintf(
+              if (es_ea) "<b>SOFR E.A. en t (%s):</b> %.3f%% E.A.<extra></extra>" else "<b>SOFR en t (%s):</b> %.2f%%<extra></extra>",
+              format(f_sel, "%Y-%m-%d"),
+              sofr_reg_val
+            )
           )
       }
 
@@ -475,7 +523,10 @@ mod_tab2_tasas_server <- function(id, df_rates) {
             y           = 1.0,
             xref        = "x",
             yref        = "y",
-            text        = "<b>Estímulo Monetario Sincronizado (2020–2021)</b><br>Piso Histórico de Tasas por Emergencia COVID-19<br>IBR: 1.75% E.A. | SOFR: ~0.05%",
+            text        = sprintf(
+              if (es_ea) "<b>Estímulo Monetario Sincronizado (2020–2021)</b><br>Piso Histórico de Tasas por Emergencia COVID-19<br>IBR: 1.75%% E.A. | SOFR E.A.: ~%.3f%%" else "<b>Estímulo Monetario Sincronizado (2020–2021)</b><br>Piso Histórico de Tasas por Emergencia COVID-19<br>IBR: 1.75%% E.A. | SOFR: ~%.2f%%",
+              sofr_piso
+            ),
             showarrow   = TRUE,
             arrowhead   = 2,
             arrowsize   = 0.9,
@@ -492,10 +543,13 @@ mod_tab2_tasas_server <- function(id, df_rates) {
           ),
           list(
             x           = as.Date("2023-05-15"),
-            y           = 5.35,
+            y           = max(5.35, sofr_pico + 0.05),
             xref        = "x",
             yref        = "y",
-            text        = "<b>Picos del Ciclo Contractivo (2023)</b><br>Ajuste Anti-inflacionario Récord en Ambos Países<br>IBR máx: 13.25% (abr-23) | SOFR máx: 5.30% (jul-23)",
+            text        = sprintf(
+              if (es_ea) "<b>Picos del Ciclo Contractivo (2023)</b><br>Ajuste Anti-inflacionario Récord en Ambos Países<br>IBR máx: 13.25%% (abr-23) | SOFR E.A. máx: %.3f%% (jul-23)" else "<b>Picos del Ciclo Contractivo (2023)</b><br>Ajuste Anti-inflacionario Récord en Ambos Países<br>IBR máx: 13.25%% (abr-23) | SOFR máx: %.2f%% (jul-23)",
+              sofr_pico
+            ),
             showarrow   = TRUE,
             arrowhead   = 2,
             arrowsize   = 0.9,
@@ -515,7 +569,11 @@ mod_tab2_tasas_server <- function(id, df_rates) {
             y           = 3.65,
             xref        = "x",
             yref        = "y",
-            text        = "<b>Fase de Normalización y Recortes (2025)</b><br>Diferencial de Tasas (Spread): ~503 bps<br>IBR: 9.25% E.A. | SOFR: 4.22% (31-oct-2025)",
+            text        = sprintf(
+              if (es_ea) "<b>Fase de Normalización y Recortes (2025)</b><br>Diferencial de Tasas (Spread): ~%d bps<br>IBR: 9.25%% E.A. | SOFR E.A.: %.3f%% (31-oct-2025)" else "<b>Fase de Normalización y Recortes (2025)</b><br>Diferencial de Tasas (Spread): ~%d bps<br>IBR: 9.25%% E.A. | SOFR: %.2f%% (31-oct-2025)",
+              spread_cierre_bps,
+              sofr_cierre
+            ),
             showarrow   = TRUE,
             arrowhead   = 2,
             arrowsize   = 0.9,
@@ -553,7 +611,14 @@ mod_tab2_tasas_server <- function(id, df_rates) {
             tickcolor  = "#9ca3af"
           ),
           yaxis = list(
-            title     = list(text = "<b>Tasa SOFR Overnight (% Anualizado, Actual/360) [Eje Izquierdo]</b>", font = list(color = "#0f766e", size = 11.5)),
+            title     = list(
+              text = if (es_ea) {
+                "<b>Tasa SOFR Overnight (% E.A., base Act/360) [Eje Izquierdo]</b>"
+              } else {
+                "<b>Tasa SOFR Overnight (% Anualizado, Actual/360) [Eje Izquierdo]</b>"
+              },
+              font = list(color = "#0f766e", size = 11.5)
+            ),
             tickfont  = list(color = "#0f766e", size = 11),
             side      = "left",
             range     = c(0, 6.8),
@@ -575,7 +640,7 @@ mod_tab2_tasas_server <- function(id, df_rates) {
             side       = "right",
             range      = c(0, 17.0),
             tickvals   = seq(0, 15, by = 2.5),
-            ticktext   = c("0%", "2%", "5%", "8%", "10%", "12%", "15%"),
+            ticktext   = c("0%", "2.5%", "5%", "7.5%", "10%", "12.5%", "15%"),
             showgrid   = FALSE,
             zeroline   = FALSE,
             showline   = TRUE,

@@ -49,8 +49,9 @@ detectar_dir_taller3 <- function() {
   normalizePath(ruta, winslash = "/")
 }
 
-fecha_inicio <- "2020-01-01"
-fecha_fin    <- "2025-10-31"
+fecha_inicio            <- "2020-01-01"
+fecha_fin               <- "2025-10-31"
+fecha_consulta_snapshot <- "2026-11-02" # Fecha de extracción conjunta SOFR + IBR
 
 dir_taller3 <- detectar_dir_taller3()
 dir_raw     <- file.path(dir_taller3, "Outputs", "Data", "raw")
@@ -62,19 +63,25 @@ ruta_csv_raw  <- file.path(dir_raw, "sofr_diaria_2020_2025.csv")
 # 2. Petición a la API REST de la Reserva Federal de Nueva York ----------------
 endpoint_sofr <- "https://markets.newyorkfed.org/api/rates/secured/sofr/search.json"
 
-respuesta_api <- GET(
-  url = endpoint_sofr,
-  query = list(startDate = fecha_inicio, endDate = fecha_fin),
-  user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-)
+if (!file.exists(ruta_json_raw) || file.size(ruta_json_raw) < 10000) {
+  respuesta_api <- GET(
+    url = endpoint_sofr,
+    query = list(startDate = fecha_inicio, endDate = fecha_fin),
+    user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+  )
 
-if (status_code(respuesta_api) != 200) {
-  stop("La API de la NY Fed devolvió un código de error: ", status_code(respuesta_api))
+  if (status_code(respuesta_api) != 200) {
+    stop("La API de la NY Fed devolvió un código de error: ", status_code(respuesta_api))
+  }
+
+  # Almacenamiento del archivo crudo en JSON
+  contenido_json <- content(respuesta_api, as = "text", encoding = "UTF-8")
+  writeLines(contenido_json, con = ruta_json_raw, useBytes = TRUE)
+  fecha_consulta <- as.character(Sys.Date())
+} else {
+  contenido_json <- paste(readLines(ruta_json_raw, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  fecha_consulta <- fecha_consulta_snapshot
 }
-
-# Almacenamiento del archivo crudo en JSON
-contenido_json <- content(respuesta_api, as = "text", encoding = "UTF-8")
-writeLines(contenido_json, con = ruta_json_raw, useBytes = TRUE)
 
 # 3. Estructuración, tipado y tratamiento de la serie --------------------------
 datos_crudos <- fromJSON(contenido_json, flatten = TRUE)
@@ -96,3 +103,4 @@ df_sofr <- datos_crudos$refRates |>
 write_csv(df_sofr, ruta_csv_raw)
 
 message("Serie SOFR tratada y guardada en raw/: ", ruta_csv_raw)
+message("Fecha de consulta registrada (NY Fed SOFR API): ", fecha_consulta)

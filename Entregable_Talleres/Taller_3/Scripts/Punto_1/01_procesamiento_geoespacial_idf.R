@@ -576,10 +576,11 @@ p_mapa_mpio <- ggplot() +
   ) +
   labs(
     title = "Índice de Desempeño Fiscal (IDF) Municipal en Colombia (Vigencia 2024)",
-    subtitle = "Cobertura cartográfica MGN (1.102 polígonos evaluados y 20 territorios no municipalizados - Bono 1)",
+    subtitle = "Cobertura MGN 2018: 1.102 polígonos evaluados y 20 territorios sin calificación municipal DNP (Bono 1)",
     caption = paste0(
-      "Fuente: Elaboración Grupo 10 con base en DNP (IDF Municipal Vigencia 2024: 1.103 municipios, incl. Nuevo Belén de Bajirá) y MGN DANE.\n",
-      "Nota: Los polígonos en gris claro en Amazonas, Guainía y Vaupés corresponden a las Áreas No Municipalizadas (ANM), no sujetas a medición municipal."
+      "Fuente: Elaboración Grupo 10 con base en DNP (IDF Municipal Vigencia 2024: 1.103 municipios) y MGN 2018 DANE (1.122 polígonos).\n",
+      "Nota: Los 20 polígonos en gris claro corresponden a 18 Áreas No Municipalizadas (ANM), Mapiripana y San Andrés (88001).\n",
+      "Nuevo Belén de Bajirá (27493, Chocó) figura en DNP/DANE sin polígono independiente en el MGN 2018."
     )
   ) +
   tema_mapa_institucional

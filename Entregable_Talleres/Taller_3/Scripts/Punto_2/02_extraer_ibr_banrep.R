@@ -83,6 +83,9 @@ if (!file.exists(ruta_xml_raw) || file.size(ruta_xml_raw) < 1000000) {
 # 3. Web scraping y extracción directa de nodos con xml2 y XPath ---------------
 doc_xml <- read_xml(ruta_xml_raw)
 
+nodo_extracted <- xml_find_first(doc_xml, ".//*[local-name()='Extracted']")
+fecha_consulta_xml <- if (!is.na(nodo_extracted)) substr(xml_text(nodo_extracted), 1, 10) else as.character(Sys.Date())
+
 nodo_serie_on <- xml_find_first(
   doc_xml,
   ".//*[local-name()='Series'][.//*[local-name()='Value'][@value='IRIBRM00'] and .//*[local-name()='Value'][@value='ER']]"
@@ -112,3 +115,4 @@ df_ibr <- tibble(
 write_csv(df_ibr, ruta_csv_raw)
 
 message("Serie IBR tratada y guardada en raw/: ", ruta_csv_raw)
+message("Fecha de consulta registrada (BanRep SDMX Extracted): ", fecha_consulta_xml)
