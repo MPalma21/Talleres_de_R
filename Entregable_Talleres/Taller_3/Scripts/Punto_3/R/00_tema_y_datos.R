@@ -13,6 +13,8 @@ localizar_dir_shiny <- function() {
     file.path(getwd(), "Scripts", "Punto_3", "data_shiny"),
     file.path(getwd(), "Entregable_Talleres", "Taller_3", "Scripts", "Punto_3", "data_shiny"),
     file.path(getwd(), "Entregable_Talleres", "Taller_3", "data_shiny"),
+    file.path(getwd(), "Taller_3", "Scripts", "Punto_3", "data_shiny"),
+    file.path(getwd(), "Taller_3_Grupo_10", "Scripts", "Punto_3", "data_shiny"),
     file.path(getwd(), "..", "Punto_3", "data_shiny")
   )
   dir_valido <- posibles_rutas[dir.exists(posibles_rutas)][1]

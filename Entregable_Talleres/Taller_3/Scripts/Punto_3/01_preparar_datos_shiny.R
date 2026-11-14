@@ -29,8 +29,35 @@ suppressPackageStartupMessages({
   library(here)
 })
 
-# 1. Localización robusta de rutas del repositorio -----------------------------
-dir_taller3 <- here("Entregable_Talleres", "Taller_3")
+# 1. Localización robusta de rutas (repo completo o carpeta Taller_3 aislada) ---
+detectar_dir_taller3 <- function() {
+  args_cmd <- commandArgs(trailingOnly = FALSE)
+  arg_file <- grep("^--file=", args_cmd, value = TRUE)
+  dir_script <- if (length(arg_file) > 0) dirname(normalizePath(sub("^--file=", "", arg_file[1]))) else NULL
+  candidatos <- c(
+    if (!is.null(dir_script)) file.path(dir_script, "..", ".."),
+    getwd(),
+    file.path(getwd(), ".."),
+    file.path(getwd(), "..", ".."),
+    file.path(getwd(), "Entregable_Talleres", "Taller_3"),
+    file.path(getwd(), "Taller_3"),
+    file.path(getwd(), "Taller_3_Grupo_10"),
+    here("Entregable_Talleres", "Taller_3"),
+    here()
+  )
+  validos <- vapply(
+    candidatos,
+    function(d) dir.exists(d) && dir.exists(file.path(d, "Scripts")) && dir.exists(file.path(d, "Outputs")),
+    logical(1)
+  )
+  ruta <- candidatos[validos][1]
+  if (is.na(ruta)) {
+    stop("No se encontró la carpeta raíz del Taller 3 (con subcarpetas Scripts/ y Outputs/).", call. = FALSE)
+  }
+  normalizePath(ruta, winslash = "/")
+}
+
+dir_taller3 <- detectar_dir_taller3()
 dir_raw     <- file.path(dir_taller3, "Outputs", "Data", "raw")
 dir_proc    <- file.path(dir_taller3, "Outputs", "Data", "processed")
 dir_images  <- file.path(dir_taller3, "Outputs", "Images")
@@ -108,10 +135,14 @@ message(sprintf(
 # mediano (GEIH + EMICRON 2024, Taller 2) con el Índice de Desempeño Fiscal
 # departamental ponderado y el Valor Agregado per cápita 2024 (Ejercicio 1, Taller 3).
 
-ruta_taller2_dpto <- here("outputs", "4_1_tabla_departamental.csv")
+candidatos_t2 <- c(
+  file.path(dir_taller3, "..", "..", "outputs", "4_1_tabla_departamental.csv"),
+  here("outputs", "4_1_tabla_departamental.csv")
+)
+ruta_taller2_dpto <- candidatos_t2[file.exists(candidatos_t2)][1]
 ruta_csv_3c       <- file.path(dir_punto3, "datos_ejercicio_3c_laboral.csv")
 
-if (file.exists(ruta_taller2_dpto)) {
+if (!is.na(ruta_taller2_dpto) && file.exists(ruta_taller2_dpto)) {
   df_labor_base <- read_csv(ruta_taller2_dpto, show_col_types = FALSE) |>
     select(
       DPTO_NUM, OCUPADOS_EXP, INFORMALES_EXP,

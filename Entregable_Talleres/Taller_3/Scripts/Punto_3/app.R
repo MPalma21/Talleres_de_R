@@ -44,6 +44,8 @@ rutas_www <- c(
   file.path(getwd(), "www"),
   file.path(getwd(), "Scripts", "Punto_3", "www"),
   file.path(getwd(), "Entregable_Talleres", "Taller_3", "Scripts", "Punto_3", "www"),
+  file.path(getwd(), "Taller_3", "Scripts", "Punto_3", "www"),
+  file.path(getwd(), "Taller_3_Grupo_10", "Scripts", "Punto_3", "www"),
   file.path(getwd(), "..", "Punto_3", "www")
 )
 dir_www <- rutas_www[dir.exists(rutas_www)][1]
@@ -57,6 +59,8 @@ if (!exists("cargar_datos_shiny", mode = "function")) {
     file.path(getwd(), "R"),
     file.path(getwd(), "Scripts", "Punto_3", "R"),
     file.path(getwd(), "Entregable_Talleres", "Taller_3", "Scripts", "Punto_3", "R"),
+    file.path(getwd(), "Taller_3", "Scripts", "Punto_3", "R"),
+    file.path(getwd(), "Taller_3_Grupo_10", "Scripts", "Punto_3", "R"),
     file.path(getwd(), "..", "Punto_3", "R")
   )
   dir_r <- rutas_r[dir.exists(rutas_r)][1]

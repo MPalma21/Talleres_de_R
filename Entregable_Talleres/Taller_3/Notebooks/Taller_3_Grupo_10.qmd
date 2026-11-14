@@ -145,7 +145,7 @@ format:
     fig-pos: "H"
     fig-align: center
     mermaid-format: png
-    keep-tex: true
+    keep-tex: false
     echo: false
     include-in-header:
       text: |
@@ -179,6 +179,12 @@ if (!is.na(dir_lib)) {
   .libPaths(c(normalizePath(dir_lib), .libPaths()))
 }
 
+# Paquetes adicionales identificados explícitamente con [PAQUETE ADICIONAL]:
+# [PAQUETE ADICIONAL]: scales (formateo porcentual y escalas numéricas)
+# [PAQUETE ADICIONAL]: lubridate (parseo y manejo de fechas)
+# [PAQUETE ADICIONAL]: here (resolución portable de rutas relativas)
+# [PAQUETE ADICIONAL]: knitr (compilación de tablas, figuras y fragmentos de código en Quarto)
+# [PAQUETE ADICIONAL]: kableExtra (estilos avanzados y ajuste de ancho en tablas PDF/HTML)
 library(tidyverse)
 library(scales)
 library(lubridate)
@@ -188,7 +194,19 @@ if (requireNamespace("kableExtra", quietly = TRUE)) {
   library(kableExtra)
 }
 
-dir_taller3 <- here("Entregable_Talleres", "Taller_3")
+candidatos_t3 <- c(
+  file.path(getwd(), ".."),
+  getwd(),
+  file.path(getwd(), "Entregable_Talleres", "Taller_3"),
+  here("Entregable_Talleres", "Taller_3"),
+  here()
+)
+validos_t3 <- vapply(
+  candidatos_t3,
+  function(d) dir.exists(d) && dir.exists(file.path(d, "Scripts")) && dir.exists(file.path(d, "Outputs")),
+  logical(1)
+)
+dir_taller3 <- normalizePath(candidatos_t3[validos_t3][1], winslash = "/")
 dir_scripts <- file.path(dir_taller3, "Scripts", "Punto_2")
 dir_proc    <- file.path(dir_taller3, "Outputs", "Data", "processed")
 dir_images  <- file.path(dir_taller3, "Outputs", "Images")

@@ -21,23 +21,36 @@
 # [PAQUETE ADICIONAL]: scales (reescalado de paletas cromáticas por cuantiles y formateo numérico)
 # [PAQUETE ADICIONAL]: httr (descarga programática de respaldos oficiales desde portales DANE/DNP)
 
-# Definición de rutas relativas robustas desde cualquier directorio de ejecución
-dir_base <- getwd()
-if (basename(dir_base) == "Punto_1") {
-  ruta_repo <- normalizePath(file.path(dir_base, "..", "..", ".."))
-} else if (basename(dir_base) == "Scripts") {
-  ruta_repo <- normalizePath(file.path(dir_base, "..", ".."))
-} else if (basename(dir_base) == "Taller_3" || basename(dir_base) == "Notebooks") {
-  ruta_repo <- normalizePath(file.path(dir_base, "..", ".."))
-  if (!dir.exists(file.path(ruta_repo, "Datos"))) {
-    ruta_repo <- normalizePath(file.path(dir_base, "..", "..", ".."))
+# Definición de rutas portables (funciona dentro del repo o descomprimiendo Taller_3/)
+detectar_dir_taller3 <- function() {
+  args_cmd <- commandArgs(trailingOnly = FALSE)
+  arg_file <- grep("^--file=", args_cmd, value = TRUE)
+  dir_script <- if (length(arg_file) > 0) dirname(normalizePath(sub("^--file=", "", arg_file[1]))) else NULL
+  candidatos <- c(
+    if (!is.null(dir_script)) file.path(dir_script, "..", ".."),
+    getwd(),
+    file.path(getwd(), ".."),
+    file.path(getwd(), "..", ".."),
+    file.path(getwd(), "Entregable_Talleres", "Taller_3"),
+    file.path(getwd(), "Taller_3"),
+    file.path(getwd(), "Taller_3_Grupo_10")
+  )
+  validos <- vapply(
+    candidatos,
+    function(d) dir.exists(d) && dir.exists(file.path(d, "Scripts")) && dir.exists(file.path(d, "Outputs")),
+    logical(1)
+  )
+  ruta <- candidatos[validos][1]
+  if (is.na(ruta)) {
+    stop("No se encontró la carpeta raíz del Taller 3 (con subcarpetas Scripts/ y Outputs/).", call. = FALSE)
   }
-} else {
-  ruta_repo <- dir_base
+  normalizePath(ruta, winslash = "/")
 }
 
-if (dir.exists(file.path(ruta_repo, "librerias"))) {
-  .libPaths(c(file.path(ruta_repo, "librerias"), .libPaths()))
+dir_taller3 <- detectar_dir_taller3()
+ruta_repo_libs <- file.path(dir_taller3, "..", "..", "librerias")
+if (dir.exists(ruta_repo_libs)) {
+  .libPaths(c(normalizePath(ruta_repo_libs), .libPaths()))
 }
 
 suppressPackageStartupMessages({
@@ -53,10 +66,31 @@ suppressPackageStartupMessages({
   library(httr)
 })
 
-ruta_datos        <- file.path(ruta_repo, "Datos", "Taller_3")
-ruta_outputs_img  <- file.path(ruta_repo, "Entregable_Talleres", "Taller_3", "Outputs", "Images")
-ruta_outputs_data <- file.path(ruta_repo, "Entregable_Talleres", "Taller_3", "Outputs", "Data", "processed")
-ruta_shiny_data   <- file.path(ruta_repo, "Entregable_Talleres", "Taller_3", "Scripts", "Punto_3", "data_shiny")
+# Busca insumos primarios en Datos/Taller_3/ (repo) o junto/dentro de Taller_3/
+candidatos_datos <- c(
+  file.path(dir_taller3, "..", "..", "Datos", "Taller_3"),
+  file.path(dir_taller3, "Datos", "Taller_3"),
+  file.path(dir_taller3, "Datos"),
+  file.path(dir_taller3, "..", "Datos", "Taller_3"),
+  file.path(dir_taller3, "..", "Datos")
+)
+tiene_insumos <- vapply(
+  candidatos_datos,
+  function(d) dir.exists(d) && (file.exists(file.path(d, "ResultadosIDF_DNP.xlsx")) || dir.exists(file.path(d, "shapefiles"))),
+  logical(1)
+)
+ruta_datos <- if (any(tiene_insumos)) {
+  normalizePath(candidatos_datos[tiene_insumos][1], winslash = "/")
+} else {
+  candidatos_datos[dir.exists(candidatos_datos)][1]
+}
+if (is.na(ruta_datos)) {
+  ruta_datos <- file.path(dir_taller3, "Datos", "Taller_3")
+}
+
+ruta_outputs_img  <- file.path(dir_taller3, "Outputs", "Images")
+ruta_outputs_data <- file.path(dir_taller3, "Outputs", "Data", "processed")
+ruta_shiny_data   <- file.path(dir_taller3, "Scripts", "Punto_3", "data_shiny")
 
 dir.create(ruta_outputs_img, recursive = TRUE, showWarnings = FALSE)
 dir.create(ruta_outputs_data, recursive = TRUE, showWarnings = FALSE)
@@ -198,8 +232,17 @@ leer_idf_dnp <- function(ruta_xlsx) {
 df_idf_muni <- leer_idf_dnp(archivo_idf)
 
 ## 1.4 DANE Geoportal: Shapefiles Departamental y Municipal (MGN) ----
-archivo_shp_dpto <- file.path(ruta_datos, "shapefiles", "MGN_DPTO_POLITICO.shp")
-archivo_shp_mpio <- file.path(ruta_datos, "shapefiles", "MGN_MPIO_POLITICO.shp")
+buscar_shp <- function(nombre_shp) {
+  rutas_shp <- c(
+    file.path(ruta_datos, "shapefiles", nombre_shp),
+    file.path(ruta_datos, nombre_shp)
+  )
+  encontrado <- rutas_shp[file.exists(rutas_shp)][1]
+  if (is.na(encontrado)) rutas_shp[1] else encontrado
+}
+
+archivo_shp_dpto <- buscar_shp("MGN_DPTO_POLITICO.shp")
+archivo_shp_mpio <- buscar_shp("MGN_MPIO_POLITICO.shp")
 
 shp_dpto_raw <- st_read(archivo_shp_dpto, quiet = TRUE)
 shp_mpio_raw <- st_read(archivo_shp_mpio, quiet = TRUE)
